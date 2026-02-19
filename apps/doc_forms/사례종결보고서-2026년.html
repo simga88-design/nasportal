@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>사례종결보고서 입력 폼</title>
+    <link rel="stylesheet" as="style" crossorigin
+        href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.8/dist/web/static/pretendard.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+    <style>
+        :root {
+            --primary: #2563eb;
+            --border: #e2e8f0;
+            --text: #334155;
+            --background: #f8fafc;
+        }
+
+        body {
+            font-family: 'Pretendard', sans-serif;
+            margin: 0;
+            padding: 0;
+            color: var(--text);
+            font-size: 14px;
+            background: transparent;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 6px;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 6px 10px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 13px;
+            transition: border-color 0.2s;
+            box-sizing: border-box;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        textarea.form-control {
+            resize: vertical;
+            min-height: 50px;
+        }
+
+        .row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 5px;
+        }
+
+        .flex-1 {
+            flex: 1;
+        }
+
+        .flex-2 {
+            flex: 2;
+        }
+
+        .checkbox-group {
+            background: white;
+            padding: 10px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 13px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+
+        .checkbox-group.col-3 {
+            grid-template-columns: 1fr 1fr 1fr;
+        }
+
+        .checkbox-group label {
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="form-content" style="padding: 15px 20px 30px;">
+        <div class="form-group">
+            <label class="form-label">작성일자</label>
+            <input type="date" id="v_date" class="form-control">
+        </div>
+        <div class="form-group">
+            <label class="form-label">담당자</label>
+            <input type="text" id="v_manager" class="form-control">
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">대상자 정보</label>
+            <div>
+                <input type="text" id="v_name" class="form-control" placeholder="성명" style="margin-bottom:5px;">
+                <input type="text" id="v_gender" class="form-control" placeholder="성별(남/여)" style="margin-bottom:5px;">
+                <input type="text" id="v_age" class="form-control" placeholder="연령(세)">
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">등록 유형</label>
+            <div class="checkbox-group col-3" id="v_type_group">
+                <label><input type="radio" name="v_type" value="만성" checked> 만성</label>
+                <label><input type="radio" name="v_type" value="자살"> 자살</label>
+                <label><input type="radio" name="v_type" value="아동"> 아동</label>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">개입 기간</label>
+            <div>
+                <div style="font-size: 11px; color: #64748b; margin-bottom: 8px;">* 시작일과 완료일을 선택하면 서비스 기간(개월 수)이 자동으로
+                    계산됩니다.</div>
+                <input type="text" id="v_period_total" class="form-control" placeholder="서비스 기간 총 (N)개월"
+                    style="margin-bottom:5px;">
+                <input type="date" id="v_period_start" class="form-control" style="margin-bottom:5px;">
+                <input type="date" id="v_period_end" class="form-control">
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">담당자 의견</label>
+            <textarea id="v_opinion" class="form-control"></textarea>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">종결 유형 (택일)</label>
+            <div
+                style="background:white; border:1px solid var(--border); border-radius:6px; padding:10px; line-height: 2;">
+                <div class="chk-group" style="margin-bottom: 5px;">
+                    <strong style="display:inline-block; width: 80px; color: var(--primary);">
+                        <label><input type="radio" name="v_end_cat" value="사망" class="parent-radio"> 사망:</label>
+                    </strong>
+                    <label><input type="radio" name="v_end_type" value="질병" class="child-radio"> 질병</label>
+                    <label style="margin-left:8px;"><input type="radio" name="v_end_type" value="사고"
+                            class="child-radio"> 사고</label>
+                    <label style="margin-left:8px;"><input type="radio" name="v_end_type" value="자살"
+                            class="child-radio"> 자살</label>
+                    <label style="margin-left:8px;"><input type="radio" name="v_end_type" value="사망_기타"
+                            class="child-radio"> 기타</label>
+                    <input type="text" id="v_end_die_other" class="form-control"
+                        style="width:120px; display:inline-block; padding:2px 5px; margin-left:5px;"
+                        placeholder="기타 사유">
+                </div>
+                <div class="chk-group" style="margin-bottom: 5px;">
+                    <strong style="display:inline-block; width: 80px; color: var(--primary);">
+                        <label><input type="radio" name="v_end_cat" value="전출" class="parent-radio"> 전출:</label>
+                    </strong>
+                    <label><input type="radio" name="v_end_type" value="거주지 이전" class="child-radio"> 거주지 이전</label>
+                    <label style="margin-left:8px;"><input type="radio" name="v_end_type" value="기관 연계(타정신건강복지센터)"
+                            class="child-radio"> 기관
+                        연계</label>
+                    <label style="margin-left:8px;"><input type="radio" name="v_end_type" value="타기관 이관"
+                            class="child-radio"> 타기관 이관</label>
+                </div>
+                <div class="chk-group" style="margin-bottom: 5px;">
+                    <strong style="display:inline-block; width: 80px; color: var(--primary);">
+                        <label><input type="radio" name="v_end_cat" value="시설입소" class="parent-radio"> 시설입소:</label>
+                    </strong>
+                    <label><input type="radio" name="v_end_type" value="정신의료기관" class="child-radio"> 정신의료기관</label>
+                    <label style="margin-left:8px;"><input type="radio" name="v_end_type" value="시설입소_기타"
+                            class="child-radio"> 기타</label>
+                    <input type="text" id="v_end_fac_other" class="form-control"
+                        style="width:120px; display:inline-block; padding:2px 5px; margin-left:5px;"
+                        placeholder="기타 사유">
+                </div>
+                <div class="chk-group" style="margin-bottom: 5px;">
+                    <strong style="display:inline-block; width: 80px; color: var(--primary);">
+                        <label><input type="radio" name="v_end_cat" value="종결" class="parent-radio"> 종결:</label>
+                    </strong>
+                    <label><input type="radio" name="v_end_type" value="협의종결" class="child-radio"> 협의종결</label>
+                    <label style="margin-left:8px;"><input type="radio" name="v_end_type" value="부재종결"
+                            class="child-radio"> 부재종결</label>
+                    <label style="margin-left:8px;"><input type="radio" name="v_end_type" value="기관종결"
+                            class="child-radio"> 기관종결</label>
+                    <label style="margin-left:8px;"><input type="radio" name="v_end_type" value="본인희망"
+                            class="child-radio"> 본인희망</label>
+                </div>
+                <div class="chk-group">
+                    <strong style="display:inline-block; width: 80px; color: var(--primary);">
+                        <label><input type="radio" name="v_end_cat" value="위험감소" class="parent-radio"> 위험감소:</label>
+                    </strong>
+                    <label><input type="radio" name="v_end_type" value="자살위험감소" class="child-radio"> 자살위험감소</label>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">종결 평가 결과</label>
+            <div class="checkbox-group col-3" id="v_result_group">
+                <label><input type="radio" name="v_result" value="미등록관리" checked> 미등록관리</label>
+                <label><input type="radio" name="v_result" value="일반관리"> 일반관리</label>
+                <label><input type="radio" name="v_result" value="종결"> 종결</label>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">퇴록 후 거처</label>
+            <div class="checkbox-group col-3" id="v_after_group">
+                <label><input type="radio" name="v_after" value="주거시설" checked> 주거시설</label>
+                <label><input type="radio" name="v_after" value="보호자 동거"> 보호자 동거</label>
+                <label><input type="radio" name="v_after" value="독립"> 독립</label>
+                <label><input type="radio" name="v_after" value="재입원"> 재입원</label>
+                <label style="grid-column: span 2;"><input type="radio" name="v_after" value="기타"> 기타(직접입력)</label>
+                <input type="text" id="v_after_other" class="form-control" placeholder="기타 사유"
+                    style="grid-column: span 3;">
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+    <script>
+        const API_URL = `${(typeof window !== 'undefined' ? window.location.origin : 'http://localhost')}/api/auth`;
+
+        function getPayload() {
+            return {
+                v_date: document.getElementById('v_date').value,
+                v_manager: document.getElementById('v_manager').value,
+                v_name: document.getElementById('v_name').value,
+                v_gender: document.getElementById('v_gender').value,
+                v_age: document.getElementById('v_age').value,
+                v_period_total: document.getElementById('v_period_total').value,
+                v_period_start: document.getElementById('v_period_start').value,
+                v_period_end: document.getElementById('v_period_end').value,
+                v_opinion: document.getElementById('v_opinion').value,
+
+                v_type: document.querySelector('input[name="v_type"]:checked') ? document.querySelector('input[name="v_type"]:checked').value : '',
+                v_end_cat: document.querySelector('input[name="v_end_cat"]:checked') ? document.querySelector('input[name="v_end_cat"]:checked').value : '',
+                v_end_type: document.querySelector('input[name="v_end_type"]:checked') ? document.querySelector('input[name="v_end_type"]:checked').value : '',
+                v_end_die_other: document.getElementById('v_end_die_other').value,
+                v_end_fac_other: document.getElementById('v_end_fac_other').value,
+                v_result: document.querySelector('input[name="v_result"]:checked') ? document.querySelector('input[name="v_result"]:checked').value : '',
+                v_after: document.querySelector('input[name="v_after"]:checked') ? document.querySelector('input[name="v_after"]:checked').value : '',
+                v_after_other: document.getElementById('v_after_other').value
+            };
+        }
+
+        function triggerPreview() {
+            if (window.updateTimeout) clearTimeout(window.updateTimeout);
+            window.updateTimeout = setTimeout(() => {
+                window.parent.postMessage({ type: 'updatePreview', payload: getPayload() }, '*');
+            }, 100);
+        }
+
+        document.querySelectorAll('.child-radio').forEach(el => {
+            el.addEventListener('change', function () {
+                if (this.checked) {
+                    const group = this.closest('.chk-group');
+                    if (group) {
+                        const parent = group.querySelector('.parent-radio');
+                        if (parent) parent.checked = true;
+                    }
+                }
+                triggerPreview();
+            });
+        });
+
+        document.querySelectorAll('.parent-radio').forEach(el => {
+            el.addEventListener('change', triggerPreview);
+        });
+
+        document.querySelectorAll('input:not(.child-radio):not(.parent-radio), select, textarea').forEach(el => {
+            el.addEventListener('input', triggerPreview);
+            el.addEventListener('change', triggerPreview);
+        });
+
+        function calculateMonths() {
+            const startVal = document.getElementById('v_period_start').value;
+            const endVal = document.getElementById('v_period_end').value;
+
+            if (startVal && endVal) {
+                const startDate = new Date(startVal);
+                const endDate = new Date(endVal);
+
+                if (startDate <= endDate) {
+                    let months = (endDate.getFullYear() - startDate.getFullYear()) * 12;
+                    months -= startDate.getMonth();
+                    months += endDate.getMonth();
+
+                    // If the end date's day of month is less than the start date's day of month, 
+                    // it means a full month hasn't elapsed yet for that last month
+                    if (endDate.getDate() < startDate.getDate()) {
+                        months--;
+                    } else if (endDate.getDate() > startDate.getDate()) {
+                        // If it's strictly greater, user's previous logic added a month. 
+                        // But conventional "Mar 1 to Mar 1" = 12 months. 
+                        // "Mar 1 to Mar 2" = 12 months (or 13 if they want strict inclusive coverage). 
+                        // Let's stick to standard human rounding: Diff in months, but ensure minimum 1.
+                        // Adding +1 if they want inclusive (e.g., Mar 1 to Mar 31 is 1 month).
+
+                        // User specifically asked: "1.25년 3월1일부터 26년 3월 1일이면 12개월아님? 13개월로 입력되는데?"
+                        // So we should NOT add an extra month arbitrarily if the date is >=. 
+                        // If it's exactly the same day (or greater), the month difference is already correct.
+                    }
+
+                    // At least 1 month if dates are valid but same month/close
+                    months = Math.max(1, months);
+
+                    document.getElementById('v_period_total').value = months;
+                    triggerPreview();
+                } else {
+                    document.getElementById('v_period_total').value = '';
+                }
+            } else {
+                document.getElementById('v_period_total').value = '';
+            }
+        }
+
+        document.getElementById('v_period_start').addEventListener('change', calculateMonths);
+        document.getElementById('v_period_end').addEventListener('change', calculateMonths);
+
+        document.addEventListener('DOMContentLoaded', () => {
+            triggerPreview();
+        });
+
+        window.addEventListener('message', function (event) {
+            if (event.data.action === 'save') {
+                saveData(event.data.commonData);
+            } else if (event.data.action === 'prepareApproval') {
+                prepareApproval(event.data.commonData);
+            } else if (event.data.action === 'updateCommon') {
+                const cm = event.data.commonData;
+                if (cm.issuer && !document.getElementById('v_manager').value) {
+                    document.getElementById('v_manager').value = cm.issuer;
+                }
+                triggerPreview();
+            } else if (event.data.action === 'unlockInputs') {
+                document.querySelectorAll('input, select, textarea').forEach(el => el.disabled = false);
+            } else if (event.data.action === 'loadDoc') {
+                const doc = event.data.data;
+                const content = doc.content || {};
+
+                document.getElementById('v_date').value = content.v_date || '';
+                document.getElementById('v_manager').value = content.v_manager || '';
+                document.getElementById('v_name').value = content.v_name || '';
+                document.getElementById('v_gender').value = content.v_gender || '';
+                document.getElementById('v_age').value = content.v_age || '';
+                document.getElementById('v_period_total').value = content.v_period_total || '';
+                document.getElementById('v_period_start').value = content.v_period_start || '';
+                document.getElementById('v_period_end').value = content.v_period_end || '';
+                document.getElementById('v_opinion').value = content.v_opinion || '';
+
+                if (content.v_type) {
+                    const el = document.querySelector(`input[name="v_type"][value="${content.v_type}"]`);
+                    if (el) el.checked = true;
+                }
+                if (content.v_end_cat) {
+                    const catEl = document.querySelector(`input[name="v_end_cat"][value="${content.v_end_cat}"]`);
+                    if (catEl) catEl.checked = true;
+                } else if (content.v_end_type) {
+                    // Fallback to determine category from type for legacy data
+                    const typeEl = document.querySelector(`input[name="v_end_type"][value="${content.v_end_type}"]`);
+                    if (typeEl) {
+                        typeEl.checked = true;
+                        const group = typeEl.closest('.chk-group');
+                        if (group) {
+                            const parent = group.querySelector('.parent-radio');
+                            if (parent) parent.checked = true;
+                        }
+                    }
+                }
+
+                if (content.v_end_type) {
+                    const typeEl = document.querySelector(`input[name="v_end_type"][value="${content.v_end_type}"]`);
+                    if (typeEl) typeEl.checked = true;
+                }
+                document.getElementById('v_end_die_other').value = content.v_end_die_other || '';
+                document.getElementById('v_end_fac_other').value = content.v_end_fac_other || '';
+
+                if (content.v_result) document.querySelector(`input[name="v_result"][value="${content.v_result}"]`).checked = true;
+                if (content.v_after) document.querySelector(`input[name="v_after"][value="${content.v_after}"]`).checked = true;
+                document.getElementById('v_after_other').value = content.v_after_other || '';
+
+                // Lock fields in view mode
+                document.querySelectorAll('input, select, textarea').forEach(el => el.disabled = true);
+                triggerPreview();
+            }
+        });
+
+        function saveData(commonData) {
+            const content = getPayload();
+            const target_name = content.v_name;
+            if (!target_name) {
+                Toastify({ text: "대상자 성명을 입력해주세요.", style: { background: "#ef4444" }, duration: 3000 }).showToast();
+                window.parent.postMessage({ type: 'saveError' }, '*');
+                return;
+            }
+
+            fetch(API_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    action: 'save_issued_doc',
+                    type: '사례종결보고서-2026년',
+                    target_name: target_name,
+                    title: `사례종결보고서(${target_name})`,
+                    content: { ...commonData, ...content },
+                    issuer: commonData.issuer
+                })
+            })
+                .then(res => res.json())
+                .then(json => {
+                    if (json.result === 'success') {
+                        window.parent.postMessage({ type: 'saveSuccess', id: json.id }, '*');
+                    } else {
+                        Toastify({ text: "오류 발생: " + json.message, style: { background: "#ef4444" }, duration: 4000 }).showToast();
+                        window.parent.postMessage({ type: 'saveError' }, '*');
+                    }
+                })
+                .catch(err => {
+                    Toastify({ text: "서버 오류", style: { background: "#ef4444" }, duration: 4000 }).showToast();
+                    window.parent.postMessage({ type: 'saveError' }, '*');
+                });
+        }
+
+        function prepareApproval(commonData) {
+            const content = getPayload();
+            const target_name = content.v_name;
+            if (!target_name) {
+                Toastify({ text: "대상자 성명을 입력해주세요.", style: { background: "#ef4444" }, duration: 3000 }).showToast();
+                window.parent.postMessage({ type: 'approvalError', message: '대상자 성명을 입력해주세요.' }, '*');
+                return;
+            }
+            const fullData = { ...commonData, ...content };
+
+            // First, save as DRAFT in issued_docs
+            fetch(API_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    action: 'save_issued_doc',
+                    type: '사례종결보고서-2026년',
+                    target_name: target_name,
+                    title: `사례종결보고서(${target_name})`,
+                    content: fullData,
+                    issuer: commonData.issuer,
+                    status: '결재 대기' // Indicates pending electronic approval
+                })
+            })
+                .then(res => res.json())
+                .then(json => {
+                    if (json.result === 'success') {
+                        window.parent.postMessage({
+                            type: 'readyForApproval',
+                            targetName: target_name,
+                            reportData: fullData,
+                            linkedDocId: json.id // Pass the new DB ID
+                        }, '*');
+                    } else {
+                        Toastify({ text: "사전 임시저장 오류: " + json.message, style: { background: "#ef4444" }, duration: 4000 }).showToast();
+                        window.parent.postMessage({ type: 'approvalError', message: json.message }, '*');
+                    }
+                })
+                .catch(err => {
+                    Toastify({ text: "서버 오류 (사전 임시저장 실패)", style: { background: "#ef4444" }, duration: 4000 }).showToast();
+                    window.parent.postMessage({ type: 'approvalError', message: '사전 임시저장 실패' }, '*');
+                });
+        }
+    </script>
+</body>
+
+</html>

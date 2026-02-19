@@ -1,0 +1,1601 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>주간 실적 및 주간 보고</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-hover: #1d4ed8;
+            --secondary: #64748b;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --border-color: #e2e8f0;
+            --text-main: #334155;
+            --text-light: #94a3b8;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
+            color: var(--text-main);
+            overflow-x: hidden;
+        }
+
+        /* --- Header & Summary --- */
+        .page-header {
+            background: var(--card-bg);
+            padding: 24px 32px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-title {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: #0f172a;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            letter-spacing: -0.5px;
+        }
+
+        .header-subtitle {
+            color: var(--text-light);
+            font-size: 0.9rem;
+            font-weight: 500;
+            margin-top: 4px;
+        }
+
+        /* --- Stats Cards --- */
+        .stat-card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 24px;
+            display: flex;
+            align-items: center;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.025);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -4px rgba(0, 0, 0, 0.05);
+        }
+
+        .stat-icon {
+            width: 56px;
+            height: 56px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            margin-right: 20px;
+        }
+
+        .icon-blue {
+            background: #dbeafe;
+            color: #2563eb;
+        }
+
+        .icon-green {
+            background: #d1fae5;
+            color: #059669;
+        }
+
+        .icon-purple {
+            background: #f3e8ff;
+            color: #7e22ce;
+        }
+
+        .stat-info h5 {
+            margin: 0;
+            font-size: 0.95rem;
+            color: var(--secondary);
+            font-weight: 600;
+        }
+
+        .stat-info h2 {
+            margin: 4px 0 0 0;
+            font-size: 2rem;
+            font-weight: 800;
+            color: #0f172a;
+        }
+
+        /* --- Tabs --- */
+        .custom-tabs {
+            border-bottom: 2px solid var(--border-color);
+            margin: 24px 0;
+            gap: 24px;
+            display: flex;
+        }
+
+        .custom-tab-btn {
+            background: none;
+            border: none;
+            padding: 12px 0;
+            font-size: 1.05rem;
+            font-weight: 600;
+            color: var(--secondary);
+            cursor: pointer;
+            position: relative;
+            transition: color 0.2s;
+        }
+
+        .custom-tab-btn:hover {
+            color: var(--primary);
+        }
+
+        .custom-tab-btn.active {
+            color: var(--primary);
+        }
+
+        .custom-tab-btn.active::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background-color: var(--primary);
+            border-radius: 3px 3px 0 0;
+        }
+
+        /* --- Grids & Tables --- */
+        .glass-panel {
+            background: var(--card-bg);
+            border-radius: 16px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02);
+            overflow: hidden;
+            margin-bottom: 24px;
+        }
+
+        .panel-header {
+            padding: 16px 24px;
+            background: rgba(248, 250, 252, 0.8);
+            backdrop-filter: blur(8px);
+            border-bottom: 1px solid var(--border-color);
+            font-weight: 700;
+            color: #1e293b;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modern-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .modern-table th {
+            background: #f8fafc;
+            color: var(--secondary);
+            font-size: 0.85rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            padding: 14px 24px;
+            border-bottom: 2px solid var(--border-color);
+            letter-spacing: 0.5px;
+        }
+
+        .modern-table td {
+            padding: 16px 24px;
+            border-bottom: 1px solid var(--border-color);
+            vertical-align: middle;
+            font-size: 0.95rem;
+            font-weight: 500;
+        }
+
+        .modern-table tbody tr {
+            transition: background-color 0.15s;
+        }
+
+        .modern-table tbody tr:hover {
+            background-color: #f1f5f9;
+        }
+
+        /* --- Interactive Elements --- */
+        .status-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            user-select: none;
+            border: 1px solid transparent;
+        }
+
+        .status-pill:hover {
+            transform: scale(1.05);
+        }
+
+        .status-wait {
+            background: #f1f5f9;
+            color: #64748b;
+            border-color: #cbd5e1;
+        }
+
+        .status-prog {
+            background: #eff6ff;
+            color: #2563eb;
+            border-color: #bfdbfe;
+        }
+
+        .status-done {
+            background: #ecfdf5;
+            color: #059669;
+            border-color: #a7f3d0;
+        }
+
+        .minimal-input {
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 8px 12px;
+            width: 100%;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            background: #f8fafc;
+        }
+
+        .minimal-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+            background: #fff;
+        }
+
+        .number-input {
+            width: 70px;
+            text-align: center;
+            font-weight: 700;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .btn-modern {
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary-modern {
+            background: var(--primary);
+            color: white;
+            border: none;
+        }
+
+        .btn-primary-modern:hover {
+            background: var(--primary-hover);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.2);
+        }
+
+        .empty-state {
+            padding: 60px 20px;
+            text-align: center;
+            color: var(--secondary);
+        }
+
+        .empty-icon {
+            font-size: 3rem;
+            color: #cbd5e1;
+            margin-bottom: 16px;
+        }
+
+        /* Report Table Specific */
+        .report-label {
+            font-size: 0.75rem;
+            color: #64748b;
+            background: #f1f5f9;
+            padding: 2px 6px;
+            border-radius: 4px;
+            margin-right: 6px;
+            border: 1px solid #e2e8f0;
+        }
+
+        [v-cloak] {
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Header -->
+    <header class="page-header">
+        <div>
+            <div class="header-title">
+                <div
+                    style="background: linear-gradient(135deg, #2563eb, #8b5cf6); background-clip: text; -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+                    <i class="fas fa-layer-group"></i> 주간 실적 & 주간 보고 (개발중)
+                </div>
+            </div>
+            <div class="header-subtitle">업무 스케줄링, 실적 누적, 금주상담보고를 한 곳에서 관리합니다.</div>
+        </div>
+        <div class="d-flex align-items-center gap-3">
+            <div class="d-flex flex-column align-items-end me-3">
+                <span class="fw-bold text-dark" id="userNameDisplay">사용자 로딩중...</span>
+                <span class="badge bg-light text-secondary border mt-1" id="userRoleDisplay">소속</span>
+            </div>
+            <div class="position-relative">
+                <i class="fas fa-calendar-alt position-absolute text-secondary"
+                    style="top:50%; transform:translateY(-50%); left:12px;"></i>
+                <input type="week" id="currentWeek" class="minimal-input"
+                    style="padding-left: 36px; width: 180px; cursor:pointer;" onchange="handleWeekChange()">
+            </div>
+        </div>
+    </header>
+
+    <div class="container-fluid px-4 py-4" style="max-width: 1600px; margin: 0 auto;">
+
+        <!-- Dashboard Stats -->
+        <div class="row g-4 mb-4" id="statsRow" style="display:none;">
+            <div class="col-md-4">
+                <div class="stat-card">
+                    <div class="stat-icon icon-blue"><i class="fas fa-clipboard-list"></i></div>
+                    <div class="stat-info">
+                        <h5>이번 주 등록 업무</h5>
+                        <h2 id="stat-total">0<span
+                                style="font-size:1rem;font-weight:600;color:#94a3b8;margin-left:4px;">건</span></h2>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="stat-card">
+                    <div class="stat-icon icon-green"><i class="fas fa-check-circle"></i></div>
+                    <div class="stat-info">
+                        <h5>업무 완료율</h5>
+                        <h2 id="stat-done">0<span
+                                style="font-size:1rem;font-weight:600;color:#94a3b8;margin-left:4px;">%</span></h2>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="stat-card">
+                    <div class="stat-icon icon-purple"><i class="fas fa-star"></i></div>
+                    <div class="stat-info">
+                        <h5>금주상담보고</h5>
+                        <h2 id="stat-cases">0<span
+                                style="font-size:1rem;font-weight:600;color:#94a3b8;margin-left:4px;">건</span></h2>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Navigation Tabs -->
+        <div class="custom-tabs" role="tablist">
+            <button class="custom-tab-btn active" data-bs-toggle="tab" data-bs-target="#daily-tab"
+                onclick="toggleStats(true)">
+                <i class="fas fa-calendar-check me-2"></i>주간 실적 (체크리스트)
+            </button>
+            <button class="custom-tab-btn" data-bs-toggle="tab" data-bs-target="#setup-tab"
+                onclick="toggleStats(false)">
+                <i class="fas fa-cog me-2"></i>나의 업무 세팅
+            </button>
+            <button class="custom-tab-btn" data-bs-toggle="tab" data-bs-target="#weekly-tab"
+                onclick="toggleStats(false)" id="nav-weekly-tab">
+                <i class="fas fa-file-invoice me-2 text-primary"></i>회의자료취합 (관리자)
+            </button>
+        </div>
+
+        <!-- Tab Contents -->
+        <div class="tab-content">
+
+            <!-- 1. DAILY LOG TARGET TAB -->
+            <div class="tab-pane fade show active" id="daily-tab">
+                <div class="glass-panel">
+                    <div class="panel-header">
+                        <div class="d-flex align-items-center gap-2">
+                            <i class="fas fa-list-ul text-primary"></i> 주간 실적 입력 데스크
+                        </div>
+                        <div class="d-flex gap-2">
+                            <button class="btn-modern border-2 bg-white text-secondary" style="border-color:#cbd5e1;"
+                                onclick="loadLastWeekIncomplete()">
+                                <i class="fas fa-history"></i> 전주 미완료 이월
+                            </button>
+                            <button class="btn-modern border-2 bg-white text-success" style="border-color:#86efac;"
+                                onclick="setAllRoutineDone()">
+                                <i class="fas fa-check-double"></i> 루틴 일괄 진행
+                            </button>
+                            <button class="btn-modern btn-primary-modern" onclick="openCaseModal()">
+                                <i class="fas fa-plus"></i> <span style="letter-spacing: -0.5px;">금주상담보고</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div style="overflow-x: auto;">
+                        <table class="modern-table">
+                            <thead>
+                                <tr>
+                                    <th style="width:15%">업무 구분</th>
+                                    <th style="width:35%">세부 업무 내용 (목표 달성률)</th>
+                                    <th style="width:15%; text-align:center;">상태 (클릭)</th>
+                                    <th style="width:15%; text-align:center;">주간 누적 달성 (건)</th>
+                                    <th style="width:20%">실적 메모</th>
+                                </tr>
+                            </thead>
+                            <tbody id="dailyLogTbody">
+                                <!-- Rendered via JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                    <div id="dailyLogEmpty" class="empty-state" style="display:none;">
+                        <div class="empty-icon"><i class="fas fa-box-open"></i></div>
+                        <h4>설정된 업무가 없습니다</h4>
+                        <p class="mt-2 mb-4">상단의 '나의 업무 세팅' 탭으로 이동하여<br>평소 수행하는 루틴 업무를 장바구니에 담아주세요.</p>
+                        <button class="btn btn-outline-primary"
+                            onclick="document.querySelector('[data-bs-target=\'#setup-tab\']').click()">업무 세팅하러
+                            가기</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. SETUP TAB -->
+            <div class="tab-pane fade" id="setup-tab">
+                <div class="row g-4">
+                    <div class="col-md-4">
+                        <div class="glass-panel h-100">
+                            <div class="panel-header"><i class="fas fa-plus-circle text-success"></i> 업무 장바구니 추가</div>
+                            <div class="p-4">
+                                <div class="mb-4">
+                                    <label class="form-label text-muted small fw-bold">1. 공통 대분류 선택</label>
+                                    <div class="d-flex gap-2">
+                                        <select class="minimal-input" id="setupCategorySelect"></select>
+                                        <button class="btn btn-outline-danger px-3 d-none" id="btnDeleteCategory"
+                                            onclick="deleteMasterCategory()" title="선택한 대분류 삭제 (관리자 전용)"><i
+                                                class="fas fa-trash"></i></button>
+                                    </div>
+                                </div>
+                                <div class="mb-4">
+                                    <label class="form-label text-muted small fw-bold">2. 세부 업무 명칭 입력</label>
+                                    <input type="text" class="minimal-input" id="setupTaskName"
+                                        placeholder="예: 초기상담 및 전산입력">
+                                </div>
+                                <div class="mb-4">
+                                    <label class="form-label text-muted small fw-bold">3. [선택] 연간/월간 목표량 설정</label>
+                                    <div class="row g-2">
+                                        <div class="col-6">
+                                            <input type="number" class="minimal-input" id="setupTargetGoal"
+                                                placeholder="목표 1 (예: 65회)" min="0">
+                                        </div>
+                                        <div class="col-6">
+                                            <input type="number" class="minimal-input" id="setupTargetGoal2"
+                                                placeholder="목표 2 (예: 650명)" min="0">
+                                        </div>
+                                    </div>
+                                    <small class="text-muted d-block mt-1" style="font-size:0.75rem;">목표 2는 옵션입니다. 필요시 두
+                                        가지 단위를 동시에 관리할 수 있습니다.</small>
+                                </div>
+                                <button class="btn-modern btn-primary-modern w-100 justify-content-center"
+                                    onclick="saveUserTask()">
+                                    <i class="fas fa-download"></i> 내 업무로 등록하기
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-8">
+                        <div class="glass-panel h-100 border-0 shadow-none bg-transparent">
+
+                            <!-- Shared Category Management inline -->
+                            <div class="glass-panel mb-4" id="adminCategoryBox" style="border-color:#fca5a5;">
+                                <div class="panel-header bg-danger text-white border-0" style="padding:12px 24px;">
+                                    <span><i class="fas fa-layer-group"></i> 1. (공통) 부서별 대분류 만들기</span>
+                                    <small class="ms-2" style="font-weight:normal; opacity:0.8;">※ 여기에 만든 대분류는 모든 직원의
+                                        목록에 추가됩니다.</small>
+                                </div>
+                                <div class="p-3 d-flex gap-2 bg-white">
+                                    <select class="minimal-input" id="newCategoryTeam"
+                                        style="width: 150px; font-weight: bold;">
+                                        <option value="센터전체">🏢 센터전체</option>
+                                        <option value="자살예방팀">🛡️ 자살예방팀</option>
+                                        <option value="정신건강복지팀">❤️ 정신건강복지팀</option>
+                                        <option value="행정팀">📋 행정팀</option>
+                                    </select>
+                                    <input type="text" class="minimal-input" id="newCategoryName"
+                                        placeholder="새로운 대분류 명칭 (예: 초기상담, 사례보고)">
+                                    <button class="btn btn-danger text-nowrap fw-bold px-4 rounded-3"
+                                        onclick="saveMasterCategory()">전역 추가</button>
+                                </div>
+                            </div>
+
+                            <div class="glass-panel mb-0">
+                                <div class="panel-header"><i class="fas fa-layer-group text-primary"></i> 나의 루틴 업무 리스트
+                                </div>
+                                <table class="modern-table">
+                                    <thead>
+                                        <tr>
+                                            <th style="width:20%">대분류</th>
+                                            <th style="width:30%">세부 업무명</th>
+                                            <th style="width:25%; text-align:center;">목표량 (1 / 2)</th>
+                                            <th style="width:25%; text-align:center;">대시보드 노출</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="userTaskTbody">
+                                        <!-- JS Rendering -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3. WEEKLY REPORT / ADMIN TAB -->
+            <div class="tab-pane fade" id="weekly-tab">
+                <div class="glass-panel" style="background: linear-gradient(to right, #f8fafc, #fff);">
+                    <div class="p-4 d-flex align-items-center gap-3 flex-wrap">
+                        <div class="fw-bold text-dark fs-5 me-2"><i class="fas fa-search me-2 text-primary"></i>조회 기간
+                        </div>
+                        <div class="btn-group me-2" role="group">
+                            <button class="btn btn-sm btn-outline-secondary"
+                                onclick="setSearchRange('week')">1주</button>
+                            <button class="btn btn-sm btn-outline-secondary"
+                                onclick="setSearchRange('month')">1달</button>
+                            <button class="btn btn-sm btn-outline-secondary"
+                                onclick="setSearchRange('year')">1년</button>
+                        </div>
+                        <input type="date" id="weekStartDate" class="minimal-input"
+                            style="width:160px; background:#fff;">
+                        <span class="text-muted fw-bold">~</span>
+                        <input type="date" id="weekEndDate" class="minimal-input" style="width:160px; background:#fff;">
+
+                        <div class="vr mx-1"></div>
+                        <select id="filterWeeklyTeam" class="minimal-input" style="width:130px; background:#fff;"
+                            onchange="renderWeeklyReport()">
+                            <option value="">모든 부서</option>
+                            <option value="자살예방팀">자살예방팀</option>
+                            <option value="정신건강복지팀">정신건강복지팀</option>
+                            <option value="행정팀">행정팀</option>
+                        </select>
+                        <input type="text" id="filterWeeklyName" class="minimal-input"
+                            style="width:100px; background:#fff;" placeholder="이름 검색" oninput="renderWeeklyReport()">
+
+                        <button class="btn-modern btn-primary-modern" onclick="loadWeeklyReport()">
+                            조회 실행
+                        </button>
+                        <button class="btn-modern bg-success text-white border-0 ms-auto" onclick="exportToExcel()">
+                            <i class="fas fa-file-excel"></i> 엑셀 내려받기
+                        </button>
+                    </div>
+                </div>
+
+                <div class="glass-panel mb-4 border-primary">
+                    <div class="panel-header bg-primary text-white border-0 py-3">
+                        <span><i class="fas fa-chart-pie"></i> 1. 직원별 주간 실적 및 향후 계획 요약</span>
+                    </div>
+                    <table class="modern-table">
+                        <thead style="background:#f1f5f9;">
+                            <tr class="text-center">
+                                <th style="width:15%">부서 / 이름</th>
+                                <th style="width:35%; text-align:left;">금주 수행 실적 (진행/완료)</th>
+                                <th style="width:30%; text-align:left;">내주 진행 계획 (대기중 내역)</th>
+                                <th style="width:20%">총 실적 달성률 (건)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="weeklyLogTbody">
+                            <!-- JS Rendering -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="glass-panel border-warning">
+                    <div class="panel-header bg-warning text-dark border-0 py-3">
+                        <span><i class="fas fa-exclamation-circle"></i> 2. 금주상담보고 대장</span>
+                    </div>
+                    <div style="overflow-x: auto;">
+                        <table class="modern-table" style="min-width: 1200px;" id="caseTable">
+                            <thead style="background:#fffbeb;">
+                                <tr>
+                                    <th>주차/분류</th>
+                                    <th>대상자</th>
+                                    <th>성별/나이</th>
+                                    <th>개입일자</th>
+                                    <th>의뢰경로</th>
+                                    <th style="width:20%">주호소 (상황)</th>
+                                    <th>척도결과 1 / 2</th>
+                                    <th style="width:20%">개입/조치 결과 및 추후계획</th>
+                                    <th>담당자</th>
+                                    <th>취소</th>
+                                </tr>
+                            </thead>
+                            <tbody id="weeklyCaseTbody">
+                                <!-- JS Rendering -->
+                            </tbody>
+                        </table>
+                    </div>
+                    <div id="weeklyCaseEmpty" class="empty-state" style="display:none;">
+                        <div class="empty-icon"><i class="fas fa-clipboard-check"></i></div>
+                        <h5>조회된 상담보고가 없습니다</h5>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Case Report Modal (Modern styling) -->
+    <div class="modal fade" id="caseModal" tabindex="-1">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content border-0 rounded-4 shadow-lg overflow-hidden">
+                <div class="modal-header border-0 bg-primary text-white p-4">
+                    <h5 class="modal-title fw-bold">
+                        <span
+                            style="background:rgba(255,255,255,0.2); padding:8px 12px; border-radius:8px; margin-right:8px;">
+                            <i class="fas fa-user-edit"></i>
+                        </span>
+                        금주상담보고
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4 bg-light">
+                    <div class="glass-panel p-4 mb-0 border-0 shadow-sm">
+                        <div class="row g-4">
+                            <!-- Row 1 -->
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold small text-secondary">보고 주차</label>
+                                <input type="text" id="c_week" class="minimal-input" placeholder="예: 2026-W08" readonly
+                                    style="background:#e2e8f0;">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold small text-secondary">개입 일자 <span
+                                        class="text-danger">*</span></label>
+                                <input type="date" id="c_date" class="minimal-input">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold small text-secondary">대상 분류 <span
+                                        class="text-danger">*</span></label>
+                                <select id="c_category" class="minimal-input">
+                                    <option>일반상담</option>
+                                    <option>응급개입</option>
+                                    <option>회원등록</option>
+                                </select>
+                            </div>
+                            <!-- Row 2 -->
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold small text-secondary">대상자명 <span
+                                        class="text-danger">*</span></label>
+                                <input type="text" id="c_name" class="minimal-input" placeholder="김OO">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold small text-secondary">성별/연령</label>
+                                <input type="text" id="c_genderAge" class="minimal-input" placeholder="여 / 35세">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold small text-secondary">의뢰 기관/경로</label>
+                                <input type="text" id="c_path" class="minimal-input" placeholder="경찰서, 보건소 등">
+                            </div>
+                            <!-- Row 3 -->
+                            <div class="col-12">
+                                <label class="form-label fw-bold small text-secondary">주호소 요약 (상황 파악) <span
+                                        class="text-danger">*</span></label>
+                                <textarea id="c_complaint" class="minimal-input" rows="2"
+                                    placeholder="어떤 위기상황이나 문제로 상담이 진행되었는지 기재"></textarea>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold small text-secondary">주요 척도 결과 1</label>
+                                <input type="text" id="c_score" class="minimal-input" placeholder="PHQ-9 15점 등">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold small text-secondary">주요 척도 결과 2</label>
+                                <input type="text" id="c_score_2" class="minimal-input" placeholder="SSI-BECK 10점 등">
+                            </div>
+                            <div class="col-md-12">
+                                <label class="form-label fw-bold small text-secondary">개입 결과 및 향후 계획 <span
+                                        class="text-danger">*</span></label>
+                                <textarea id="c_result" class="minimal-input" rows="2"
+                                    placeholder="초기상담 진행, 병원 연계, 2주 후 내소상담 예약 등"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer border-0 p-4 bg-white">
+                    <button type="button" class="btn btn-light fw-bold px-4" data-bs-dismiss="modal">작성 취소</button>
+                    <button type="button" class="btn-modern btn-primary-modern px-5 text-white shadow-sm"
+                        onclick="saveWeeklyCase()">
+                        데이터 전송 및 저장
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Required Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+    <!-- SheetJS for Excel Download -->
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
+
+    <script>
+        const API_URL = `${(typeof window !== 'undefined' ? window.location.origin : 'http://localhost')}/api/auth`;
+        let currentUser = {};
+
+        // Data Stores
+        let masterCats = [];
+        let userTasks = [];
+        let workLogs = [];
+        let weeklyCasesStore = [];
+
+        // Utilities
+        function toast(msg, type = 'success') {
+            Toastify({
+                text: msg,
+                style: { background: type === 'success' ? "linear-gradient(to right, #10b981, #059669)" : "linear-gradient(to right, #ef4444, #b91c1c)", borderRadius: '8px', fontWeight: 'bold' },
+                duration: 2500,
+                gravity: "bottom",
+                position: "right"
+            }).showToast();
+        }
+
+        function getWeekNumber(d) {
+            d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+            d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
+            var yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+            var weekNo = Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+            return String(weekNo).padStart(2, '0');
+        }
+
+        function toggleStats(show) {
+            document.getElementById('statsRow').style.display = show ? 'flex' : 'none';
+        }
+
+        // Init
+        window.onload = function () {
+            const userStr = sessionStorage.getItem('jc_user');
+            if (userStr) {
+                currentUser = JSON.parse(userStr);
+                document.getElementById('userNameDisplay').innerText = currentUser.name;
+                document.getElementById('userRoleDisplay').innerText = currentUser.team || currentUser.position || '직원';
+                const isAdmin = ['관리자', '센터장', '상임팀장'].includes(currentUser.role) || ['관리자', '센터장', '상임팀장'].includes(currentUser.position);
+                if (isAdmin) document.getElementById('btnDeleteCategory').classList.remove('d-none');
+            } else {
+                toast('로그인이 필요합니다.', 'error');
+            }
+
+            // Init Dates
+            const today = new Date();
+            const dateStr = today.toISOString().slice(0, 10);
+            setCurrentWeek();
+            document.getElementById('c_date').value = dateStr;
+            document.getElementById('c_week').value = today.getFullYear() + "-W" + getWeekNumber(today);
+
+            // Weekly Report Default Dates (Monday to Sunday)
+            const day = today.getDay();
+            const diff = today.getDate() - day + (day == 0 ? -6 : 1); // adjust when day is sunday
+            const monday = new Date(today.setDate(diff));
+            const sunday = new Date(today.setDate(diff + 6));
+            document.getElementById('weekStartDate').value = monday.toISOString().slice(0, 10);
+            document.getElementById('weekEndDate').value = sunday.toISOString().slice(0, 10);
+
+            // Fetch Setup Data
+            fetchMasterCategories().then(() => {
+                fetchUserTasks();
+            });
+
+            // Show Stats for initial tab
+            toggleStats(true);
+        };
+
+
+        // ==========================================
+        // TRACK A: Master Categories & User Tasks
+        // ==========================================
+        function fetchMasterCategories() {
+            return fetch(API_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'get_master_categories' }) })
+                .then(r => r.json()).then(res => {
+                    masterCats = res.list || [];
+                    const sel = document.getElementById('setupCategorySelect');
+                    sel.innerHTML = masterCats.map(c => `<option value="${c.id}">${c.category_name}</option>`).join('');
+                });
+        }
+
+        function saveMasterCategory() {
+            const team = document.getElementById('newCategoryTeam').value;
+            const rawName = document.getElementById('newCategoryName').value.trim();
+            if (!rawName) return toast("대분류 명칭을 입력하세요.", "error");
+
+            const name = team === '센터전체' ? rawName : `[${team}] ${rawName}`;
+
+            fetch(API_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'save_master_category', id: `MC_${Date.now()}`, category_name: name }) })
+                .then(r => r.json()).then(res => {
+                    toast('전역 카테고리가 등록되었습니다.');
+                    document.getElementById('newCategoryName').value = '';
+                    fetchMasterCategories();
+                });
+        }
+
+        function deleteMasterCategory() {
+            const id = document.getElementById('setupCategorySelect').value;
+            if (!id) return;
+            if (!confirm('정말 이 대분류를 완전히 삭제하시겠습니까?\n(이 대분류를 사용 중인 직원들의 루틴 업무가 빈 카테고리가 될 수 있습니다)')) return;
+
+            fetch(API_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'delete_master_category', id: id }) })
+                .then(r => r.json()).then(res => {
+                    toast('대분류가 시스템에서 삭제되었습니다.');
+                    fetchMasterCategories();
+                });
+        }
+
+        function fetchUserTasks() {
+            fetch(API_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'get_user_tasks', user_id: currentUser.id || currentUser.email }) })
+                .then(r => r.json()).then(res => {
+                    userTasks = res.list || [];
+                    renderUserTasks();
+                    fetchDailyLogs();
+                    fetchWeeklyCasesCount();
+                });
+        }
+
+        function saveUserTask() {
+            const cid = document.getElementById('setupCategorySelect').value;
+            const tname = document.getElementById('setupTaskName').value.trim();
+            const tgoal = document.getElementById('setupTargetGoal').value || 0;
+            const tgoal2 = document.getElementById('setupTargetGoal2').value || 0;
+            if (!cid || !tname) return toast("대분류와 업무명을 모두 입력하세요.", "error");
+
+            fetch(API_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    action: 'save_user_task',
+                    id: `UT_${Date.now()}`,
+                    user_id: currentUser.id || currentUser.email,
+                    category_id: cid,
+                    task_name: tname,
+                    target_goal: parseInt(tgoal, 10),
+                    target_goal_2: parseInt(tgoal2, 10)
+                })
+            })
+                .then(r => r.json()).then(res => {
+                    toast('루틴 업무가 추가되었습니다.');
+                    document.getElementById('setupTaskName').value = '';
+                    document.getElementById('setupTargetGoal').value = '';
+                    document.getElementById('setupTargetGoal2').value = '';
+                    fetchUserTasks();
+                });
+        }
+
+        function toggleTaskActive(id, curr) {
+            const next = curr === 1 ? 0 : 1;
+            fetch(API_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'toggle_user_task', id: id, is_active: next }) })
+                .then(() => {
+                    toast(next === 1 ? '업무가 활성화되었습니다.' : '대시보드에서 숨김 처리되었습니다.');
+                    fetchUserTasks();
+                });
+        }
+
+        function renderUserTasks() {
+            const tbody = document.getElementById('userTaskTbody');
+            if (userTasks.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" class="text-center text-muted py-4">등록된 나의 업무가 없습니다.</td></tr>`;
+                return;
+            }
+            tbody.innerHTML = userTasks.map(t => {
+                let goalText = t.target_goal > 0 ? `<span class="badge bg-primary rounded-pill px-2 py-1">목표 1: ${t.target_goal}</span>` : `<span class="text-muted small">-</span>`;
+                if (t.target_goal_2 && t.target_goal_2 > 0) {
+                    goalText += ` <span class="badge bg-primary rounded-pill px-2 py-1">목표 2: ${t.target_goal_2}</span>`;
+                }
+
+                return `
+                <tr>
+                    <td><span class="report-label" style="background:#e0e7ff; color:#3730a3; border-color:#c7d2fe;">${t.category_name || '-'}</span></td>
+                    <td class="fw-bold fs-6 text-dark">${t.task_name}</td>
+                    <td class="text-center">${goalText}</td>
+                    <td align="center">
+                        <button class="btn btn-sm ${t.is_active ? 'btn-success' : 'btn-light text-muted border'} rounded-pill px-3 fw-bold" onclick="toggleTaskActive('${t.id}', ${t.is_active})">
+                            ${t.is_active ? '<i class="fas fa-eye me-1"></i> 노출중' : '<i class="fas fa-eye-slash me-1"></i> 숨김'}
+                        </button>
+                        <button class="btn btn-sm btn-outline-primary ms-1 px-2 rounded-circle" onclick="editUserTask('${t.id}', '${t.task_name}', ${t.target_goal || 0}, ${t.target_goal_2 || 0})" title="수정">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn btn-sm btn-outline-danger ms-1 px-2 rounded-circle" onclick="deleteUserTask('${t.id}')" title="삭제">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+            `}).join('');
+        }
+
+        function deleteUserTask(id) {
+            if (!confirm('이 업무를 장바구니에서 영구적으로 삭제하시겠습니까?')) return;
+            fetch(API_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'delete_user_task', id: id }) })
+                .then(() => {
+                    toast('업무가 삭제되었습니다.');
+                    fetchUserTasks();
+                });
+        }
+
+        function editUserTask(id, currentName, currentGoal, currentGoal2) {
+            const newName = prompt('새로운 세부 업무 명칭을 입력하세요:', currentName);
+            if (newName === null) return; // cancelled
+            if (newName.trim() === '') return toast('업무 명칭은 비워둘 수 없습니다.', 'error');
+
+            const newGoalStr = prompt('새로운 [목표량 1]을 입력하세요 (없으면 0 입력):', currentGoal || 0);
+            if (newGoalStr === null) return; // cancelled
+            const newGoal = parseInt(newGoalStr, 10) || 0;
+
+            const newGoalStr2 = prompt('새로운 [목표량 2]을 입력하세요 (없으면 0 입력):', currentGoal2 || 0);
+            if (newGoalStr2 === null) return; // cancelled
+            const newGoal2 = parseInt(newGoalStr2, 10) || 0;
+
+            fetch(API_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    action: 'edit_user_task',
+                    id: id,
+                    task_name: newName.trim(),
+                    target_goal: newGoal,
+                    target_goal_2: newGoal2
+                })
+            })
+                .then(r => r.json()).then(res => {
+                    toast('업무 정보가 수정되었습니다.');
+                    fetchUserTasks();
+                    // If daily logs are already fetched, re-fetch them to update the grid display
+                    if (document.getElementById('currentWeek').value) {
+                        fetchDailyLogs();
+                    }
+                });
+        }
+
+        function getSelectedMondayDate() {
+            const weekValue = document.getElementById('currentWeek').value; // e.g. "2024-W08"
+            if (!weekValue) return '';
+            const [yearStr, weekStr] = weekValue.split('-W');
+            const year = parseInt(yearStr, 10);
+            const week = parseInt(weekStr, 10);
+
+            let date = new Date(year, 0, 1);
+            const day = date.getDay();
+            if (day <= 4 && day !== 0) {
+                date.setDate(date.getDate() - (day - 1));
+            } else {
+                const offset = day === 0 ? 1 : (8 - day);
+                date.setDate(date.getDate() + offset);
+            }
+            date.setDate(date.getDate() + (week - 1) * 7);
+
+            const localDate = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
+            return localDate.toISOString().split('T')[0];
+        }
+
+        function setCurrentWeek() {
+            const now = new Date();
+            now.setHours(0, 0, 0, 0);
+            now.setDate(now.getDate() + 4 - (now.getDay() || 7));
+            const yearStart = new Date(now.getFullYear(), 0, 1);
+            const weekNo = Math.ceil((((now - yearStart) / 86400000) + 1) / 7);
+            const val = now.getFullYear() + '-W' + String(weekNo).padStart(2, '0');
+            const el = document.getElementById('currentWeek');
+            if (el) el.value = val;
+        }
+
+        function handleWeekChange() {
+            const currentWeekVal = document.getElementById('currentWeek').value;
+            if (currentWeekVal) {
+                document.getElementById('c_week').value = currentWeekVal;
+                fetchDailyLogs();
+                fetchWeeklyCasesCount();
+            }
+        }
+
+        // ==========================================
+        // TRACK A: Daily Logs
+        // ==========================================
+        function loadLastWeekIncomplete() {
+            const mondayStr = getSelectedMondayDate();
+            if (!mondayStr) return;
+            const currDate = new Date(mondayStr);
+            const lastWeekMonday = new Date(currDate - 7 * 86400000).toISOString().slice(0, 10);
+
+            fetch(API_URL, {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'get_work_logs', user_id: currentUser.id || currentUser.email, work_date: lastWeekMonday })
+            }).then(r => r.json()).then(res => {
+                const incomplete = (res.list || []).filter(l => l.status === '진행');
+                if (incomplete.length === 0) return toast('전주 기준 진행중(미완료)인 업무가 없습니다.', 'error');
+
+                if (!confirm(`전주 진행중이던 업무 ${incomplete.length}건을 이번 주 실적으로 이월하시겠습니까?`)) return;
+
+                const currentMondayStr = getSelectedMondayDate();
+                let promises = [];
+                incomplete.forEach(log => {
+                    const todayLog = workLogs.find(l => l.user_task_id === log.user_task_id) || {};
+                    promises.push(
+                        fetch(API_URL, {
+                            method: 'POST', headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ action: 'upsert_work_log', id: todayLog.id || '', user_task_id: log.user_task_id, work_date: currentMondayStr, status: '진행', isp_count: log.isp_count || 0, isp_count_2: log.isp_count_2 || 0, memo: log.memo || '' })
+                        })
+                    );
+                });
+                Promise.all(promises).then(() => {
+                    toast(`${incomplete.length}건의 예약/미완료 업무를 가져왔습니다.`);
+                    fetchDailyLogs();
+                });
+            });
+        }
+
+        function setAllRoutineDone() {
+            const activeTasks = userTasks.filter(t => t.is_active === 1);
+            if (activeTasks.length === 0) return toast('루틴 업무가 없습니다.', 'error');
+            if (!confirm(`대시보드에 노출된 ${activeTasks.length}건의 전체 루틴 업무를 일괄적으로 '진행' 상태로 업데이트하시겠습니까?`)) return;
+
+            const date = getSelectedMondayDate();
+            if (!date) return toast('주차를 먼저 선택해주세요.', 'error');
+
+            let promises = [];
+            activeTasks.forEach(task => {
+                const log = workLogs.find(l => l.user_task_id === task.id) || { status: '대기' };
+                if (log.status !== '진행' && log.status !== '완료') {
+                    promises.push(
+                        fetch(API_URL, {
+                            method: 'POST', headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ action: 'upsert_work_log', id: log.id || '', user_task_id: task.id, work_date: date, status: '진행', isp_count: log.isp_count || 0, isp_count_2: log.isp_count_2 || 0, memo: log.memo || '' })
+                        })
+                    );
+                }
+            });
+            if (promises.length === 0) return toast('모든 루틴 업무가 이미 진행 또는 완료 상태입니다.');
+            Promise.all(promises).then(() => {
+                toast('전체 루틴이 일괄 진행 상태로 업데이트되었습니다.');
+                fetchDailyLogs();
+            });
+        }
+
+        let cumulativeLogsMap = {};
+        function fetchDailyLogs() {
+            const date = getSelectedMondayDate();
+            if (!date) return;
+            // Fetch daily logs and cumulative logs simultaneously
+            Promise.all([
+                fetch(API_URL, {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'get_work_logs', user_id: currentUser.id || currentUser.email, work_date: date })
+                }).then(r => r.json()),
+                // We need all historical logs to calculate cumulative ISP correctly for tasks that have targets
+                fetch(API_URL, {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'get_work_logs', start_date: '2000-01-01', end_date: '2099-12-31' })
+                }).then(r => r.json())
+            ]).then(([dailyRes, allRes]) => {
+                workLogs = dailyRes.list || [];
+
+                const allLogs = allRes.list || [];
+                cumulativeLogsMap = {};
+                // Filter logs up to today only (don't count future logged ISPs in current cumulation)
+                allLogs.filter(l => l.user_id === (currentUser.id || currentUser.email) && l.work_date <= date).forEach(log => {
+                    if (!cumulativeLogsMap[log.user_task_id]) {
+                        cumulativeLogsMap[log.user_task_id] = { isp1: 0, isp2: 0 };
+                    }
+                    cumulativeLogsMap[log.user_task_id].isp1 += Number(log.isp_count || 0);
+                    cumulativeLogsMap[log.user_task_id].isp2 += Number(log.isp_count_2 || 0);
+                });
+
+                renderDailyGrid();
+                updateStatsPanel();
+            });
+        }
+
+        function fetchWeeklyCasesCount() {
+            const c_week = document.getElementById('c_week').value;
+            fetch(API_URL, {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'get_weekly_cases', report_week: c_week })
+            }).then(r => r.json()).then(res => {
+                const myCases = (res.list || []).filter(c => c.manager_name === currentUser.name);
+                document.getElementById('stat-cases').innerHTML = `${myCases.length}<span style="font-size:1rem;font-weight:600;color:#94a3b8;margin-left:4px;">건 (Me)</span>`;
+            });
+        }
+
+        function renderDailyGrid() {
+            const tbody = document.getElementById('dailyLogTbody');
+            const empty = document.getElementById('dailyLogEmpty');
+            const activeTasks = userTasks.filter(t => t.is_active === 1);
+
+            if (activeTasks.length === 0) {
+                tbody.innerHTML = '';
+                empty.style.display = 'block';
+                return;
+            }
+            empty.style.display = 'none';
+
+            let html = '';
+            activeTasks.forEach(task => {
+                const log = workLogs.find(l => l.user_task_id === task.id) || { status: '대기', isp_count: 0, memo: '' };
+
+                let sClass = 'status-wait'; let sNext = '진행'; let icon = 'fa-circle';
+                if (log.status === '진행') { sClass = 'status-prog'; sNext = '완료'; icon = 'fa-spinner fa-spin'; }
+                if (log.status === '완료') { sClass = 'status-done'; sNext = '대기'; icon = 'fa-check-circle'; }
+
+                let progressHtml = '';
+                const cumulative = cumulativeLogsMap[task.id] || { isp1: 0, isp2: 0 };
+
+                if (task.target_goal > 0) {
+                    const percent = Math.min(100, Math.round((cumulative.isp1 / task.target_goal) * 100));
+                    progressHtml += `
+                    <div class="mt-2 w-100" style="max-width:250px;">
+                        <div class="d-flex justify-content-between mb-1" style="font-size:0.75rem; color:#64748b; font-weight:600;">
+                            <span>진행률 1: ${percent}%</span>
+                            <span>${cumulative.isp1} / ${task.target_goal}</span>
+                        </div>
+                        <div class="progress" style="height:6px; background:#e2e8f0;">
+                            <div class="progress-bar ${percent >= 100 ? 'bg-success' : 'bg-primary'}" role="progressbar" style="width: ${percent}%;"></div>
+                        </div>
+                    </div>`;
+                }
+
+                if (task.target_goal_2 > 0) {
+                    const percent2 = Math.min(100, Math.round((cumulative.isp2 / task.target_goal_2) * 100));
+                    progressHtml += `
+                    <div class="mt-2 w-100" style="max-width:250px;">
+                        <div class="d-flex justify-content-between mb-1" style="font-size:0.75rem; color:#64748b; font-weight:600;">
+                            <span>진행률 2: ${percent2}%</span>
+                            <span>${cumulative.isp2} / ${task.target_goal_2}</span>
+                        </div>
+                        <div class="progress" style="height:6px; background:#e2e8f0;">
+                            <div class="progress-bar ${percent2 >= 100 ? 'bg-success' : 'bg-primary'}" role="progressbar" style="width: ${percent2}%;"></div>
+                        </div>
+                    </div>`;
+                }
+
+                html += `
+                <tr data-task-id="${task.id}" data-log-id="${log.id || ''}">
+                    <td><span class="report-label fw-bold">${task.category_name || '-'}</span></td>
+                    <td>
+                        <div class="fw-bold text-dark fs-6 ${log.status === '완료' ? 'text-decoration-line-through text-opacity-50' : ''}">
+                            ${task.task_name}
+                        </div>
+                        ${progressHtml}
+                    </td>
+                    <td align="center">
+                        <div class="status-pill ${sClass}" onclick="cycleStatus('${task.id}', '${log.id || ''}', '${sNext}')">
+                            <i class="fas ${icon}"></i> ${log.status}
+                        </div>
+                    </td>
+                    <td align="center">
+                        <div class="d-flex flex-column gap-1 align-items-center">
+                            <input type="number" class="minimal-input number-input" value="${log.isp_count}" 
+                                onchange="updateLogField('${task.id}', '${log.id || ''}', 'isp_count', this.value)" min="0" placeholder="달성 1">
+                            ${task.target_goal_2 > 0 ? `
+                                <input type="number" class="minimal-input number-input mt-1" value="${log.isp_count_2 || 0}" 
+                                    onchange="updateLogField('${task.id}', '${log.id || ''}', 'isp_count_2', this.value)" min="0" placeholder="달성 2">
+                            ` : ''}
+                        </div>
+                    </td>
+                    <td>
+                        <input type="text" class="minimal-input" value="${log.memo || ''}" 
+                            placeholder="노트나 진행상황 메모..." 
+                            onchange="updateLogField('${task.id}', '${log.id || ''}', 'memo', this.value)">
+                    </td>
+                </tr>
+                `;
+            });
+            tbody.innerHTML = html;
+        }
+
+        function updateStatsPanel() {
+            const active = userTasks.filter(t => t.is_active === 1).length;
+            document.getElementById('stat-total').innerHTML = `${active}<span style="font-size:1rem;font-weight:600;color:#94a3b8;margin-left:4px;">건</span>`;
+
+            if (active === 0) {
+                document.getElementById('stat-done').innerHTML = `0<span style="font-size:1rem;font-weight:600;color:#94a3b8;margin-left:4px;">%</span>`;
+                return;
+            }
+
+            const doneCount = workLogs.filter(l => l.status === '완료' && userTasks.some(t => t.id === l.user_task_id && t.is_active === 1)).length;
+            const pct = Math.round((doneCount / active) * 100);
+            document.getElementById('stat-done').innerHTML = `${pct}<span style="font-size:1rem;font-weight:600;color:#94a3b8;margin-left:4px;">%</span>`;
+        }
+
+        function cycleStatus(taskId, logId, nextStatus) {
+            updateLogField(taskId, logId, 'status', nextStatus);
+        }
+
+        function updateLogField(taskId, logId, field, value) {
+            const date = getSelectedMondayDate();
+            if (!date) return toast('주차를 먼저 선택해주세요.', 'error');
+
+            let log = workLogs.find(l => l.user_task_id === taskId);
+            if (!log) log = { user_task_id: taskId, status: '대기', isp_count: 0, isp_count_2: 0, memo: '' };
+            log[field] = value;
+
+            fetch(API_URL, {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    action: 'upsert_work_log',
+                    id: logId, user_task_id: taskId, work_date: date,
+                    status: log.status, isp_count: log.isp_count, isp_count_2: log.isp_count_2, memo: log.memo
+                })
+            }).then(() => {
+                fetchDailyLogs(); // re-fetch to trigger UI reactivity
+            });
+        }
+
+        // ==========================================
+        // TRACK B: Weekly Cases
+        // ==========================================
+        const caseModal = new bootstrap.Modal(document.getElementById('caseModal'));
+        function openCaseModal() {
+            document.getElementById('c_name').value = '';
+            document.getElementById('c_genderAge').value = '';
+            document.getElementById('c_path').value = '';
+            document.getElementById('c_complaint').value = '';
+            document.getElementById('c_score').value = '';
+            document.getElementById('c_score_2').value = '';
+            document.getElementById('c_result').value = '';
+            caseModal.show();
+        }
+
+        function saveWeeklyCase() {
+            if (!document.getElementById('c_name').value || !document.getElementById('c_complaint').value || !document.getElementById('c_result').value) {
+                return toast('필수 항목(*)을 입력해주세요.', 'error');
+            }
+
+            const payload = {
+                action: 'save_weekly_case',
+                report_week: document.getElementById('c_week').value,
+                category: document.getElementById('c_category').value,
+                client_name: document.getElementById('c_name').value,
+                gender_age: document.getElementById('c_genderAge').value,
+                referral_path: document.getElementById('c_path').value,
+                chief_complaint: document.getElementById('c_complaint').value,
+                scale_score: document.getElementById('c_score').value,
+                scale_score_2: document.getElementById('c_score_2').value,
+                action_result: document.getElementById('c_result').value,
+                intervention_date: document.getElementById('c_date').value,
+                manager_name: currentUser.name
+            };
+
+            fetch(API_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
+                .then(r => r.json()).then(res => {
+                    toast('상담보고가 성공적으로 등재되었습니다.');
+                    caseModal.hide();
+                    fetchWeeklyCasesCount();
+                });
+        }
+
+        // ==========================================
+        // ADMIN / WEEKLY AGGREGATION
+        // ==========================================
+        let allUsersTasksStore = [];
+        let historicalLogsStore = [];
+
+        function setSearchRange(type) {
+            const today = new Date();
+            let start = new Date(today.getTime());
+            let end = new Date(today.getTime());
+
+            if (type === 'week') {
+                const day = today.getDay();
+                const diff = today.getDate() - day + (day === 0 ? -6 : 1);
+                start.setDate(diff);
+                end = new Date(start.getTime());
+                end.setDate(end.getDate() + 6);
+            } else if (type === 'month') {
+                start = new Date(today.getFullYear(), today.getMonth(), 1);
+                end = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+            } else if (type === 'year') {
+                start = new Date(today.getFullYear(), 0, 1);
+                end = new Date(today.getFullYear(), 11, 31);
+            }
+
+            const format = (d) => {
+                const local = new Date(d.getTime() - d.getTimezoneOffset() * 60000);
+                return local.toISOString().split('T')[0];
+            };
+
+            document.getElementById('weekStartDate').value = format(start);
+            document.getElementById('weekEndDate').value = format(end);
+        }
+
+        async function loadWeeklyReport() {
+            const sd = document.getElementById('weekStartDate').value;
+            const ed = document.getElementById('weekEndDate').value;
+            if (!sd || !ed) return toast('검색 기간을 설정해주세요', 'error');
+
+            toast("서버에서 취합 데이터를 불러옵니다...");
+
+            // Snap sd to its Monday to guarantee we include weeks that start in the previous month
+            const sDate = new Date(sd);
+            const sDay = sDate.getDay();
+            sDate.setDate(sDate.getDate() - sDay + (sDay === 0 ? -6 : 1));
+            const querySd = new Date(sDate.getTime() - sDate.getTimezoneOffset() * 60000).toISOString().split('T')[0];
+
+            // Snap ed to its Sunday
+            const eDate = new Date(ed);
+            const eDay = eDate.getDay();
+            eDate.setDate(eDate.getDate() + (eDay === 0 ? 0 : 7 - eDay));
+            const queryEd = new Date(eDate.getTime() - eDate.getTimezoneOffset() * 60000).toISOString().split('T')[0];
+
+            // 1. Fetch Weekly Cases
+            const caseRes = await fetch(API_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'get_weekly_cases', start_date: querySd, end_date: queryEd }) }).then(r => r.json());
+            weeklyCasesStore = caseRes.list || [];
+
+            // 2. Fetch Aggregated Logs in period
+            const logRes = await fetch(API_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'get_work_logs', start_date: querySd, end_date: queryEd }) }).then(r => r.json());
+            weeklyLogsStore = logRes.list || [];
+
+            // 3. Fetch all user tasks (no user_id passed) to gather target goals for all users
+            const taskRes = await fetch(API_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'get_user_tasks' }) }).then(r => r.json());
+            allUsersTasksStore = taskRes.list || [];
+
+            // 4. Fetch historical cumulative logs for accurate progress computation
+            const histRes = await fetch(API_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'get_work_logs', start_date: '2000-01-01', end_date: '2099-12-31' }) }).then(r => r.json());
+            historicalLogsStore = histRes.list || [];
+
+            renderWeeklyReport();
+        }
+
+        function renderWeeklyReport() {
+            const teamFilter = document.getElementById('filterWeeklyTeam').value;
+            const nameFilter = document.getElementById('filterWeeklyName').value.trim();
+
+            const caseTbody = document.getElementById('weeklyCaseTbody');
+            const emptyCase = document.getElementById('weeklyCaseEmpty');
+            caseTbody.innerHTML = '';
+
+            let filteredCases = weeklyCasesStore;
+            let filteredLogs = weeklyLogsStore;
+
+            if (nameFilter) {
+                filteredCases = filteredCases.filter(c => c.manager_name && c.manager_name.includes(nameFilter));
+                filteredLogs = filteredLogs.filter(l => l.user_id && l.user_id.includes(nameFilter));
+            }
+            if (teamFilter) {
+                let userTeams = {};
+                try {
+                    const memCache = localStorage.getItem('jc_portal_members');
+                    if (memCache) {
+                        const parsed = JSON.parse(memCache);
+                        const mems = parsed.list || parsed.data || [];
+                        mems.forEach(m => userTeams[m.id || m.email] = m.team || '');
+                    }
+                } catch (e) { }
+
+                // 부서 필터링: 직원의 실제 팀(부서) 정보로 필터링
+                filteredLogs = filteredLogs.filter(l => {
+                    const t = userTeams[l.user_id];
+                    return t && t.includes(teamFilter);
+                });
+
+                // Check manager team for cases
+                filteredCases = filteredCases.filter(c => {
+                    let managerTeam = '';
+                    try {
+                        const memCache = localStorage.getItem('jc_portal_members');
+                        if (memCache) {
+                            const parsed = JSON.parse(memCache);
+                            const mems = parsed.list || parsed.data || [];
+                            const m = mems.find(x => x.name === c.manager_name);
+                            if (m) managerTeam = m.team || '';
+                        }
+                    } catch (e) { }
+                    return (managerTeam && managerTeam.includes(teamFilter)) || (c.category && c.category.includes(teamFilter));
+                });
+
+                allUsersTasksStore = allUsersTasksStore.filter(t => {
+                    const myTeam = userTeams[t.user_id];
+                    return myTeam && myTeam.includes(teamFilter);
+                });
+            }
+
+            if (filteredCases.length === 0) {
+                emptyCase.style.display = 'block';
+                document.getElementById('caseTable').style.display = 'none';
+            } else {
+                emptyCase.style.display = 'none';
+                document.getElementById('caseTable').style.display = 'table';
+                caseTbody.innerHTML = filteredCases.map(c => `
+                    <tr>
+                        <td>
+                            <div class="fw-bold text-dark" style="font-size:0.85rem;">${c.report_week}</div>
+                            <span class="badge bg-light text-secondary border mt-1">${c.category}</span>
+                        </td>
+                        <td class="fw-bold text-dark fs-6">${c.client_name}</td>
+                        <td class="text-secondary">${c.gender_age}</td>
+                        <td class="text-primary fw-bold" style="letter-spacing:-0.5px;">${c.intervention_date}</td>
+                        <td class="text-secondary">${c.referral_path}</td>
+                        <td><div style="font-size:0.9rem; line-height:1.4;">${c.chief_complaint}</div></td>
+                        <td>
+                            <div class="text-secondary fw-bold" style="font-size:0.85rem;">1: ${c.scale_score || '-'}</div>
+                            <div class="text-secondary fw-bold" style="font-size:0.85rem; margin-top:4px;">2: ${c.scale_score_2 || '-'}</div>
+                        </td>
+                        <td><div style="font-size:0.9rem; line-height:1.4;">${c.action_result}</div></td>
+                        <td class="text-center">
+                            <div style="background:#f1f5f9; padding:4px 10px; border-radius:12px; font-weight:700; color:#334155; font-size:0.85rem; display:inline-block;">
+                                ${c.manager_name}
+                            </div>
+                        </td>
+                        <td class="text-center">
+                            <button class="btn btn-sm btn-light text-danger border rounded-circle" style="width:32px; height:32px; padding:0;" onclick="deleteWeeklyCase('${c.id}')">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `).join('');
+            }
+
+            // Define task-based cumulative stats to map progress per individual project goal
+            const taskProgressMap = {};
+            const ed = document.getElementById('weekEndDate').value;
+
+            // Register target goals per task (only active tasks)
+            allUsersTasksStore.forEach(task => {
+                if (task.is_active !== 1 || !task.target_goal) return;
+                taskProgressMap[task.id] = {
+                    user_id: task.user_id,
+                    name: task.task_name,
+                    target: task.target_goal,
+                    target2: task.target_goal_2 || 0,
+                    cumulativeIsp: 0,
+                    cumulativeIsp2: 0
+                };
+            });
+
+            // Calculate cumulative ISP per task up to end date
+            historicalLogsStore.filter(l => l.work_date <= ed && l.user_task_id).forEach(l => {
+                if (taskProgressMap[l.user_task_id]) {
+                    taskProgressMap[l.user_task_id].cumulativeIsp += Number(l.isp_count || 0);
+                    taskProgressMap[l.user_task_id].cumulativeIsp2 += Number(l.isp_count_2 || 0);
+                }
+            });
+
+            // Map Reduce by User for the current period
+            const userMap = {};
+            filteredLogs.forEach(l => {
+                if (!l.task_name) return;
+                const uid = l.user_id;
+                if (!userMap[uid]) {
+                    userMap[uid] = { name: uid, doneTasks: new Set(), waitTasks: new Set(), periodIsp: 0, periodIsp2: 0 };
+                }
+
+                if (l.status === '완료' || l.status === '진행') {
+                    userMap[uid].doneTasks.add(l.task_name);
+                } else if (l.status === '대기') {
+                    userMap[uid].waitTasks.add(l.task_name);
+                }
+                userMap[uid].periodIsp += Number(l.isp_count || 0);
+                userMap[uid].periodIsp2 += Number(l.isp_count_2 || 0);
+            });
+
+            const wLogTbody = document.getElementById('weeklyLogTbody');
+            wLogTbody.innerHTML = '';
+
+            const keys = Object.keys(userMap);
+            if (keys.length === 0) {
+                wLogTbody.innerHTML = `<tr><td colspan="4" class="text-center py-4 text-muted">선택한 조건에 해당하는 실적 로그가 없습니다.</td></tr>`;
+            } else {
+                wLogTbody.innerHTML = keys.map(uid => {
+                    const u = userMap[uid];
+                    const doneHtml = Array.from(u.doneTasks).map(t => `<span class="report-label bg-success bg-opacity-10 text-success border-success mb-1 d-inline-block">${t}</span>`).join(' ');
+                    const waitHtml = Array.from(u.waitTasks).map(t => `<span class="report-label bg-secondary bg-opacity-10 text-secondary border-secondary mb-1 d-inline-block">${t}</span>`).join(' ');
+
+                    let progressHtml = '';
+                    const userGoalTasks = Object.values(taskProgressMap).filter(t => t.user_id === uid);
+
+                    if (userGoalTasks.length > 0) {
+                        progressHtml = userGoalTasks.map(t => {
+                            const percent = Math.min(100, Math.round((t.cumulativeIsp / t.target) * 100));
+                            let html = `
+                                <div class="mb-3 w-100">
+                                    <div class="d-flex justify-content-between text-dark" style="font-size:0.75rem; font-weight:700; margin-bottom:2px;">
+                                        <span class="text-truncate" style="max-width:140px;" title="${t.name}">${t.name} (목표1)</span>
+                                        <span class="text-primary">${percent}% <span class="text-muted fw-normal ms-1">(${t.cumulativeIsp}/${t.target})</span></span>
+                                    </div>
+                                    <div class="progress" style="height:6px; background:#e2e8f0;">
+                                        <div class="progress-bar ${percent >= 100 ? 'bg-success' : 'bg-primary'}" role="progressbar" style="width: ${percent}%;"></div>
+                                    </div>
+                            `;
+                            if (t.target2 > 0) {
+                                const percent2 = Math.min(100, Math.round((t.cumulativeIsp2 / t.target2) * 100));
+                                html += `
+                                    <div class="d-flex justify-content-between text-dark mt-2" style="font-size:0.75rem; font-weight:700; margin-bottom:2px;">
+                                        <span class="text-truncate" style="max-width:140px;" title="${t.name}">ㄴ (목표2)</span>
+                                        <span class="text-primary">${percent2}% <span class="text-muted fw-normal ms-1">(${t.cumulativeIsp2}/${t.target2})</span></span>
+                                    </div>
+                                    <div class="progress" style="height:6px; background:#e2e8f0;">
+                                        <div class="progress-bar ${percent2 >= 100 ? 'bg-success' : 'bg-primary'}" role="progressbar" style="width: ${percent2}%;"></div>
+                                    </div>
+                                `;
+                            }
+                            html += `</div>`;
+                            return html;
+                        }).join('');
+
+                        // Append the period's total ISP at the bottom
+                        progressHtml += `<div class="mt-2 pt-2 border-top text-center text-muted" style="font-size:0.75rem; font-weight:600;">이번 기간 달성: <b class="text-dark fs-6 ms-1">${u.periodIsp}</b> (+${u.periodIsp2})</div>`;
+                    } else {
+                        progressHtml = `<div class="text-center text-muted" style="font-size:0.85rem;"><br>설정된 목표량 지표 없음<br><br><span class="text-dark fw-bold fs-6">이번 기간: ${u.periodIsp} (+${u.periodIsp2})</span></div>`;
+                    }
+
+                    let displayName = uid.split('@')[0];
+                    let displayTeam = '';
+                    try {
+                        const memCache = localStorage.getItem('jc_portal_members');
+                        if (memCache) {
+                            const parsed = JSON.parse(memCache);
+                            const mems = parsed.list || parsed.data || [];
+                            const m = mems.find(x => x.id === uid || x.email === uid);
+                            if (m) {
+                                displayName = m.name;
+                                displayTeam = `<span class="badge bg-light text-secondary border me-1">${m.team || ''}</span>`;
+                            }
+                        }
+                    } catch (e) { console.warn('Failed to parse members cache:', e); }
+
+                    return `
+                    <tr>
+                        <td class="text-center">
+                            <div class="d-flex flex-column align-items-center justify-content-center">
+                                ${displayTeam}
+                                <span class="fw-bold mt-1 text-dark">${displayName} <span class="text-muted small fw-normal">님</span></span>
+                            </div>
+                        </td>
+                        <td>${doneHtml || '<span class="text-muted small">실적 없음</span>'}</td>
+                        <td>${waitHtml || '<span class="text-muted small">계획 없음</span>'}</td>
+                        <td class="align-middle" style="background: #f8fafc;">${progressHtml}</td>
+                    </tr>
+                    `;
+                }).join('');
+            }
+        }
+
+        function deleteWeeklyCase(id) {
+            if (!confirm("해당 대상자 보고를 완전히 삭제하시겠습니까?")) return;
+            fetch(API_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'delete_weekly_case', id }) })
+                .then(() => loadWeeklyReport());
+        }
+
+        function exportToExcel() {
+            if (weeklyCasesStore.length === 0) return toast("내보낼 데이터가 없습니다.", "error");
+
+            // Define worksheet JSON formatting
+            const ws_data = weeklyCasesStore.map(c => ({
+                "보고주차": c.report_week,
+                "카테고리": c.category,
+                "대상자명": c.client_name,
+                "성별/나이": c.gender_age,
+                "개입일자": c.intervention_date,
+                "의뢰기관/경로": c.referral_path,
+                "주호소 및 현황": c.chief_complaint,
+                "척도결과1": c.scale_score,
+                "척도결과2": c.scale_score_2,
+                "조치결과 및 계획": c.action_result,
+                "담당실무자": c.manager_name
+            }));
+
+            const ws = XLSX.utils.json_to_sheet(ws_data);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "주간상담보고(Cases)");
+            XLSX.writeFile(wb, `주간상담보고_${document.getElementById('weekStartDate').value}.xlsx`);
+        }
+
+    </script>
+</body>
+
+</html>

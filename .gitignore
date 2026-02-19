@@ -1,0 +1,43 @@
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Private files / Secrets (if any)
+*.log
+config_private.js
+
+# Node.js (if applicable)
+node_modules/
+npm-debug.log*
+
+# Git environment
+.git/
+
+# Server Specific Excludes
+node-v20.11.1-win-x64/
+node.zip
+db/portal.sqlite
+db/portal.sqlite-shm
+db/portal.sqlite-wal
+uploads/
+downloads/
+backup_db.js
+backup_db.ps1
+delete_docs.js
+reset_data.js
+run_invisible.vbs
+start_server.bat
+update_ports.js
+*.zip
+*.exe
+dist/
+temp_pdf/
+circulation_files/
+database.db
+database.sqlite
+admin_history.txt
+git_log.txt
+git_status.txt
+err.txt
+*.xlsx
+test.pdf

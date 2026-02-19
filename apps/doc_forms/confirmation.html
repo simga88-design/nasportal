@@ -1,0 +1,227 @@
+﻿<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>상담확인서 입력 폼</title>
+    <link rel="stylesheet" as="style" crossorigin
+        href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.8/dist/web/static/pretendard.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+    <style>
+        :root {
+            --primary: #2563eb;
+            --border: #e2e8f0;
+            --text: #334155;
+            --text-muted: #64748b;
+        }
+
+        body {
+            font-family: 'Pretendard', sans-serif;
+            margin: 0;
+            padding: 0;
+            color: var(--text);
+            font-size: 14px;
+            background: transparent;
+        }
+
+        .form-group {
+            margin-bottom: 8px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 4px;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 6px 8px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 12px;
+            transition: border-color 0.2s;
+            box-sizing: border-box;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        textarea.form-control {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .flex-row {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .flex-row>div {
+            flex: 1;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="form-content" style="padding: 15px 20px 30px;">
+        <div class="form-group flex-row">
+            <div>
+                <label class="form-label">상담시작 확인일</label>
+                <input type="date" id="c_start" class="form-control">
+            </div>
+            <div>
+                <label class="form-label">상담종료 확인일</label>
+                <input type="date" id="c_end" class="form-control">
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="form-label">서비스 종류</label>
+            <input type="text" id="c_type" class="form-control" placeholder="예: 심층상담, 재난심리지원 등">
+        </div>
+        <div class="form-group">
+            <label class="form-label">성명</label>
+            <input type="text" id="c_name" class="form-control">
+        </div>
+        <div class="form-group">
+            <label class="form-label">연락처</label>
+            <input type="text" id="c_contact" class="form-control">
+        </div>
+        <div class="form-group">
+            <label class="form-label">주소</label>
+            <input type="text" id="c_address" class="form-control">
+        </div>
+        <div class="form-group">
+            <label class="form-label">상담내용 (요약)</label>
+            <textarea id="c_content" class="form-control" rows="5"></textarea>
+        </div>
+        <div class="form-group">
+            <label class="form-label">발급 용도</label>
+            <input type="text" id="c_purpose" class="form-control" placeholder="예: 기관 제출용, 본인 확인용 등">
+        </div>
+        <div class="form-group">
+            <label class="form-label">발급자(담당자명/직위)</label>
+            <input type="text" id="c_staffTitle" class="form-control" placeholder="예: 정신건강사회복지사 홍길동">
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+    <script>
+        const API_URL = `${(typeof window !== 'undefined' ? window.location.origin : 'http://localhost')}/api/auth`;
+
+        window.onload = function () {
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('c_start').value = today;
+            document.getElementById('c_end').value = today;
+            setTimeout(updatePreview, 100);
+        };
+
+        function updatePreview() {
+            const data = {
+                c_start: document.getElementById('c_start').value,
+                c_end: document.getElementById('c_end').value,
+                c_type: document.getElementById('c_type').value,
+                c_name: document.getElementById('c_name').value,
+                c_contact: document.getElementById('c_contact').value,
+                c_address: document.getElementById('c_address').value,
+                c_content: document.getElementById('c_content').value,
+                c_purpose: document.getElementById('c_purpose').value,
+                c_staffTitle: document.getElementById('c_staffTitle').value
+            };
+            window.parent.postMessage({ type: 'updatePreview', payload: data }, '*');
+        }
+
+        document.querySelectorAll('input, textarea').forEach(el => {
+            el.addEventListener('input', () => {
+                if (window.updateTimeout) clearTimeout(window.updateTimeout);
+                window.updateTimeout = setTimeout(updatePreview, 300);
+            });
+        });
+
+        window.addEventListener('message', function (event) {
+            if (event.data.action === 'save') {
+                saveData(event.data.commonData);
+            } else if (event.data.action === 'loadDoc') {
+                const doc = event.data.data;
+                const content = doc.content || {};
+
+                document.getElementById('c_start').value = content.c_start || '';
+                document.getElementById('c_end').value = content.c_end || '';
+                document.getElementById('c_type').value = content.c_type || '';
+                document.getElementById('c_name').value = content.c_name || '';
+                document.getElementById('c_contact').value = content.c_contact || '';
+                document.getElementById('c_address').value = content.c_address || '';
+                document.getElementById('c_content').value = content.c_content || '';
+                document.getElementById('c_purpose').value = content.c_purpose || '';
+                document.getElementById('c_staffTitle').value = content.c_staffTitle || '';
+
+                // Lock fields in view mode
+                document.querySelectorAll('input, select, textarea').forEach(el => el.disabled = true);
+                document.querySelectorAll('button').forEach(el => el.style.display = 'none');
+
+                updatePreview();
+            } else if (event.data.action === 'updateCommon') {
+                updatePreview();
+            } else if (event.data.action === 'unlockInputs') {
+                document.querySelectorAll('input, select, textarea').forEach(el => el.disabled = false);
+                document.querySelectorAll('button').forEach(el => el.style.display = '');
+            }
+        });
+
+        function saveData(commonData) {
+            const content = {
+                c_start: document.getElementById('c_start').value,
+                c_end: document.getElementById('c_end').value,
+                c_type: document.getElementById('c_type').value,
+                c_name: document.getElementById('c_name').value,
+                c_contact: document.getElementById('c_contact').value,
+                c_address: document.getElementById('c_address').value,
+                c_content: document.getElementById('c_content').value,
+                c_purpose: document.getElementById('c_purpose').value,
+                c_staffTitle: document.getElementById('c_staffTitle').value
+            };
+
+            const target_name = content.c_name;
+            if (!target_name) {
+                Toastify({ text: "대상자 이름을 입력해주세요.", style: { background: "#ef4444" }, duration: 3000 }).showToast();
+                window.parent.postMessage({ type: 'saveError' }, '*');
+                return;
+            }
+
+            fetch(API_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    action: 'save_issued_doc',
+                    type: 'confirmation',
+                    target_name,
+                    content: { ...commonData, ...content },
+                    issuer: commonData.issuer
+                })
+            })
+                .then(res => res.json())
+                .then(json => {
+                    if (json.result === 'success') {
+                        window.parent.postMessage({ type: 'saveSuccess', id: json.id }, '*');
+                    } else {
+                        Toastify({ text: "오류 발생: " + json.message, style: { background: "#ef4444" }, duration: 4000 }).showToast();
+                        window.parent.postMessage({ type: 'saveError' }, '*');
+                    }
+                })
+                .catch(err => {
+                    Toastify({ text: "서버 통신 오류", style: { background: "#ef4444" }, duration: 4000 }).showToast();
+                    window.parent.postMessage({ type: 'saveError' }, '*');
+                });
+        }
+    </script>
+</body>
+
+</html>

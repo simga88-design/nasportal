@@ -1,0 +1,899 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>제천시정신건강복지센터 업무지원시스템</title>
+    <link rel="stylesheet" href="./css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+
+<body>
+
+    <div id="login-page" class="login-container">
+        <div class="login-box">
+            <h2>제천시정신건강복지센터</h2>
+            <p>업무지원시스템 접속을 환영합니다.</p>
+            <input type="text" id="login-id" placeholder="사용자 ID (예: 000@jcmind.or.kr)"
+                onkeypress="if(event.key === 'Enter') document.getElementById('login-pw').focus()">
+            <input type="password" id="login-pw" placeholder="비밀번호 (초기값: 1234)"
+                onkeypress="if(event.key === 'Enter') handleLogin()">
+            <button id="btn-login" onclick="handleLogin()">로그인</button>
+            <p class="login-footer">문의: 정신건강복지센터 사무실</p>
+        </div>
+    </div>
+
+    <div id="main-page" class="app-container" style="display: none;">
+
+        <nav class="sidebar">
+            <div class="logo-area" style="cursor:pointer;" onclick="loadContent('home')">
+                <i class="fas fa-hospital" id="logo-icon" style="font-size: 24px; display: none;"></i>
+                <h3>제천시정신건강복지센터포털</h3>
+            </div>
+            <div class="user-profile">
+                <div class="avatar" id="sidebar-avatar"><i class="fas fa-user"></i></div>
+                <div class="user-info">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; width: 100%;">
+                        <div
+                            style="padding-right: 15px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;">
+                            <span id="display-name">사용자</span> <span id="display-position"
+                                style="font-size: 0.8em; color: #7f8c8d;"></span>
+                            <small id="display-team" style="display: block; color: #7f8c8d;"></small>
+                        </div>
+                        <div style="display:flex; align-items:center; gap:14px; margin-left: auto; margin-right: -8px;">
+                            <div class="noti-icon" id="sidebar-noti-btn" onclick="toggleNotiList(event)"
+                                style="padding:0; color:#7f8c8d; font-size:16px;">
+                                <i class="fas fa-bell"></i>
+                                <span id="noti-count" class="noti-badge"
+                                    style="display:none; top:-8px; right:-8px; border-color:#253342;">0</span>
+                            </div>
+                            <i class="fas fa-cog btn-settings" title="프로필 수정"
+                                onclick="loadFrame('./apps/profile_edit.html', '프로필 수정')"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <ul class="menu-list">
+                <li id="menu-notice" title="공지사항" onclick="loadFrame('./apps/notice.html', '공지사항')"><i
+                        class="fas fa-bullhorn"></i>
+                    <span>공지사항</span>
+                </li>
+                <li id="menu-calendar" title="일정관리" onclick="loadFrame('./apps/calendar_local.html', '일정관리')"><i
+                        class="fas fa-calendar-alt"></i> <span>일정관리</span></li>
+
+                <li class="menu-header">전자결재</li>
+                <li id="menu-approval" title="전자결재 관리" onclick="loadFrame('./apps/approval.html', '전자결재 관리')"><i
+                        class="fas fa-file-signature"></i> 전자결재 관리</li>
+                <li id="menu-doc-numbering" title="공문번호발급" onclick="loadFrame('./apps/doc_numbering.html', '공문번호발급')"><i
+                        class="fas fa-paperclip"></i> 공문번호발급</li>
+                <li id="menu-doc-issue" title="발급 및 기안" onclick="loadFrame('./apps/doc_issue.html', '발급 및 기안')"><i
+                        class="fas fa-file-alt"></i> 발급 및 기안</li>
+
+                <li class="menu-header">사례 관리</li>
+                <li id="menu-case-management" title="사례접수 및 회신"
+                    onclick="loadFrame('./apps/case_management.html', '사례접수 및 회신')"><i class="fas fa-user-md"></i> 사례접수 및 회신</li>
+                <li id="menu-case-manager" title="사례관리 통합매니저"
+                    onclick="window.open('https://script.google.com/a/macros/jcmind.or.kr/s/AKfycbwxBALh0Rq684W0pSwIMBK4ZMjOAgv66VumhR-ZOx-BP5hMozqqV4J49eHXFBcI5PPt/exec', '_blank')">
+                    <i class="fas fa-project-diagram"></i> 사례관리 통합매니저
+                </li>
+
+                <li class="menu-header">공람함</li>
+                <li id="menu-circulation" title="공람함" onclick="loadFrame('./apps/circulation.html', '공람함')"><i
+                        class="fas fa-envelope-open-text"></i> 공람함</li>
+
+                <li class="menu-header" id="header-daily-log">업무일지</li>
+                <li id="menu-work-dashboard" title="주간실적보고(개발중)"
+                    onclick="loadFrame('./apps/work_dashboard.html', '주간실적보고(개발중)')">
+                    <i class="fas fa-tasks"></i> 주간실적보고 (개발중)
+                </li>
+                <li style="display:none;" title="업무일지" id="menu-daily-log"
+                    onclick="loadFrame('./apps/daily_log.html', '업무일지')">
+                    <i class="fas fa-book"></i> 업무일지
+                </li>
+                <li style="display:none;" title="업무일지결재" id="menu-daily-approve"
+                    onclick="loadFrame('./apps/daily_log.html', '업무일지결재')"><i class="fas fa-check-double"></i>
+                    업무일지결재
+                </li>
+
+                <li class="menu-header">시스템</li>
+                <li id="menu-error-report" title="오류 신고" onclick="loadFrame('./apps/error_report.html', '오류 신고')"><i class="fas fa-bug"></i> 오류 신고</li>
+                <li id="menu-org-chart" title="조직도" onclick="loadFrame('./apps/org_chart.html', '조직도')"><i
+                        class="fas fa-sitemap"></i> 조직도</li>
+            </ul>
+
+            <div class="logout-area">
+                <button title="로그아웃" onclick="handleLogout()"><i class="fas fa-sign-out-alt"></i> 로그아웃</button>
+            </div>
+        </nav>
+
+        <main class="content-area">
+            <header>
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    <button id="sidebar-toggle" onclick="toggleSidebar()"
+                        style="background:transparent; border:none; font-size:20px; cursor:pointer; color:var(--text-main);">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <h2 id="page-title">대시보드</h2>
+                </div>
+                <span class="date-display" id="current-date"></span>
+            </header>
+
+            <div id="content-viewer">
+                <div class="dashboard-widgets">
+                    <div class="widget" id="widget-schedule">
+                        <div class="widget-header">
+                            <h4><i class="fas fa-calendar-day widget-title-icon"></i> 오늘의 핵심 일정</h4>
+                        </div>
+                        <div class="widget-empty"><i class="fas fa-circle-notch fa-spin"></i> 로딩 중...</div>
+                    </div>
+
+                    <div class="widget" id="widget-pendings">
+                        <div class="widget-header">
+                            <h4><i class="fas fa-file-signature widget-title-icon" style="color:#f59e0b;"></i> 나의 결재 대기
+                                문서</h4>
+                        </div>
+                        <div class="widget-empty"><i class="fas fa-circle-notch fa-spin"></i> 로딩 중...</div>
+                    </div>
+
+                    <div class="widget" id="widget-circulations">
+                        <div class="widget-header">
+                            <h4><i class="fas fa-envelope-open-text widget-title-icon" style="color:#8b5cf6;"></i> 미확인
+                                공람 문서</h4>
+                        </div>
+                        <div class="widget-empty"><i class="fas fa-circle-notch fa-spin"></i> 로딩 중...</div>
+                    </div>
+
+                    <div class="widget" id="widget-notifications">
+                        <div class="widget-header">
+                            <h4><i class="fas fa-bell widget-title-icon" style="color:#ef4444;"></i> 최근 알림 피드</h4>
+                        </div>
+                        <div class="widget-empty"><i class="fas fa-circle-notch fa-spin"></i> 로딩 중...</div>
+                    </div>
+
+                    <div class="widget" id="widget-notices">
+                        <div class="widget-header">
+                            <h4><i class="fas fa-bullhorn widget-title-icon" style="color:#10b981;"></i> 최신 공지</h4>
+                        </div>
+                        <div class="widget-empty"><i class="fas fa-circle-notch fa-spin"></i> 로딩 중...</div>
+                    </div>
+                </div>
+            </div>
+
+            <iframe id="app-frame" src="" style="display:none; width:100%; height:100%; border:none;"></iframe>
+        </main>
+    </div>
+
+    <div id="noti-list" class="noti-dropdown"
+        style="position:fixed; z-index:99999; width:340px; border-radius:12px; box-shadow:0 0 20px rgba(0,0,0,0.2);">
+        <div class="noti-header" style="display:flex; justify-content:space-between; align-items:center;">
+            <span>알림 센터</span>
+            <button onclick="document.getElementById('noti-list').classList.remove('show')"
+                style="border:none; background:transparent; cursor:pointer;">&times;</button>
+        </div>
+        <div id="noti-items" class="noti-body" style="max-height:500px;">
+            <div style="padding:20px; text-align:center; color:var(--text-muted);">알림이 없습니다.</div>
+        </div>
+    </div>
+
+    <script src="./js/store.js"></script>
+    <script src="./js/modal.js"></script>
+    <script src="./js/config.js"></script>
+    <script src="./js/data_manager.js"></script>
+    <script src="./js/common.js"></script>
+    <script>
+        if (window.module) module = window.module;
+
+        // Version Control Check
+        async function checkVersion() {
+            try {
+                // version action handles checking if the current version is allowed
+                const response = await fetch(BASE_URL, {
+                    method: 'POST',
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        action: 'check_version',
+                        currentVersion: APP_VERSION
+                    })
+                });
+                const json = await response.json();
+
+                if (json.result === 'success' && json.isOutdated) {
+                    // Block access if version is too old
+                    document.body.innerHTML = `
+                        <div style="height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #1e293b; color: white; font-family: 'Pretendard', sans-serif; text-align: center; padding: 20px;">
+                            <i class="fas fa-download" style="font-size: 60px; color: #f59e0b; margin-bottom: 25px;"></i>
+                            <h1 style="margin-bottom: 10px;">업데이트가 필요합니다.</h1>
+                            <p style="font-size: 1.1em; opacity: 0.9; line-height: 1.6;">
+                                현재 버전(v${APP_VERSION})은 더 이상 사용할 수 없습니다.<br>
+                                최신 버전(v${json.latestVersion})으로 업데이트가 필요합니다.
+                            </p>
+                            <div style="margin-top: 30px; font-size: 0.9em; opacity: 0.7;">
+                                담당자에게 문의하여 최신 파일을 설치해 주세요.
+                            </div>
+                            <button onclick="location.reload()" style="margin-top: 30px; padding: 12px 24px; background: #3b82f6; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold;">다시 확인</button>
+                        </div>
+                    `;
+                    return false;
+                }
+            } catch (err) {
+                console.warn("Version check skipped due to network/server error", err);
+            }
+            return true;
+        }
+
+        // Login Logic
+        async function handleLogin() {
+            const inputId = document.getElementById('login-id').value;
+            const inputPw = document.getElementById('login-pw').value;
+
+            if (!inputId || !inputPw) {
+                Modal.alert("아이디와 비밀번호를 입력해주세요.");
+                return;
+            }
+
+            const btn = document.getElementById('btn-login');
+            const originalText = btn.innerText;
+            btn.innerText = "로그인 중...";
+            btn.disabled = true;
+
+            try {
+                // Use new GAS Auth URL separately
+                const response = await fetch(BASE_URL, {
+                    method: 'POST',
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        action: 'login',
+                        id: inputId,
+                        password: inputPw
+                    })
+                });
+
+                const json = await response.json();
+
+                if (json.result === 'success') {
+                    // Login Success
+                    sessionStorage.setItem('jc_user', JSON.stringify(json.user));
+                    initSystem(json.user);
+                } else {
+                    // Login Fail
+                    Modal.alert(json.message || "로그인 정보가 올바르지 않습니다.");
+                }
+
+            } catch (err) {
+                console.error(err);
+                Modal.alert("서버 통신 오류가 발생했습니다.");
+            } finally {
+                btn.innerText = originalText;
+                btn.disabled = false;
+            }
+        }
+
+
+        // ===========================================
+        // Daily Log Helper Functions
+        // ===========================================
+        function calculateDaysWorked(joinDateString) {
+            if (!joinDateString) return -1; // No join date -> invalid
+            const joinDate = new Date(joinDateString);
+            const today = new Date();
+            // Calculate difference in milliseconds
+            const diffTime = today - joinDate;
+            // Convert to days
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            return diffDays;
+        }
+
+        function canWriteDailyLog(user) {
+            // Explicit Permission Override
+            if (user.permissions && user.permissions.dailyLogWrite === true) return true;
+
+            // Join Date Check (Must be within 90 days)
+            if (!user.joinDate) return false;
+            const days = calculateDaysWorked(user.joinDate);
+            return days >= 0 && days <= 90;
+        }
+
+        function canApproveDailyLog(user) {
+            if (user.isSystemAdmin === true || user.isSystemAdmin === 1 || user.role === '관리자') return true;
+            const pos = user.position || '';
+            const approverRoles = ['주임', '팀장', '상임팀장', '센터장', '부센터장'];
+            return approverRoles.some(role => pos.includes(role));
+        }
+        // --- Notification Logic ---
+        async function fetchNotifications() {
+            const user = window.AppStore.state.currentUser || JSON.parse(sessionStorage.getItem('jc_user'));
+            if (!user) return;
+            try {
+                const res = await fetch(BASE_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'get_notifications', user_id: user.id })
+                });
+                const json = await res.json();
+                if (json.result === 'success') {
+                    window.AppStore.state.notifications = json.list;
+                }
+            } catch (e) { console.error('Noti fetch error', e); }
+        }
+
+        // Subscribe to Store states to trigger rendering automatically
+        window.addEventListener('DOMContentLoaded', () => {
+            window.AppStore.subscribe('notifications', (list) => {
+                if (list) renderNotifications(list);
+            });
+            window.AppStore.subscribe('currentUser', (user) => {
+                if (user) renderUserInfo(user);
+            });
+        });
+
+        function renderUserInfo(user) {
+            // Display Info
+            document.getElementById('display-name').innerText = user.name;
+
+            // Smart Affiliation Display
+            const isHighLevel = ['센터장', '부센터장', '상임팀장'].includes(user.position);
+            const teamEl = document.getElementById('display-team');
+            const posEl = document.getElementById('display-position');
+
+            if (isHighLevel || user.team === user.position || !user.team || user.team === '없음') {
+                teamEl.style.display = 'none';
+            } else {
+                teamEl.style.display = 'block';
+                teamEl.innerText = user.team;
+            }
+            posEl.innerText = user.position || '';
+
+            if (user.avatar) {
+                document.getElementById('sidebar-avatar').innerHTML = `<img src="${user.avatar}" style="width:100%; height:100%; border-radius:50%; object-fit:cover;">`;
+            } else {
+                document.getElementById('sidebar-avatar').innerHTML = `<i class="fas fa-user"></i>`;
+            }
+
+            // Daily Work Log Access Control
+            const headerDaily = document.getElementById('header-daily-log');
+            const menuDailyLog = document.getElementById('menu-daily-log');
+            const menuDailyApprove = document.getElementById('menu-daily-approve');
+
+            // 1. Write Permission
+            const canWrite = canWriteDailyLog(user);
+            if (canWrite) {
+                menuDailyLog.style.display = 'block';
+                headerDaily.style.display = 'block';
+            } else {
+                menuDailyLog.style.display = 'none';
+            }
+
+            // 2. Approve Permission
+            const canApprove = canApproveDailyLog(user);
+            if (canApprove) {
+                menuDailyApprove.style.display = 'block';
+                headerDaily.style.display = 'block';
+            } else {
+                menuDailyApprove.style.display = 'none';
+            }
+
+            // Hide header if both hidden
+            if (!canWrite && !canApprove) {
+                headerDaily.style.display = 'none';
+            }
+
+            // Admin Menu Visibility
+            const isAdmin = user.isSystemAdmin === true || user.isSystemAdmin === 1 || user.role === '관리자';
+            if (isAdmin) {
+                // Add Admin Menu if not exists
+                const menuList = document.querySelector('.menu-list');
+                // Check if already added to avoid duplicates
+                if (!document.getElementById('menu-admin')) {
+                    const adminHeader = document.createElement('li');
+                    adminHeader.className = 'menu-header';
+                    adminHeader.innerText = '시스템 관리';
+                    adminHeader.id = 'header-admin';
+
+                    const adminItem = document.createElement('li');
+                    adminItem.id = 'menu-admin';
+                    adminItem.innerHTML = '<i class="fas fa-cogs"></i> 통합 관리(MDM)';
+                    adminItem.onclick = function () { loadFrame('./apps/admin_manager.html', '통합 관리(MDM)'); };
+
+                    menuList.appendChild(adminHeader);
+                    menuList.appendChild(adminItem);
+                }
+            }
+        }
+
+        function renderNotifications(list) {
+            const unread = list.filter(n => !n.is_read).length;
+            const countEl = document.getElementById('noti-count');
+            if (unread > 0) {
+                countEl.innerText = unread > 99 ? '99+' : unread;
+                countEl.style.display = 'flex';
+            } else {
+                countEl.style.display = 'none';
+            }
+
+            const body = document.getElementById('noti-items');
+            if (list.length === 0) {
+                body.innerHTML = '<div style="padding:20px; text-align:center; color:var(--text-muted);">알림이 없습니다.</div>';
+                return;
+            }
+
+            let html = '';
+            if (list.some(n => n.is_read)) {
+                html += `<div style="padding: 5px 10px; text-align: right; border-bottom: 1px solid #eee;">
+                            <button onclick="deleteReadNotifications()" style="font-size: 0.8em; padding: 2px 8px; background: #94a3b8; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                                읽은 알림 지우기
+                            </button>
+                         </div>`;
+            }
+
+            html += list.map(n => {
+                // Translate Notification Tags
+                let displayMsg = n.message
+                    .replace('[GENERAL]', '[일반 기안]')
+                    .replace('[LEAVE]', '[휴가 신청서]')
+                    .replace('[TRIP]', '[출장 신청서]');
+
+                // 긴급 알림 스타일링
+                const isUrgent = n.type === 'URGENT';
+                const urgentStyle = isUrgent && !n.is_read ? 'background-color: #fef2f2; border-left: 4px solid #ef4444;' : '';
+                const titleStyle = isUrgent && !n.is_read ? 'color: #ef4444; font-weight: 800;' : '';
+
+                return `
+                <div class="noti-item ${n.is_read ? 'read' : ''}" onclick="handleNotiClick('${n.id}', '${n.link}')" style="position:relative; padding-right:30px; ${urgentStyle}">
+                    <button onclick="deleteNotification(event, '${n.id}')" style="position:absolute; right:10px; top:10px; background:none; border:none; color:#cbd5e1; cursor:pointer; font-size:14px;" title="삭제" onmouseover="this.style.color='#ef4444'" onmouseout="this.style.color='#cbd5e1'"><i class="fas fa-times"></i></button>
+                    <div class="noti-title" style="${titleStyle}">${n.title}</div>
+                    <div class="noti-msg">${displayMsg}</div>
+                    <div class="noti-time">${(function(){
+                        let d = n.created_at;
+                        if (!d.includes('Z') && !d.includes('T')) d = d.replace(' ', 'T') + 'Z';
+                        return new Date(d).toLocaleString();
+                    })()}</div>
+                </div>
+                `;
+            }).join('');
+
+            body.innerHTML = html;
+        }
+
+        function toggleNotiList(event) {
+            const list = document.getElementById('noti-list');
+            const btn = document.getElementById('sidebar-noti-btn'); // Use specific ID
+
+            if (list.classList.contains('show')) {
+                list.classList.remove('show');
+            } else {
+                // Position calculation
+                const rect = btn.getBoundingClientRect();
+                list.style.top = (rect.top - 10) + 'px'; // Slightly above or aligned
+                list.style.left = (rect.right + 15) + 'px'; // To the right of sidebar
+
+                // Adjustment if bottom overflow
+                if (rect.top + 500 > window.innerHeight) {
+                    list.style.top = 'auto';
+                    list.style.bottom = '20px';
+                }
+
+                list.classList.add('show');
+                fetchNotifications();
+            }
+            if (event) event.stopPropagation();
+        }
+
+        async function handleNotiClick(id, link) {
+            try {
+                await fetch(BASE_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'mark_notification_read', id })
+                });
+                if (link) {
+                    if (link.includes('.html') && !link.startsWith('http')) {
+                        let title; // Declare title here
+                        if (!title) {
+                            if (link.includes('approval')) title = '전자결재 관리';
+                            if (link.includes('circulation')) title = '공람함';
+                        }
+                        if (link.includes('notice')) title = '공지사항';
+                        loadFrame(link, title);
+                    } else {
+                        window.open(link, '_blank');
+                    }
+                }
+                fetchNotifications();
+                document.getElementById('noti-list').classList.remove('show');
+            } catch (e) { console.error(e); }
+        }
+
+        async function deleteNotification(event, id) {
+            event.stopPropagation();
+            if (!confirm("이 알림을 삭제하시겠습니까?")) return;
+            try {
+                const res = await fetch(BASE_URL, {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'delete_notification', id })
+                });
+                const json = await res.json();
+                if (json.result === 'success') {
+                    fetchNotifications();
+                    if (typeof loadWidgetNotifications === 'function') {
+                        loadWidgetNotifications();
+                    }
+                }
+            } catch (e) { console.error("Delete Notification Error", e); }
+        }
+
+        async function deleteReadNotifications() {
+            const user = JSON.parse(sessionStorage.getItem('jc_user'));
+            if (!user) return;
+            if (!confirm('읽은 알림을 모두 삭제하시겠습니까?')) return;
+
+            try {
+                await fetch(BASE_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'delete_read_notifications', user_id: user.id })
+                });
+                fetchNotifications();
+            } catch (e) { console.error(e); }
+        }
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('#noti-list') && !e.target.closest('#sidebar-noti-btn')) {
+                document.getElementById('noti-list').classList.remove('show');
+            }
+        });
+
+        // System Initialization
+        function initSystem(user) {
+            document.getElementById('login-page').style.display = 'none';
+            document.getElementById('main-page').style.display = 'flex';
+
+            // Set Store state which triggers renderUserInfo
+            window.AppStore.state.currentUser = user;
+
+            //Cache Warming (Background Fetch)
+            console.log('Starting Cache Warming...');
+            DataManager.getMembers((d, c) => {
+                if (d && d.result === 'success') window.AppStore.state.members = d.list;
+                if (c) console.log('Members Cached');
+            });
+            DataManager.getTeams((d, c) => {
+                if (d && d.result === 'success') window.AppStore.state.teams = d.list;
+                if (c) console.log('Teams Cached');
+            });
+
+            // Date Display
+            const today = new Date();
+            document.getElementById('current-date').innerText = today.toLocaleDateString('ko-KR', {
+                year: 'numeric', month: 'long', day: 'numeric', weekday: 'long', hour: '2-digit', minute: '2-digit'
+            });
+
+            // Initial Load
+            loadDashboardWidgets();
+            fetchNotifications(); // Fetch immediately
+
+            // Polling for Notifications (every 30 seconds)
+            if (window.notiInterval) clearInterval(window.notiInterval);
+            window.notiInterval = setInterval(fetchNotifications, 30000);
+        }
+
+        // Logout
+        function handleLogout() {
+            Modal.confirm("로그아웃 하시겠습니까?").then(result => {
+                if (result) {
+                    sessionStorage.removeItem('jc_user');
+                    location.reload();
+                }
+            });
+        }
+
+        // Navigation
+        function updateActiveMenu(element) {
+            document.querySelectorAll('.menu-list li').forEach(li => li.classList.remove('active'));
+            if (element) element.classList.add('active');
+        }
+
+        function loadFrame(url, title, element) {
+            let target = element;
+            try { if (!target && window.event) target = window.event.currentTarget; } catch (e) { }
+            updateActiveMenu(target);
+            if (title) document.getElementById('page-title').innerText = title;
+            document.getElementById('content-viewer').style.display = 'none';
+            const frame = document.getElementById('app-frame');
+            frame.style.display = 'block';
+
+            // Cache busting
+            const separator = url.includes('?') ? '&' : '?';
+            frame.src = url + separator + 't=' + new Date().getTime();
+        }
+
+        function loadContent(type, element) {
+            let target = element;
+            try { if (!target && window.event) target = window.event.currentTarget; } catch (e) { }
+            updateActiveMenu(target);
+            document.getElementById('app-frame').style.display = 'none';
+            const viewer = document.getElementById('content-viewer');
+            viewer.style.display = 'block';
+
+            if (type === 'home') {
+                document.getElementById('page-title').innerText = "대시보드";
+                loadDashboardWidgets(); // Refresh all widgets
+            }
+        }
+
+        // Dashboard Data
+        function loadDashboardWidgets() {
+            loadWidgetSchedule();
+            loadWidgetPendings();
+            loadWidgetCirculations();
+            loadWidgetNotifications();
+            loadWidgetNotices();
+        }
+
+        // Widget 1: Today Schedule
+        function loadWidgetSchedule() {
+            const widget = document.getElementById('widget-schedule');
+            DataManager.getEvents('all', (json, isCache) => {
+                if (json.result === 'success') {
+                    // Get today's date string in local timezone (KST)
+                    const today = new Date();
+                    const todayStr = new Date(today.getTime() - (today.getTimezoneOffset() * 60000)).toISOString().split('T')[0];
+
+                    const todayEvents = json.list.filter(e => {
+                        return (e.start && e.start.startsWith(todayStr)) || (e.end && e.end.startsWith(todayStr));
+                    });
+
+                    if (todayEvents.length === 0) {
+                        widget.innerHTML = `<div class="widget-header"><h4><i class="fas fa-calendar-day widget-title-icon"></i> 오늘의 핵심 일정</h4></div>
+                                            <div class="widget-empty">오늘 등록된 일정이 없습니다.</div>`;
+                    } else {
+                        let html = `<div class="widget-header"><h4><i class="fas fa-calendar-day widget-title-icon"></i> 오늘의 핵심 일정</h4></div><ul class="widget-list">`;
+                        todayEvents.forEach(e => {
+                            html += `<li class="clickable" onclick="loadFrame('./apps/calendar_local.html', '일정관리')">
+                                        <div style="font-weight:600; font-size:14px; color:#1e293b;">${e.title}</div>
+                                        <div style="font-size:12px; color:#64748b;">${e.start ? e.start.replace('T', ' ').substring(0, 16) : ''} ${e.location ? '| ' + e.location : ''}</div>
+                                     </li>`;
+                        });
+                        html += `</ul>`;
+                        widget.innerHTML = html;
+                    }
+                } else if (!isCache) {
+                    widget.innerHTML = `<div class="widget-header"><h4><i class="fas fa-calendar-day widget-title-icon"></i> 오늘의 핵심 일정</h4></div>
+                        <div class="widget-empty">일정을 불러오지 못했습니다.</div>`;
+                }
+            });
+        }
+
+        // Widget 2: Pending Approvals
+        async function loadWidgetPendings() {
+            const widget = document.getElementById('widget-pendings');
+            const userStr = sessionStorage.getItem('jc_user');
+            if (!userStr) return;
+            const user = JSON.parse(userStr);
+
+            try {
+                // Fetch approvals
+                const resApp = await fetch(BASE_URL, {
+                    method: 'POST', headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ action: 'get_approvals', user_id: user.id, mode: 'all_my' })
+                });
+                const jsonApp = await resApp.json();
+                const pendingApps = jsonApp.result === 'success' ? jsonApp.list : [];
+
+                // Fetch members for name lookup
+                let members = [];
+                await new Promise(resolve => {
+                    DataManager.getMembers((json) => {
+                        if (json.result === 'success') members = json.list;
+                        resolve();
+                    });
+                });
+
+                if (pendingApps.length === 0) {
+                    widget.innerHTML = `
+                    <div class="widget-header"><h4><i class="fas fa-file-signature widget-title-icon" style="color:#f59e0b;"></i> 나의 최근 결재 문서</h4></div>
+                                <div class="widget-empty">최근 처리되거나 대기중인 문서가 없어요! 🙌</div>
+                    `;
+                    return;
+                }
+
+                // Sort by created_at descending just in case
+                pendingApps.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+                let html = `<div class="widget-header"><h4><i class="fas fa-file-signature widget-title-icon" style="color:#f59e0b;"></i> 나의 최근 결재 문서 <span style="font-size:12px; margin-left:8px; padding:2px 8px; background:#fef3c7; color:#d97706; border-radius:12px;">${pendingApps.length}건</span></h4></div><ul class="widget-list">`;
+                pendingApps.slice(0, 5).forEach(a => {
+                    const drafterMember = members.find(m => m.id === a.drafter_id);
+                    const drafterName = drafterMember ? `${drafterMember.name} ${drafterMember.position || ''}` : a.drafter_id;
+
+                    let statusBadge = '';
+                    if (a.status === 'APPROVED') {
+                        statusBadge = `<span style="font-size:10px; padding:2px 6px; border-radius:4px; background:#ecfdf5; color:#059669; border:1px solid #10b981;">승인됨</span>`;
+                    } else if (a.status === 'REJECTED') {
+                        statusBadge = `<span style="font-size:10px; padding:2px 6px; border-radius:4px; background:#fef2f2; color:#ef4444; border:1px solid #ef4444;">반려됨</span>`;
+                    } else {
+                        statusBadge = `<span style="font-size:10px; padding:2px 6px; border-radius:4px; background:#eff6ff; color:#3b82f6; border:1px solid #3b82f6;">결재중</span>`;
+                    }
+
+                    html += `<li class="clickable" onclick="loadFrame('./apps/approval.html?open_id=${a.id}', '전자결재 관리')">
+                                <div style="font-weight:600; font-size:14px; color:#1e293b; display:flex; justify-content:space-between; align-items:center;">
+                                    <span>${a.title}</span>
+                                    ${statusBadge}
+                                </div>
+                                <div style="font-size:12px; color:#64748b; margin-top:4px;">기안자: ${drafterName} | ${new Date(a.created_at).toLocaleDateString()}</div>
+                             </li>`;
+                });
+                html += `</ul>`;
+                widget.innerHTML = html;
+
+            } catch (e) {
+                console.error("Pendings Error", e);
+                widget.innerHTML = `< div class="widget-header" > <h4><i class="fas fa-file-signature widget-title-icon" style="color:#f59e0b;"></i> 나의 결재 대기 문서</h4></div >
+                        <div class="widget-empty">결재 정보를 불러올 수 없습니다.</div>`;
+            }
+        }
+
+        // Widget 2-B: Unread Circulations
+        async function loadWidgetCirculations() {
+            const widget = document.getElementById('widget-circulations');
+            const userStr = sessionStorage.getItem('jc_user');
+            if (!userStr) return;
+            const user = JSON.parse(userStr);
+
+            try {
+                // Fetch circulations (no specific action payload might cause failure if not defined, ensuring we send standard 'get_circ_list' which works for Circulation app)
+                const resCirc = await fetch(BASE_URL, {
+                    method: 'POST', headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ action: 'get_circ_list' })
+                });
+                const jsonCirc = await resCirc.json();
+
+                let unreadCircs = [];
+                if (jsonCirc.result === 'success') {
+                    unreadCircs = jsonCirc.list.filter(c => {
+                        try {
+                            const readers = Array.isArray(c.readers) ? c.readers : (c.readers ? JSON.parse(c.readers) : []);
+                            return !readers.includes(user.name);
+                        } catch (parseErr) {
+                            return true; // if error parsing, assume unread
+                        }
+                    });
+                }
+
+                if (unreadCircs.length === 0) {
+                    widget.innerHTML = `
+                    <div class="widget-header"><h4><i class="fas fa-envelope-open-text widget-title-icon" style="color:#8b5cf6;"></i> 미확인 공람 문서</h4></div>
+                                <div class="widget-empty">새로운 공람 문서가 없어요! 🙌</div>
+                    `;
+                    return;
+                }
+
+                let html = `<div class="widget-header"><h4><i class="fas fa-envelope-open-text widget-title-icon" style="color:#8b5cf6;"></i> 미확인 공람 문서 <span style="font-size:12px; margin-left:8px; padding:2px 8px; background:#ede9fe; color:#7c3aed; border-radius:12px;">${unreadCircs.length}건</span></h4></div><ul class="widget-list">`;
+                unreadCircs.slice(0, 5).forEach(c => {
+                    html += `<li class="clickable" onclick="loadFrame('./apps/circulation.html?open_id=${c.id}', '공람확인')">
+                                <div style="font-weight:600; font-size:14px; color:#1e293b;">${c.title}</div>
+                                <div style="font-size:12px; color:#64748b;">작성자: ${c.author} | ${c.date}</div>
+                             </li>`;
+                });
+                html += `</ul>`;
+                widget.innerHTML = html;
+
+            } catch (e) {
+                console.error("Circulation Error", e);
+                widget.innerHTML = `< div class="widget-header" > <h4><i class="fas fa-envelope-open-text widget-title-icon" style="color:#8b5cf6;"></i> 미확인 공람 문서</h4></div >
+                        <div class="widget-empty">공람 정보를 불러올 수 없습니다.</div>`;
+            }
+        }
+
+        // Widget 3: Notification Feed
+        async function loadWidgetNotifications() {
+            const widget = document.getElementById('widget-notifications');
+            const userStr = sessionStorage.getItem('jc_user');
+            if (!userStr) return;
+            const user = JSON.parse(userStr);
+
+            try {
+                const res = await fetch(BASE_URL, {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'get_notifications', user_id: user.id })
+                });
+                const json = await res.json();
+
+                if (json.result === 'success') {
+                    const list = json.list.slice(0, 5); // limit to top 5
+                    if (list.length === 0) {
+                        widget.innerHTML = `<div class="widget-header"><h4><i class="fas fa-bell widget-title-icon" style="color:#ef4444;"></i> 최근 알림 피드</h4></div>
+                        <div class="widget-empty">새로 도착한 알림이 없습니다.</div>`;
+                    } else {
+                        let html = `<div class="widget-header"><h4><i class="fas fa-bell widget-title-icon" style="color:#ef4444;"></i> 최근 알림 피드</h4></div><ul class="widget-list">`;
+                        list.forEach(n => {
+                            let displayMsg = n.message.replace('[GENERAL]', '[일반 기안]').replace('[LEAVE]', '[휴가 신청서]').replace('[TRIP]', '[출장 신청서]');
+                            html += `<li class="clickable ${n.is_read ? '' : 'unread'}" style="position:relative; padding-right:25px;" onclick="handleNotiClick('${n.id}', '${n.link}')">
+                            <button onclick="deleteNotification(event, '${n.id}')" style="position:absolute; right:15px; top:15px; background:none; border:none; color:#cbd5e1; cursor:pointer; font-size:13px;" title="삭제" onmouseover="this.style.color='#ef4444'" onmouseout="this.style.color='#cbd5e1'"><i class="fas fa-times"></i></button>
+                            <div style="font-weight:${n.is_read ? '500' : '700'}; font-size:13px; color:${n.is_read ? '#64748b' : '#0f172a'}; margin-bottom:2px;">${n.title} ${n.is_read ? '' : '<span style="color:#ef4444;font-size:10px;vertical-align:top;">N</span>'}</div>
+                            <div style="font-size:12px; color:#64748b; margin-bottom:4px;">${displayMsg}</div>
+                            <div style="font-size:11px; color:#94a3b8;">${new Date(n.created_at).toLocaleString()}</div>
+                        </li>`;
+                        });
+                        html += `</ul>`;
+                        widget.innerHTML = html;
+                    }
+                }
+            } catch (e) {
+                widget.innerHTML = `<div class="widget-header"><h4><i class="fas fa-bell widget-title-icon" style="color:#ef4444;"></i> 최근 알림 피드</h4></div>
+                        <div class="widget-empty">알림을 불러올 수 없습니다.</div>`;
+            }
+        }
+
+        // Widget 4: Notices
+        function loadWidgetNotices() {
+            const widget = document.getElementById('widget-notices');
+            DataManager.getNotices((json, isCache) => {
+                if (json.result === 'success') {
+                    const notices = json.list;
+                    notices.sort((a, b) => {
+                        if (a.isPinned !== b.isPinned) return (b.isPinned ? 1 : 0) - (a.isPinned ? 1 : 0);
+                        return new Date(b.date) - new Date(a.date);
+                    });
+                    const recent = notices.slice(0, 5);
+
+                    if (recent.length === 0) {
+                        widget.innerHTML = `<div class="widget-header"><h4><i class="fas fa-bullhorn widget-title-icon" style="color:#10b981;"></i> 최신 공지</h4></div>
+                        <div class="widget-empty">등록된 공지사항이 없습니다.</div>`;
+                    } else {
+                        let html = `<div class="widget-header"><h4><i class="fas fa-bullhorn widget-title-icon" style="color:#10b981;"></i> 최신 공지</h4></div><ul class="widget-list">`;
+                        recent.forEach(n => {
+                            const color = n.type === '긴급' ? '#ef4444' : n.type === '행사' ? '#10b981' : '#3b82f6';
+                            html += `
+                        <li class="clickable" onclick="loadFrame('./apps/notice.html', '공지사항')">
+                            <div style="font-size:14px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; color:#1e293b; font-weight:500;">
+                                <span style="color:${color}; font-weight:bold; margin-right:5px;">[${n.type}]</span>
+                                ${n.isPinned ? '📌 ' : ''}${n.title}
+                            </div>
+                            <div style="font-size:11px; color:#94a3b8; text-align:right;">${n.date}</div>
+                        </li>`;
+                        });
+                        html += '</ul>';
+                        widget.innerHTML = html;
+                    }
+                } else if (!isCache) {
+                    widget.innerHTML = `<div class="widget-header"><h4><i class="fas fa-bullhorn widget-title-icon" style="color:#10b981;"></i> 최신 공지</h4></div>
+                                        <div class="widget-empty">데이터 로드 실패: ${json.message}</div>`;
+                }
+            });
+        }
+
+        // Auto Login Check
+        window.onload = async function () {
+            // Check Version First
+            const isVersionOk = await checkVersion();
+            if (!isVersionOk) return;
+
+            const savedUserStr = sessionStorage.getItem('jc_user');
+            if (savedUserStr) {
+                try {
+                    const savedUser = JSON.parse(savedUserStr);
+                    initSystem(savedUser);
+                } catch (e) {
+                    sessionStorage.removeItem('jc_user');
+                }
+            }
+        }
+
+        // Toggle Sidebar
+        function toggleSidebar() {
+            const sidebar = document.querySelector('.sidebar');
+            sidebar.classList.toggle('collapsed');
+
+            // Adjust logo visibility logic
+            const isCollapsed = sidebar.classList.contains('collapsed');
+            const logoIcon = document.getElementById('logo-icon');
+            if (logoIcon) {
+                logoIcon.style.display = isCollapsed ? 'block' : 'none';
+            }
+        }
+    </script>
+</body>
+
+</html>

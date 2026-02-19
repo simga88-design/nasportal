@@ -1,0 +1,820 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <title>센터 공지사항</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        /* 1. 디자인 테마 (Professional Blue + Pretendard) */
+        @import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css");
+
+        :root {
+            --primary: #1e3a8a;
+            --secondary: #3b82f6;
+            --danger: #ef4444;
+            --success: #10b981;
+            --background: #f8fafc;
+            --text-main: #1e293b;
+            --text-sub: #64748b;
+            --border: #e2e8f0;
+        }
+
+        body {
+            font-family: "Pretendard Variable", Pretendard, sans-serif;
+            margin: 0;
+            padding: 25px;
+            background: var(--background);
+            color: var(--text-main);
+            height: 100vh;
+            overflow: hidden;
+            /* 스크롤은 container 내부에서 */
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            height: calc(100vh - 50px);
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* 헤더 & 버튼 */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            flex-shrink: 0;
+        }
+
+        .header h2 {
+            margin: 0;
+            font-size: 24px;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 10px 18px;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            transition: 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-family: inherit;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #172554;
+        }
+
+        .btn-outline {
+            background: white;
+            border: 1px solid var(--border);
+            color: var(--text-main);
+        }
+
+        .btn-outline:hover {
+            background: #f1f5f9;
+        }
+
+        .btn-danger {
+            background: var(--danger);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #dc2626;
+        }
+
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 13px;
+        }
+
+        /* 테이블 스타일 */
+        .table-container {
+            flex-grow: 1;
+            overflow-y: auto;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: fixed;
+            /* 고정 레이아웃 */
+        }
+
+        th {
+            background: #f8fafc;
+            padding: 15px;
+            text-align: left;
+            font-size: 14px;
+            color: var(--text-sub);
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        td {
+            padding: 15px;
+            border-bottom: 1px solid var(--border);
+            font-size: 14px;
+            vertical-align: middle;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        tr {
+            transition: background 0.15s;
+        }
+
+        tr:hover {
+            background: #f1f5f9;
+        }
+
+        .row-pinned {
+            background: #fffbeb;
+        }
+
+        .row-pinned:hover {
+            background: #fef3c7;
+        }
+
+        /* 배지 스타일 */
+        .badge {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 700;
+            color: white;
+            display: inline-block;
+            text-align: center;
+            min-width: 50px;
+        }
+
+        .badge-urgent {
+            background: var(--danger);
+        }
+
+        .badge-notice {
+            background: var(--secondary);
+        }
+
+        .badge-event {
+            background: var(--success);
+        }
+
+        .pin-icon {
+            color: #f59e0b;
+            margin-right: 5px;
+        }
+
+        /* 모달 (글쓰기 & 상세보기) */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .modal.show {
+            opacity: 1;
+        }
+
+        .modal-content {
+            background: white;
+            width: 700px;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            max-height: 85vh;
+            display: flex;
+            flex-direction: column;
+            transform: translateY(20px);
+            transition: transform 0.2s;
+        }
+
+        .modal.show .modal-content {
+            transform: translateY(0);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            border-bottom: 2px solid var(--border);
+            padding-bottom: 15px;
+        }
+
+        .modal-header h3 {
+            margin: 0;
+            color: var(--text-main);
+            font-size: 20px;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: var(--text-sub);
+        }
+
+        /* 폼 스타일 */
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            font-size: 14px;
+            color: var(--text-main);
+        }
+
+        input,
+        select,
+        textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-family: inherit;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        input:focus,
+        select:focus,
+        textarea:focus {
+            border-color: var(--primary);
+        }
+
+        textarea {
+            height: 300px;
+            resize: none;
+            line-height: 1.6;
+        }
+
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .checkbox-label input {
+            width: auto;
+            margin: 0;
+        }
+
+        /* 상세보기 스타일 */
+        .view-meta {
+            display: flex;
+            gap: 20px;
+            font-size: 14px;
+            color: var(--text-sub);
+            margin-bottom: 20px;
+            background: #f8fafc;
+            padding: 15px;
+            border-radius: 6px;
+        }
+
+        .view-content {
+            min-height: 200px;
+            line-height: 1.7;
+            font-size: 15px;
+            color: var(--text-main);
+            overflow-y: auto;
+            white-space: pre-wrap;
+        }
+
+        /* Loading Overlay */
+        #loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.8);
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid var(--primary);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin-bottom: 10px;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Loading Overlay -->
+    <div id="loading-overlay">
+        <div class="spinner"></div>
+        <div style="font-weight:600; color:var(--primary);">데이터 불러오는 중...</div>
+    </div>
+
+    <div class="container">
+        <div class="header">
+            <h2><i class="fas fa-bullhorn"></i> 센터 공지사항</h2>
+            <button id="writeBtn" class="btn btn-primary" onclick="openWriteModal()" style="display: none;">
+                <i class="fas fa-pen"></i> 새 공지 작성
+            </button>
+        </div>
+
+        <div class="table-container">
+            <table id="noticeTable">
+                <thead>
+                    <tr>
+                        <th style="width: 80px; text-align: center;">구분</th>
+                        <th>제목</th>
+                        <th style="width: 120px;">작성자</th>
+                        <th style="width: 120px;">날짜</th>
+                        <th style="width: 80px; text-align: center;">조회</th>
+                        <th style="width: 140px; text-align: center;" class="admin-only">관리</th>
+                    </tr>
+                </thead>
+                <tbody id="noticeList"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- WRITING/EDITING MODAL -->
+    <div id="modal-write" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modal-write-title">공지사항 작성</h3>
+                <button class="close-btn" onclick="closeModal('modal-write')">&times;</button>
+            </div>
+            <form id="noticeForm" style="overflow-y: auto; overflow-x: hidden; box-sizing: border-box; padding-right: 10px; display: flex; flex-direction: column; flex-grow: 1;">
+                <div style="display: flex; gap: 15px;">
+                    <div class="form-group" style="width: 150px;">
+                        <label>말머리</label>
+                        <select id="n-type">
+                            <option value="공지">공지</option>
+                            <option value="긴급">긴급</option>
+                            <option value="행사">행사</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>제목</label>
+                    <input type="text" id="n-title" placeholder="제목을 입력하세요" required>
+                </div>
+                <div class="form-group">
+                    <label>내용</label>
+                    <textarea id="n-content" placeholder="내용을 입력하세요" required></textarea>
+                </div>
+                <!-- File Upload Area -->
+                <div class="form-group">
+                    <label>사진/파일 첨부</label>
+                    <div id="drop-zone" style="border: 2px dashed var(--border); border-radius: 6px; padding: 20px; text-align: center; color: var(--text-sub); cursor: pointer; transition: 0.2s; background: #fafafa;">
+                        <i class="fas fa-cloud-upload-alt" style="font-size: 24px; margin-bottom: 10px;"></i>
+                        <div style="font-size: 14px;">클릭하거나 파일을 이곳으로 드래그 앤 드롭하세요.</div>
+                        <input type="file" id="n-file-input" multiple accept="image/*" style="display: none;">
+                    </div>
+                    <div id="file-list" style="margin-top: 10px; display: flex; flex-wrap: wrap; gap: 10px;"></div>
+                </div>
+                <div class="form-group">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="n-isPinned"> 상단 고정 (목록 최상단에 노출됩니다)
+                    </label>
+                </div>
+                <input type="hidden" id="n-id"> <!-- For Edit -->
+
+                <div
+                    style="margin-top: auto; text-align: right; padding-top: 20px; border-top: 1px solid var(--border); position: sticky; bottom: 0; background: white; padding-bottom: 10px;">
+                    <button type="button" class="btn btn-outline" onclick="closeModal('modal-write')">취소</button>
+                    <button type="submit" class="btn btn-primary" id="saveNoticeBtn">저장</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- VIEW MODAL -->
+    <div id="modal-view" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="v-title" style="word-break: break-all; padding-right: 20px;"></h3>
+                <button class="close-btn" onclick="closeModal('modal-view')">&times;</button>
+            </div>
+            <div class="view-meta">
+                <span id="v-type-badge"></span>
+                <span><i class="fas fa-user"></i> <span id="v-author"></span></span>
+                <span><i class="far fa-calendar"></i> <span id="v-date"></span></span>
+                <span><i class="far fa-eye"></i> <span id="v-views"></span></span>
+            </div>
+            
+            <div style="overflow-y: auto; overflow-x: hidden; padding-right: 10px; flex-grow: 1; margin-bottom: 20px;">
+                <div id="v-attachments" style="margin-bottom: 20px; display: flex; flex-direction: column; gap: 10px;"></div>
+                <div id="v-content" class="view-content"></div>
+            </div>
+
+            <div style="margin-top: auto; text-align: right; padding-top: 20px; border-top: 1px solid var(--border);">
+                <button type="button" class="btn btn-primary" onclick="closeModal('modal-view')">닫기</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="../js/config.js"></script>
+    <script src="../js/data_manager.js"></script>
+    <script>
+        // 1. Authentication
+        const userStr = sessionStorage.getItem('jc_user');
+        const user = userStr ? JSON.parse(userStr) : null;
+        // Check Admin or Center Manager or System Admin
+        const isAdmin = user && (['관리자', '센터장', '시스템관리자'].includes(user.role) || user.isSystemAdmin === true);
+
+        // UI Setup
+        if (isAdmin) {
+            document.getElementById('writeBtn').style.display = 'inline-flex';
+        } else {
+            // Hide Admin Columns CSS
+            const style = document.createElement('style');
+            style.innerHTML = `.admin-only {display: none !important; }`;
+            document.head.appendChild(style);
+        }
+
+        let noticeData = [];
+        let uploadedFiles = []; // Array of {name, dataUrl}
+
+        // 2. Load Data (with Local Cache)
+        function loadNotices() {
+            const overlay = document.getElementById('loading-overlay');
+            overlay.style.display = 'flex';
+
+            DataManager.getNotices((json, isCache) => {
+                if (json.result === 'success') {
+                    noticeData = json.list;
+                    renderList();
+                    // If we have data (cache or net), hide overlay immediately
+                    overlay.style.display = 'none';
+                    if (isCache) console.log('Loaded from cache, background updating...');
+                } else {
+                    // Only show error if we don't have cache (first load failed)
+                    if (!isCache && noticeData.length === 0) {
+                        parent.Modal.alert("데이터 로드 실패: " + json.message);
+                        overlay.style.display = 'none';
+                    }
+                }
+            });
+        }
+
+        function renderList() {
+            const list = document.getElementById('noticeList');
+            list.innerHTML = '';
+
+            // Sort: Pinned First -> Date Desc -> Title Asc
+            noticeData.sort((a, b) => {
+                if (a.isPinned !== b.isPinned) return b.isPinned - a.isPinned;
+                return new Date(b.date) - new Date(a.date);
+            });
+
+            if (noticeData.length === 0) {
+                list.innerHTML = '<tr><td colspan="6" style="text-align:center; padding: 50px; color:#999;">등록된 공지사항이 없습니다.</td></tr>';
+                return;
+            }
+
+            noticeData.forEach(n => {
+                const tr = document.createElement('tr');
+                if (n.isPinned) tr.classList.add('row-pinned');
+                tr.onclick = (e) => {
+                    // Prevent click if clicking buttons
+                    if (e.target.closest('button')) return;
+                    openViewModal(n.id);
+                };
+
+                const typeClass = n.type === '긴급' ? 'badge-urgent' : n.type === '행사' ? 'badge-event' : 'badge-notice';
+
+                tr.innerHTML = `
+        <td style="text-align: center;"><span class="badge ${typeClass}">${n.type}</span></td>
+        <td style="font-weight: 500;">
+            ${n.isPinned ? '<i class="fas fa-thumbtack pin-icon"></i>' : ''}
+            ${n.title}
+        </td>
+        <td>${n.author}</td>
+        <td>${n.date}</td>
+        <td style="text-align: center; color:#888;">${n.viewCount || n.views || 0}</td>
+        <td class="admin-only" style="text-align: center;">
+            <button class="btn btn-sm btn-outline" onclick="openWriteModal('${n.id}')">수정</button>
+            <button class="btn btn-sm btn-danger" onclick="deleteNotice('${n.id}')">삭제</button>
+        </td>
+        `;
+                list.appendChild(tr);
+            });
+        }
+
+        // 3. Modals
+        function openModal(id) {
+            const el = document.getElementById(id);
+            el.style.display = 'flex';
+            setTimeout(() => el.classList.add('show'), 10);
+        }
+
+        function closeModal(id) {
+            const el = document.getElementById(id);
+            el.classList.remove('show');
+            setTimeout(() => el.style.display = 'none', 200);
+        }
+
+        // 4. Write / Edit
+        function openWriteModal(id = null) {
+            const form = document.getElementById('noticeForm');
+            uploadedFiles = [];
+            renderFileList();
+
+            if (id) {
+                // Edit
+                const n = noticeData.find(x => x.id === id);
+                document.getElementById('modal-write-title').innerText = "공지사항 수정";
+                document.getElementById('n-type').value = n.type;
+                document.getElementById('n-title').value = n.title;
+                document.getElementById('n-content').value = n.content;
+                document.getElementById('n-isPinned').checked = n.isPinned;
+                document.getElementById('n-id').value = n.id;
+                if (n.files && Array.isArray(n.files)) {
+                    uploadedFiles = [...n.files];
+                    renderFileList();
+                }
+            } else {
+                // New
+                form.reset();
+                document.getElementById('modal-write-title').innerText = "새 공지사항 작성";
+                document.getElementById('n-type').value = '공지';
+                document.getElementById('n-id').value = '';
+            }
+            openModal('modal-write');
+        }
+
+        // File Upload Logic
+        const dropZone = document.getElementById('drop-zone');
+        const fileInput = document.getElementById('n-file-input');
+
+        dropZone.addEventListener('click', () => fileInput.click());
+
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.style.borderColor = 'var(--primary)';
+            dropZone.style.background = '#e0f2fe';
+        });
+
+        dropZone.addEventListener('dragleave', () => {
+            dropZone.style.borderColor = 'var(--border)';
+            dropZone.style.background = '#fafafa';
+        });
+
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.style.borderColor = 'var(--border)';
+            dropZone.style.background = '#fafafa';
+            if (e.dataTransfer.files.length) {
+                handleFiles(e.dataTransfer.files);
+            }
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length) {
+                handleFiles(e.target.files);
+            }
+        });
+
+        function handleFiles(files) {
+            Array.from(files).forEach(file => {
+                if (!file.type.startsWith('image/')) {
+                    parent.Modal.alert("이미지 파일만 업로드 가능합니다.");
+                    return;
+                }
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    // Compress image slightly if needed, or just push dataUrl
+                    const img = new Image();
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        let w = img.width, h = img.height;
+                        if (w > 1200) { h *= 1200 / w; w = 1200; }
+                        canvas.width = w; canvas.height = h;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, w, h);
+                        const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
+                        uploadedFiles.push({ name: file.name, dataUrl });
+                        renderFileList();
+                    };
+                    img.src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            });
+            fileInput.value = ''; // Reset
+        }
+
+        function renderFileList() {
+            const list = document.getElementById('file-list');
+            list.innerHTML = '';
+            uploadedFiles.forEach((f, idx) => {
+                const div = document.createElement('div');
+                div.style.position = 'relative';
+                div.style.width = '100px';
+                div.style.height = '100px';
+                div.style.border = '1px solid var(--border)';
+                div.style.borderRadius = '6px';
+                div.style.overflow = 'hidden';
+
+                const img = document.createElement('img');
+                img.src = f.dataUrl;
+                img.style.width = '100%';
+                img.style.height = '100%';
+                img.style.objectFit = 'cover';
+
+                const btn = document.createElement('button');
+                btn.innerHTML = '&times;';
+                btn.style.position = 'absolute';
+                btn.style.top = '2px';
+                btn.style.right = '2px';
+                btn.style.background = 'rgba(0,0,0,0.5)';
+                btn.style.color = 'white';
+                btn.style.border = 'none';
+                btn.style.borderRadius = '50%';
+                btn.style.width = '20px';
+                btn.style.height = '20px';
+                btn.style.cursor = 'pointer';
+                btn.onclick = (e) => {
+                    e.stopPropagation();
+                    uploadedFiles.splice(idx, 1);
+                    renderFileList();
+                };
+
+                div.appendChild(img);
+                div.appendChild(btn);
+                list.appendChild(div);
+            });
+        }
+
+        document.getElementById('noticeForm').onsubmit = async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('n-id').value;
+            const now = new Date();
+            const today = now.toISOString().split('T')[0];
+
+            const formData = {
+                action: 'save_notice',
+                id: id || '', // If empty will be created by GAS
+                type: document.getElementById('n-type').value,
+                title: document.getElementById('n-title').value,
+                content: document.getElementById('n-content').value,
+                isPinned: document.getElementById('n-isPinned').checked,
+                author: id ? (noticeData.find(x => x.id === id).author) : user.name,
+                files: uploadedFiles
+                // date and views are handled by GAS for new items, kept for edits
+            };
+
+            const btn = document.getElementById('saveNoticeBtn');
+            btn.disabled = true;
+            btn.innerText = "저장 중...";
+
+            try {
+                const res = await fetch(BASE_URL, {
+                    method: 'POST',
+                    body: JSON.stringify(formData)
+                });
+                const json = await res.json();
+
+                if (json.result === 'success') {
+                    closeModal('modal-write');
+                    // Clear cache before loading so it fetches fresh data with files included
+                    localStorage.removeItem(DataManager.CACHE_KEYS.NOTICES);
+                    loadNotices();
+                } else {
+                    parent.Modal.alert("저장 실패: " + json.message);
+                }
+            } catch (e) {
+                console.error(e);
+                parent.Modal.alert("저장 중 오류 발생");
+            } finally {
+                btn.disabled = false;
+                btn.innerText = "저장";
+            }
+        };
+
+        async function deleteNotice(id) {
+            if (await parent.Modal.confirm('정말로 삭제하시겠습니까?')) {
+                try {
+                    const res = await fetch(BASE_URL, {
+                        method: 'POST',
+                        body: JSON.stringify({ action: 'delete_notice', id: id })
+                    });
+                    const json = await res.json();
+                    if (json.result === 'success') loadNotices();
+                    else parent.Modal.alert("삭제 실패: " + json.message);
+                } catch (e) {
+                    parent.Modal.alert("오류 발생");
+                }
+            }
+        }
+
+        // 5. View Details
+        async function openViewModal(id) {
+            const n = noticeData.find(x => x.id === id);
+            if (!n) return;
+
+            // Increment View Count (Fire and forget, or await?)
+            // We want UI to feel fast, but we should update DB.
+            fetch(BASE_URL, {
+                method: 'POST',
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ action: 'increment_notice_view', id: id })
+            }); // Background update
+
+            // Populate Modal
+            document.getElementById('v-title').innerText = n.title;
+            const badgeSpan = document.getElementById('v-type-badge');
+            badgeSpan.className = `badge ${n.type === '긴급' ? 'badge-urgent' : n.type === '행사' ? 'badge-event' : 'badge-notice'}`;
+            badgeSpan.innerText = n.type;
+
+            document.getElementById('v-author').innerText = n.author;
+            document.getElementById('v-date').innerText = n.date;
+            n.viewCount = (n.viewCount || n.views || 0) + 1;
+            document.getElementById('v-views').innerText = n.viewCount;
+            document.getElementById('v-content').innerText = n.content;
+
+            const vAttachments = document.getElementById('v-attachments');
+            vAttachments.innerHTML = '';
+            if (n.files && Array.isArray(n.files) && n.files.length > 0) {
+                n.files.forEach(f => {
+                    const img = document.createElement('img');
+                    img.src = f.dataUrl;
+                    img.style.maxWidth = '70%'; // Reduced by 30%
+                    img.style.height = 'auto';
+                    img.style.objectFit = 'contain';
+                    img.style.border = '1px solid var(--border)';
+                    img.style.borderRadius = '8px';
+                    img.style.cursor = 'pointer';
+                    img.onclick = () => {
+                        // Open full size in new tab/window
+                        const w = window.open();
+                        w.document.write(`<img src="${f.dataUrl}" style="max-width:100%;">`);
+                    };
+                    vAttachments.appendChild(img);
+                });
+            }
+
+            openModal('modal-view');
+            renderList(); // Update table row instantly
+        }
+
+        // Init
+        window.onload = loadNotices;
+    </script>
+</body>
+
+</html>

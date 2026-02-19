@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <title>공문서 채번 및 수발대장</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        /* 기본 스타일 (Pretendard 적용) */
+        body {
+            font-family: 'Pretendard', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f1f5f9;
+            color: #334155;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        }
+
+        /* 탭 메뉴 */
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 25px;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        .tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            font-weight: bold;
+            border-radius: 8px 8px 0 0;
+            color: #64748b;
+        }
+
+        .tab.active {
+            background: #1e3a8a;
+            color: white;
+        }
+
+        /* 섹션 제어 */
+        .section {
+            display: none;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        /* 폼 스타일 */
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 5px;
+            font-size: 0.9em;
+        }
+
+        input,
+        select,
+        textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            box-sizing: border-box;
+        }
+
+        .btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.2s;
+        }
+
+        .btn-blue {
+            background: #1e3a8a;
+            color: white;
+            width: 100%;
+        }
+
+        .btn-blue:hover {
+            background: #172554;
+        }
+
+        /* 결과 창 (채번 완료 시) */
+        #resultBox {
+            margin-top: 20px;
+            padding: 20px;
+            background: #f0fdf4;
+            border: 1px dashed #22c55e;
+            border-radius: 8px;
+            text-align: center;
+            display: none;
+        }
+
+        #docNumberResult {
+            font-size: 1.8em;
+            font-weight: bold;
+            color: #166534;
+            display: block;
+            margin: 10px 0;
+        }
+
+        /* 미발송 목록 테이블 */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+            font-size: 0.9em;
+        }
+
+        th {
+            background: #f8fafc;
+            padding: 12px;
+            border-bottom: 2px solid #e2e8f0;
+            text-align: left;
+        }
+
+        td {
+            padding: 12px;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .badge-red {
+            background: #fee2e2;
+            color: #ef4444;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <div class="tabs">
+            <div class="tab active" onclick="switchTab('issue')">번호 발행 (기안)</div>
+            <div class="tab" onclick="switchTab('pending'); getPendingList();">미발송 목록 확인</div>
+            <div class="tab" onclick="switchTab('fix')">수정 요청</div>
+        </div>
+
+        <div id="section-issue" class="section active">
+            <div class="form-group">
+                <label>문서 구분 (시트명)</label>
+                <select id="docType">
+                    <option value="제정공">제정공 (일반공문)</option>
+                    <option value="제정내">제정내 (내부결재)</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>문서 제목</label>
+                <input type="text" id="title" placeholder="공문 제목을 입력하세요">
+            </div>
+            <div class="form-group">
+                <label>수신처 (또는 구분)</label>
+                <input type="text" id="target" placeholder="예: 제천시청">
+            </div>
+            <div class="form-group">
+                <label>기안자 (본인)</label>
+                <input type="text" id="sender" readonly>
+            </div>
+            <button class="btn btn-blue" onclick="issueNumber()">채번하기 (번호 생성)</button>
+
+            <div id="resultBox">
+                <span>✅ 채번이 완료되었습니다!</span>
+                <span id="docNumberResult"></span>
+                <small>구글 시트 '문서수발대장'에 기록되었습니다.</small>
+            </div>
+        </div>
+
+        <div id="section-pending" class="section">
+            <h3><i class="fas fa-clock"></i> 아직 발송일이 등록되지 않은 문서</h3>
+            <p><small>번호만 따고 발송 처리를 안 한 목록입니다. 실제 발송 후 시트에서 날짜를 입력해주세요.</small></p>
+            <table>
+                <thead>
+                    <tr>
+                        <th>기안일</th>
+                        <th>문서번호</th>
+                        <th>제목</th>
+                        <th>기안자</th>
+                    </tr>
+                </thead>
+                <tbody id="pendingListBody"></tbody>
+            </table>
+        </div>
+
+        <div id="section-fix" class="section">
+            <div class="form-group">
+                <label>수정할 문서 번호</label>
+                <input type="text" id="fixDocNumber" placeholder="예: 제정공-123">
+            </div>
+            <div class="form-group">
+                <label>수정 요청 내용</label>
+                <textarea id="fixContent" placeholder="오타 수정 등 요청사항을 적어주세요"></textarea>
+            </div>
+            <button class="btn btn-blue" onclick="sendFixRequest()">수정 요청 접수</button>
+        </div>
+    </div>
+
+    <script>
+        const GAS_URL = "https://script.google.com/macros/s/AKfycby_8AyKCeZFUYmNc0o-u0SrQuzPvG45Vm3yZNS7nFtK7sHW_n8Swci4vXOn5GmxSaE/exec";
+
+        // 1. 로그인 정보 가져오기
+        const user = JSON.parse(sessionStorage.getItem('jc_user'));
+        if (user) document.getElementById('sender').value = user.name;
+
+        // 탭 전환
+        function switchTab(target) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            event.currentTarget.classList.add('active');
+            document.getElementById('section-' + target).classList.add('active');
+        }
+
+        // [기능 1] 번호 발행 (issue)
+        async function issueNumber() {
+            const payload = {
+                action: "issue",
+                docType: document.getElementById('docType').value,
+                title: document.getElementById('title').value,
+                target: document.getElementById('target').value,
+                sender: document.getElementById('sender').value
+            };
+
+            if (!payload.title || !payload.target) return alert("제목과 수신처를 입력하세요.");
+
+            const response = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) });
+            const res = await response.json();
+
+            if (res.result === "success") {
+                document.getElementById('resultBox').style.display = 'block';
+                document.getElementById('docNumberResult').innerText = res.data.message;
+            }
+        }
+
+        // [기능 4] 미발송 목록 가져오기 (get_pending_list)
+        async function getPendingList() {
+            const response = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: "get_pending_list" }) });
+            const res = await response.json();
+
+            if (res.result === "success") {
+                const list = res.data.list;
+                const tbody = document.getElementById('pendingListBody');
+                tbody.innerHTML = list.map(item => `
+                <tr>
+                    <td>${item.date}</td>
+                    <td><span class="badge-red">${item.docNum}</span></td>
+                    <td>${item.title}</td>
+                    <td>${item.sender}</td>
+                </tr>
+            `).join('');
+            }
+        }
+
+        // [기능 5] 수정 요청 (fix_request)
+        async function sendFixRequest() {
+            const payload = {
+                action: "fix_request",
+                docNumber: document.getElementById('fixDocNumber').value,
+                content: document.getElementById('fixContent').value,
+                requester: user.name
+            };
+
+            const response = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) });
+            const res = await response.json();
+            if (res.result === "success") alert("수정 요청이 접수되었습니다.");
+        }
+    </script>
+</body>
+
+</html>

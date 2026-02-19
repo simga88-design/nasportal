@@ -1,0 +1,905 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <title>스마트 조직도</title>
+    <!-- html2canvas for image export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #1e3a8a;
+            --primary-light: #eff6ff;
+            --secondary: #3b82f6;
+            --bg-color: #f8fafc;
+            --card-bg: rgba(255, 255, 255, 0.9);
+            --border: #e2e8f0;
+            --text-main: #1e293b;
+            --text-sub: #64748b;
+            --line-color: #94a3b8;
+            /* Darker, more solid line */
+            --line-thickness: 2px;
+        }
+
+        body {
+            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+        }
+
+        /* Utility Bar */
+        .utility-bar {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            margin-bottom: 20px;
+            gap: 12px;
+        }
+
+        .btn {
+            padding: 10px 18px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-outline {
+            background-color: white;
+            color: var(--text-main);
+            border: 1px solid var(--border);
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+            box-shadow: 0 4px 6px rgba(30, 58, 138, 0.2);
+        }
+
+        .btn-zoom {
+            background-color: var(--secondary);
+            color: white;
+            box-shadow: 0 4px 6px rgba(59, 130, 246, 0.2);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Org Chart Canvas Area */
+        #org-canvas {
+            background-color: transparent;
+            padding: 40px 20px;
+            border-radius: 16px;
+            overflow-x: auto;
+            min-height: 600px;
+            position: relative;
+        }
+
+        /* Tree Structure Styles */
+        .tree {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .tree ul {
+            padding-top: 15px;
+            /* compact */
+            position: relative;
+            transition: all 0.5s;
+            display: flex;
+            justify-content: center;
+            padding-left: 0;
+            margin: 0;
+            list-style-type: none;
+        }
+        
+        /* New explicit grid for teams to guarantee identical column widths */
+        .tree ul.team-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
+            grid-auto-flow: column;
+            grid-auto-columns: 1fr;
+            justify-content: center;
+            /* Override flex behavior from .tree ul */
+        }
+
+        .tree li {
+            float: left;
+            text-align: center;
+            list-style-type: none;
+            position: relative;
+            padding: 15px 5px 0 5px;
+            /* normal compact spacing for individual members */
+            transition: all 0.5s;
+        }
+
+        .tree li.team-cluster {
+            padding: 15px 40px 0 40px;
+            /* widened spacing for teams */
+        }
+
+        /* Connector Lines */
+        .tree li::before,
+        .tree li::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 50%;
+            border-top: var(--line-thickness) solid var(--line-color);
+            width: 50%;
+            height: 15px;
+            /* compact */
+            box-sizing: border-box;
+            display: block;
+        }
+
+        .tree li::after {
+            right: auto;
+            left: 50%;
+            margin-left: -1px;
+            border-left: var(--line-thickness) solid var(--line-color);
+            box-sizing: border-box;
+            display: block;
+        }
+
+        /* Remove left-right connectors from elements without siblings */
+        .tree li:only-child::after,
+        .tree li:only-child::before {
+            display: none;
+        }
+
+        /* Remove space from the top of single children */
+        .tree li:only-child {
+            padding-top: 0;
+        }
+
+        /* Remove left connector from first child and right connector from last child */
+        .tree li:first-child::before,
+        .tree li:last-child::after {
+            border: 0 none;
+        }
+
+        /* Adding back the vertical connector to the last nodes */
+        .tree li:last-child::before {
+            border-right: var(--line-thickness) solid var(--line-color);
+            margin-right: -1px;
+        }
+
+        .tree li:first-child::after {
+            border-radius: 0;
+        }
+
+        /* Downward connectors from parents */
+        .tree ul ul::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 50%;
+            border-left: var(--line-thickness) solid var(--line-color);
+            width: 0;
+            height: 15px;
+            /* compact */
+            margin-left: -1px;
+            box-sizing: border-box;
+            display: block;
+        }
+
+        /* Strict Vertical List for Subordinates */
+        .vertical-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding-top: 15px;
+            /* compact */
+            position: relative;
+        }
+
+        /* The downward line from the parent node to the first child in vertical list */
+        .vertical-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 50%;
+            border-left: var(--line-thickness) solid var(--line-color);
+            width: 0;
+            height: 15px;
+            /* compact */
+            margin-left: -1px;
+            box-sizing: border-box;
+            display: block;
+        }
+
+        .vertical-node {
+            position: relative;
+            padding-bottom: 12px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* Line connecting this node to the next one below it */
+        .vertical-node:not(:last-child)::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            border-left: var(--line-thickness) solid var(--line-color);
+            width: 0;
+            height: 12px;
+            margin-left: -1px;
+            box-sizing: border-box;
+            display: block;
+        }
+
+        /* Node Cards */
+        .node-card {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 1) 0%, rgba(248, 250, 252, 1) 100%);
+            border: 1px solid var(--border);
+            padding: 6px 8px;
+            /* extremly small padding */
+            min-width: 80px;
+            /* extreme narrow */
+            border-radius: 8px;
+            display: inline-flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.04);
+            transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
+            text-decoration: none;
+            z-index: 2;
+        }
+
+        .node-card:hover {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.08);
+            border-color: var(--secondary);
+            z-index: 10;
+        }
+
+        /* Hierarchy Colors */
+        .rank-0,
+        .rank-1 {
+            /* Center Director / Vice Director */
+            border-top: 4px solid var(--primary);
+            background: linear-gradient(to bottom, #ffffff, #e0e7ff);
+        }
+
+        .rank-2,
+        .rank-3 {
+            /* Standing TM / TM */
+            border-top: 4px solid var(--secondary);
+            background: linear-gradient(to bottom, #ffffff, #eff6ff);
+        }
+
+        .rank-4,
+        .rank-5 {
+            /* Juim / Member */
+            border-top: 3px solid #10b981;
+            /* Green */
+            background: linear-gradient(to bottom, #ffffff, #ecfdf5);
+        }
+
+        /* Card Elements */
+        .avatar {
+            width: 32px;
+            /* reduced */
+            height: 32px;
+            /* reduced */
+            border-radius: 50%;
+            background: #e2e8f0;
+            color: #94a3b8;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            /* reduced */
+            margin-bottom: 6px;
+            border: 2px solid white;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+            position: relative;
+        }
+
+        .avatar img {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .position {
+            font-size: 10px;
+            /* reduced */
+            color: var(--secondary);
+            font-weight: 700;
+            margin-bottom: 2px;
+            letter-spacing: 0.2px;
+        }
+
+        .name {
+            font-size: 13px;
+            /* reduced */
+            font-weight: 800;
+            color: var(--text-main);
+            margin-bottom: 4px;
+        }
+
+        .department {
+            font-size: 9px;
+            /* reduced */
+            background: #f1f5f9;
+            color: var(--text-sub);
+            padding: 2px 6px;
+            border-radius: 8px;
+            font-weight: 600;
+            margin-bottom: 2px;
+        }
+
+        /* Loading State */
+        .loading-view {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 400px;
+            color: var(--text-sub);
+        }
+
+        /* Team Cluster wrapper (optional visually grouping) */
+        .team-cluster {
+            position: relative;
+            margin-top: 10px;
+        }
+
+        .team-title-label {
+            position: absolute;
+            top: -20px;
+            /* adjusted for larger font */
+            left: 50%;
+            transform: translateX(-50%);
+            background: white;
+            padding: 4px 12px;
+            /* adjusted for larger font */
+            border-radius: 12px;
+            font-size: 15px;
+            /* 50% larger */
+            font-weight: bold;
+            color: var(--text-sub);
+            border: 1px solid var(--border);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+            z-index: 3;
+            white-space: nowrap;
+        }
+
+        /* For Print Mode */
+        @media print {
+            @page {
+                size: A4 landscape;
+                margin: 5mm;
+            }
+
+            body {
+                background: white;
+                padding: 0;
+            }
+
+            .utility-bar {
+                display: none;
+            }
+
+            #org-canvas {
+                padding: 0;
+                min-height: auto;
+                transform: scale(0.9);
+                transform-origin: top center;
+            }
+
+            .node-card {
+                box-shadow: none !important;
+                border: 1px solid #cbd5e1 !important;
+            }
+
+            /* Make sure background colors print */
+            * {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+        }
+
+        /* Zoom Controls Wrapper */
+        #zoom-wrapper {
+            width: 100%;
+            height: 100%;
+            transform-origin: top center;
+            transition: transform 0.3s ease;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="utility-bar">
+        <div style="display: flex; align-items: center; gap: 10px; background: white; padding: 6px 15px; border-radius: 8px; border: 1px solid var(--border); box-shadow: 0 1px 2px rgba(0,0,0,0.05); margin-right: auto;">
+            <i class="fas fa-search-minus" style="color: var(--text-sub); cursor: pointer;" onclick="document.getElementById('zoomRange').value = Math.max(0.3, parseFloat(document.getElementById('zoomRange').value) - 0.1); applyZoom();"></i>
+            <input type="range" id="zoomRange" min="0.3" max="1.5" step="0.1" value="1" oninput="applyZoom()" style="width: 100px; accent-color: var(--secondary);">
+            <i class="fas fa-search-plus" style="color: var(--text-sub); cursor: pointer;" onclick="document.getElementById('zoomRange').value = Math.min(1.5, parseFloat(document.getElementById('zoomRange').value) + 0.1); applyZoom();"></i>
+            <span id="zoomLabel" style="font-size: 13px; font-weight: bold; width: 45px; text-align: center;">100%</span>
+            <button class="btn btn-outline" style="padding: 4px 8px; font-size: 11px;" onclick="resetZoom()">초기화</button>
+        </div>
+        
+        <!-- html2canvas trigger -->
+        <button class="btn btn-outline" onclick="saveAsImage()">
+            <i class="fas fa-file-image"></i> 이미지로 저장
+        </button>
+        <!-- Print trigger -->
+        <button class="btn btn-primary" onclick="window.print()">
+            <i class="fas fa-print"></i> 인쇄하기
+        </button>
+    </div>
+
+    <!-- The area that will be converted to image -->
+    <div id="org-canvas">
+        <div id="zoom-wrapper">
+            <div class="loading-view" id="loading-spinner">
+                <i class="fas fa-circle-notch fa-spin fa-3x" style="margin-bottom: 20px; color: var(--secondary);"></i>
+                <h3>조직도를 구성하는 중입니다...</h3>
+            </div>
+
+            <!-- Generated Tree goes here -->
+            <div class="tree" id="tree-container" style="display: none;"></div>
+        </div>
+    </div>
+
+    <!-- Core Scripts -->
+    <script src="../js/config.js"></script>
+    <script src="../js/data_manager.js"></script>
+    <script>
+        if (window.module) module = window.module;
+    </script>
+
+    <script>
+        // Organization Hierarchy Defines
+        // Rank scores: lower is higher up in the chart
+        const positionRank = {
+            '센터장': 0,
+            '부센터장': 1,
+            '상임팀장': 2,
+            '팀장': 3,
+            '주임': 4,
+            '팀원': 5
+        };
+
+        let rawMembers = [];
+        let rawTeams = [];
+
+        window.onload = function () {
+            loadOrganizationData();
+        };
+
+        function loadOrganizationData() {
+            let membersLoaded = false;
+            let teamsLoaded = false;
+
+            DataManager.getMembers((json) => {
+                if (json.result === 'success') {
+                    // Filter out Inactive
+                    rawMembers = json.list.filter(m => m.status === 'Active');
+                }
+                membersLoaded = true;
+                checkAndRender(membersLoaded, teamsLoaded);
+            });
+
+            DataManager.getTeams((json) => {
+                if (json.result === 'success') {
+                    rawTeams = json.list;
+                }
+                teamsLoaded = true;
+                checkAndRender(membersLoaded, teamsLoaded);
+            });
+        }
+
+        function checkAndRender(mLoaded, tLoaded) {
+            if (mLoaded && tLoaded) {
+                renderOrgChart();
+            }
+        }
+
+        // --- Core Parsing & Sorting Logic ---
+        function getRank(member) {
+            const pos = member.position || member.role || '';
+            if (positionRank[pos] !== undefined) return positionRank[pos];
+            return 99; // Default for parsed/unknown roles
+        }
+
+        const palette = [
+            { border: '#3b82f6', bg: '#eff6ff' }, // Blue
+            { border: '#10b981', bg: '#ecfdf5' }, // Green
+            { border: '#f59e0b', bg: '#fffbeb' }, // Amber
+            { border: '#8b5cf6', bg: '#f5f3ff' }, // Purple
+            { border: '#ec4899', bg: '#fdf2f8' }, // Pink
+            { border: '#14b8a6', bg: '#f0fdfa' }, // Teal
+            { border: '#f97316', bg: '#fff7ed' }, // Orange
+            { border: '#6366f1', bg: '#eef2ff' }, // Indigo
+        ];
+        
+        const teamColorMap = {};
+        let colorIndex = 0;
+
+        function getTeamColor(teamName) {
+            if (!teamName || teamName === '본부' || teamName === '없음') return null;
+            if (teamColorMap[teamName]) return teamColorMap[teamName];
+            
+            const c = palette[colorIndex % palette.length];
+            teamColorMap[teamName] = c;
+            colorIndex++;
+            return c;
+        }
+
+        // Sort by Rank ASC, then JoinDate ASC (oldest first)
+        function sortMembers(list) {
+            return list.sort((a, b) => {
+                const rankDiff = getRank(a) - getRank(b);
+                if (rankDiff !== 0) return rankDiff;
+
+                // Sort by join date (Ascending / oldest first) if rank is the same
+                const jd_A = a.join_date || a.joinDate;
+                const jd_B = b.join_date || b.joinDate;
+                const dateA = jd_A ? new Date(jd_A).getTime() : Infinity;
+                const dateB = jd_B ? new Date(jd_B).getTime() : Infinity;
+                return dateA - dateB;
+            });
+        }
+
+        function buildHierarchy() {
+            // 1. Identify "본부" (Headquarters - Directors and explicit HQ members)
+            const hqMembers = rawMembers.filter(m => {
+                const pos = m.position || m.role || '';
+                const isHighLevel = ['센터장', '부센터장', '상임팀장'].includes(pos);
+                let mTeam = m.team || '';
+                if (typeof mTeam === 'object' && mTeam !== null) mTeam = mTeam.name;
+
+                const hasNoSpecificTeam = !mTeam || mTeam === '없음' || mTeam === pos;
+                // Include if they are high-level with no team, OR explicitly assigned to 본부
+                return (isHighLevel && hasNoSpecificTeam) || mTeam === '본부';
+            });
+
+            // Remove HQ members from general processing
+            const hqIds = hqMembers.map(m => m.id);
+            const remainingMembers = rawMembers.filter(m => !hqIds.includes(m.id));
+
+            sortMembers(hqMembers);
+
+            // 2. Group Remaining by Team
+            const teamGroups = {};
+            const teamNames = new Set(remainingMembers.map(m => {
+                let tName = m.team;
+                if (typeof tName === 'object' && tName !== null) tName = tName.name;
+                return tName || '기타';
+            }));
+
+            // Include explicitly defined teams from DB even if empty
+            rawTeams.forEach(t => teamNames.add(t.name));
+
+            teamNames.forEach(tName => {
+                if (tName === '없음' || tName === '본부') return;
+
+                const membersInTeam = remainingMembers.filter(m => {
+                    let mTeam = m.team;
+                    if (typeof mTeam === 'object' && mTeam !== null) mTeam = mTeam.name;
+
+                    // Special case: if the member is a Team Leader and their team name is just "팀장" 
+                    // we need to guess which team they belong to or they will be isolated to a "팀장" branch.
+                    if ((mTeam === '팀장' || mTeam === m.role) && m.role === '팀장') {
+                        // Keep them in their own '팀장' fallback category
+                        return tName === '팀장';
+                    }
+
+                    return (mTeam || '기타') === tName;
+                });
+
+                if (membersInTeam.length > 0) {
+                    teamGroups[tName] = sortMembers(membersInTeam);
+                }
+            });
+
+            return {
+                hq: hqMembers,
+                teams: teamGroups
+            };
+        }
+
+        // --- HTML Generation Logic ---
+        function createNodeHTML(member, teamColor) {
+            const rank = getRank(member);
+            const posLabel = member.position || member.role || '직위없음';
+
+            // Avatar Handling
+            let avatarHtml = `<i class="fas fa-user"></i>`;
+            if (member.avatar) {
+                avatarHtml = `<img src="${member.avatar}" alt="profile" onerror="this.outerHTML='<i class=\\'fas fa-user\\'></i>'">`;
+            }
+
+            let inlineStyle = '';
+            if (teamColor && rank >= 2) { 
+                inlineStyle = `border-top: 3px solid ${teamColor.border}; background: linear-gradient(to bottom, #ffffff, ${teamColor.bg});`;
+            }
+
+            return `
+                <div class="node-card rank-${rank}" style="${inlineStyle}">
+                    <div class="avatar">${avatarHtml}</div>
+                    <div class="position">${posLabel}</div>
+                    <div class="name" style="margin-bottom:0px;">${member.name}</div>
+                </div>
+            `;
+        }
+
+        function buildTeamSubTreeHTML(teamMembers, tName) {
+            if (!teamMembers || teamMembers.length === 0) return '';
+            
+            const color = getTeamColor(tName);
+
+            const managers = teamMembers.filter(m => getRank(m) < 5);
+            let members = teamMembers.filter(m => getRank(m) >= 5);
+
+            if (managers.length === 0 && members.length > 0) {
+                managers.push(members.shift());
+            }
+
+            const leader = managers.shift();
+
+            let html = `<li>`;
+            html += createNodeHTML(leader, color);
+
+            if (managers.length > 0) {
+                html += `<div class="vertical-container">`;
+                managers.forEach((mgr, idx) => {
+                    html += `<div class="vertical-node">`;
+                    html += createNodeHTML(mgr, color);
+                    if (idx === managers.length - 1 && members.length > 0) {
+                        html += buildMembersTwoColumns(members, color);
+                    }
+                    html += `</div>`;
+                });
+                html += `</div>`;
+            } else if (members.length > 0) {
+                html += buildMembersTwoColumns(members, color);
+            }
+
+            html += `</li>`;
+            return html;
+        }
+
+        function buildMembersTwoColumns(members, color) {
+            if (!members || members.length === 0) return "";
+            
+            const col1 = [];
+            const col2 = [];
+            members.forEach((m, idx) => {
+                if (idx % 2 === 0) col1.push(m);
+                else col2.push(m);
+            });
+
+            let html = `<ul>`;
+            if (col1.length > 0) {
+                html += `<li><div style="display: flex; flex-direction: column; align-items: center;">`;
+                col1.forEach(sub => {
+                    html += `<div class="vertical-node">${createNodeHTML(sub, color)}</div>`;
+                });
+                html += `</div></li>`;
+            }
+            if (col2.length > 0) {
+                html += `<li><div style="display: flex; flex-direction: column; align-items: center;">`;
+                col2.forEach(sub => {
+                    html += `<div class="vertical-node">${createNodeHTML(sub, color)}</div>`;
+                });
+                html += `</div></li>`;
+            }
+            html += `</ul>`;
+            return html;
+        }
+
+        function renderOrgChart() {
+            const container = document.getElementById('tree-container');
+            const spinner = document.getElementById('loading-spinner');
+
+            const hierarchy = buildHierarchy();
+
+            if (hierarchy.hq.length === 0 && Object.keys(hierarchy.teams).length === 0) {
+                spinner.innerHTML = "<h3>조직도 데이터가 없습니다.</h3><p>직원 데이터를 확인해주세요.</p>";
+                return;
+            }
+
+            const preferredOrder = ['정신건강복지팀', '자살예방팀', '행정팀'];
+            const sortedTeamNames = Object.keys(hierarchy.teams).sort((a, b) => {
+                let idxA = preferredOrder.indexOf(a);
+                let idxB = preferredOrder.indexOf(b);
+                if (idxA === -1) idxA = 99;
+                if (idxB === -1) idxB = 99;
+                return idxA - idxB;
+            });
+
+            let html = `<ul>`;
+
+            // Top Level (Center Director)
+            const director = hierarchy.hq.find(m => m.position === '센터장') || hierarchy.hq[0];
+            const otherHq = hierarchy.hq.filter(m => m !== director);
+
+            if (director) {
+                html += `<li>`;
+                html += createNodeHTML(director);
+
+                // Build Sub-Level (Vice Directors, Standing TMs directly bridging the teams)
+                let hasChildren = otherHq.length > 0 || Object.keys(hierarchy.teams).length > 0;
+
+                if (hasChildren) {
+                    html += `<ul>`;
+
+                        // If we have an HQ leader (like 이용복 팀장), they become the bridge
+                    if (otherHq.length > 0) {
+                        html += `<li>`;
+                        // Stack multiple HQ leaders horizontally
+                        if (otherHq.length > 1) {
+                            html += `<div style="display:flex; justify-content:center; gap:20px;">`;
+                            otherHq.forEach(sub => {
+                                html += `<div>${createNodeHTML(sub)}</div>`;
+                            });
+                            html += `</div>`;
+                        } else {
+                            html += createNodeHTML(otherHq[0]);
+                        }
+
+                        // Render Teams UNDER the HQ Leader
+                        if (Object.keys(hierarchy.teams).length > 0) {
+                            html += `<ul class="team-grid">`;
+                            sortedTeamNames.forEach(tName => {
+                                const teamMembers = hierarchy.teams[tName];
+                                if (teamMembers.length > 0) {
+                                    // Surround team with a labeling wrapper
+                                    html += `<li class="team-cluster">
+                                                <div class="team-title-label">${tName}</div>
+                                                <ul>${buildTeamSubTreeHTML(teamMembers, tName)}</ul>
+                                             </li>`;
+                                }
+                            });
+                            html += `</ul>`;
+                        }
+                        html += `</li>`;
+                    } else {
+                        // If no HQ Team Leader, teams branch directly from Director
+                        sortedTeamNames.forEach(tName => {
+                            const teamMembers = hierarchy.teams[tName];
+                            if (teamMembers.length > 0) {
+                                // Surround team with a labeling wrapper
+                                html += `<li class="team-cluster">
+                                            <div class="team-title-label">${tName}</div>
+                                            <ul>${buildTeamSubTreeHTML(teamMembers, tName)}</ul>
+                                         </li>`;
+                            }
+                        });
+                    }
+
+                    html += `</ul>`;
+                }
+
+                html += `</li>`;
+            } else {
+                // Failsafe if no HQ is found, just dump teams side by side
+                html += `<ul class="team-grid">`;
+                sortedTeamNames.forEach(tName => {
+                    const teamMembers = hierarchy.teams[tName];
+                    html += `<li class="team-cluster">
+                                <div class="team-title-label">${tName}</div>
+                                <ul>${buildTeamSubTreeHTML(teamMembers, tName)}</ul>
+                             </li>`;
+                });
+                html += `</ul>`;
+            }
+
+            html += `</ul>`;
+
+            container.innerHTML = html;
+            spinner.style.display = 'none';
+            container.style.display = 'flex';
+        }
+
+        // --- Zoom Logic ---
+        let currentScale = 1;
+        
+        function applyZoom() {
+            const range = document.getElementById('zoomRange');
+            const wrapper = document.getElementById('zoom-wrapper');
+            if (range && wrapper) {
+                currentScale = parseFloat(range.value);
+                wrapper.style.transform = `scale(${currentScale})`;
+                document.getElementById('zoomLabel').innerText = Math.round(currentScale * 100) + '%';
+                
+                // Adjust height of container so it doesn't leave huge empty gaps
+                const container = document.getElementById('tree-container');
+                if (container) {
+                    const treeHeight = container.scrollHeight;
+                    wrapper.style.height = `${treeHeight * currentScale}px`;
+                }
+            }
+        }
+
+        function resetZoom() {
+            const range = document.getElementById('zoomRange');
+            if (range) {
+                range.value = 1;
+                applyZoom();
+            }
+        }
+
+        // --- Export Functions ---
+        function saveAsImage() {
+            const tgt = document.getElementById('org-canvas');
+            const btn = document.querySelector('.btn-outline');
+            const originalHtml = btn.innerHTML;
+
+            btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> 생성 중...`;
+            btn.disabled = true;
+
+            // Scroll to 0 so html2canvas captures everything properly
+            const oldScroll = window.scrollY;
+            window.scrollTo(0, 0);
+
+            // Temporarily remove zoom for full resolution export
+            const wrapper = document.getElementById('zoom-wrapper');
+            const oldScale = currentScale;
+            wrapper.style.transition = 'none'; // Disable transition so layout settles instantly
+            wrapper.style.transform = `scale(1)`;
+            wrapper.style.height = '100%';
+
+            // Wait for DOM to reflow fully before taking the picture
+            setTimeout(() => {
+                // html2canvas config
+                html2canvas(tgt, {
+                    scale: 2, // High resolution
+                    backgroundColor: '#f8fafc',
+                    logging: false,
+                    useCORS: true, // Allow avatars
+                    onclone: function(clonedDoc) {
+                        const clonedWrapper = clonedDoc.getElementById('org-canvas');
+                        if(clonedWrapper) clonedWrapper.style.overflow = 'visible';
+                    }
+                }).then(canvas => {
+                    const link = document.createElement('a');
+                    link.download = `조직도_${new Date().toISOString().slice(0, 10)}.png`;
+                    link.href = canvas.toDataURL('image/png');
+                    link.click();
+    
+                    btn.innerHTML = originalHtml;
+                    btn.disabled = false;
+                    window.scrollTo(0, oldScroll);
+    
+                    // Restore zoom & transition
+                    wrapper.style.transition = '';
+                    if (oldScale !== 1) {
+                        document.getElementById('zoomRange').value = oldScale;
+                        applyZoom();
+                    }
+                }).catch(err => {
+                    console.error(err);
+                    alert("이미지 생성 중 오류가 발생했습니다.");
+                    btn.innerHTML = originalHtml;
+                    btn.disabled = false;
+                    wrapper.style.transition = '';
+                });
+            }, 300); // 300ms wait ensures all line repaints and reflows are done
+        }
+    </script>
+</body>
+
+</html>

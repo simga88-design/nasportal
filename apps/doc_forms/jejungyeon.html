@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <title>연계의뢰서 폼</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg: #fff;
+            --border: #dcdfe6;
+            --primary: #3b82f6;
+            --text: #1f2937;
+        }
+
+        body {
+            margin: 0;
+            padding: 15px 20px 30px;
+            font-family: 'Noto Sans KR', sans-serif;
+            color: var(--text);
+            background: var(--bg);
+            box-sizing: border-box;
+        }
+
+        .input-group {
+            margin-bottom: 18px;
+            /* 가독성을 위한 간격 넓힘 */
+        }
+
+        .input-group label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+            color: #4b5563;
+        }
+
+        .input-group input[type="text"],
+        .input-group select,
+        .input-group textarea {
+            width: 100%;
+            padding: 8px 10px;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            font-size: 0.9rem;
+            box-sizing: border-box;
+            outline: none;
+        }
+
+        .input-group input:focus,
+        .input-group select:focus,
+        .input-group textarea:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+        }
+
+        .row {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-issue {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        .btn-issue:hover {
+            background: #2563eb;
+        }
+
+        .check-opts label {
+            font-weight: 400;
+            font-size: 13px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            margin-right: 10px;
+        }
+
+        .check-opts input {
+            margin-right: 4px;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="form-content">
+        <h2 style="margin-top:0; color:#333; font-size:18px;">📝 연계·의뢰서 작성</h2>
+
+        <div class="row">
+            <div class="input-group" style="flex:1">
+                <label>발신처</label>
+                <input type="text" id="sender" value="제천시정신건강복지센터">
+            </div>
+            <div class="input-group" style="flex:1">
+                <label>문서번호 (제정연-)</label>
+                <div style="display:flex; gap:5px;">
+                    <input type="text" id="docNum" placeholder="예: 55">
+                    <button class="btn-issue" id="btnReq" onclick="requestNumber()">채번</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="input-group">
+            <label>수신처 (수신기관)</label>
+            <input type="text" id="receiver" placeholder="수신 기관명">
+        </div>
+
+        <hr style="border:0; border-top:1px solid #eee; margin:15px 0;">
+
+        <div class="row">
+            <div class="input-group" style="flex:1"><label>의뢰대상 이름</label><input type="text" id="name"></div>
+            <div class="input-group" style="flex:1"><label>성별</label><select id="gender">
+                    <option value="남">남</option>
+                    <option value="여">여</option>
+                </select></div>
+        </div>
+
+        <div class="row">
+            <div class="input-group" style="flex:1"><label>나이</label><input type="text" id="age" placeholder="예: OO세">
+            </div>
+            <div class="input-group" style="flex:1"><label>연락처</label><input type="text" id="contact"
+                    placeholder="예: 010-0000-0000"></div>
+        </div>
+
+        <div class="input-group"><label>주소</label><input type="text" id="address" placeholder="거주지 상세 주소"></div>
+
+        <div class="row">
+            <div class="input-group" style="flex:1"><label>보호자 이름</label><input type="text" id="guardian"></div>
+            <div class="input-group" style="flex:1"><label>보호자와의 관계</label><input type="text" id="guardian_rel"></div>
+        </div>
+
+        <div class="input-group">
+            <label>의료보장</label>
+            <div class="check-opts">
+                <label><input type="radio" name="insurance" value="건강보험" checked> 건강보험</label>
+                <label><input type="radio" name="insurance" value="의료급여1종"> 의료급여 1종</label>
+                <label><input type="radio" name="insurance" value="의료급여2종"> 의료급여 2종</label>
+                <label><input type="radio" name="insurance" value="기타"> 기타</label>
+            </div>
+        </div>
+
+        <div class="input-group">
+            <label>의뢰사유 (체크박스)</label>
+            <div class="check-opts" id="refTypes">
+                <label><input type="checkbox" value="정신과 진단 및 치료"> 정신과 진단 및 치료</label>
+                <label><input type="checkbox" value="기 타"> 기타</label>
+                <label><input type="checkbox" value="사례관 리"> 사례관리</label>
+                <label><input type="checkbox" value="프로그램"> 프로그램</label>
+            </div>
+        </div>
+
+        <div class="input-group"><label>대상자 상태 (현재 증상, 주호소 등)</label>
+            <textarea id="symptoms" rows="5" placeholder="*정신과적 증상 관련 또는&#10;*지지체계 및 경제적 문제 등 주호소 작성"></textarea>
+        </div>
+
+        <div class="input-group"><label>의뢰사유 (상세내용)</label>
+            <textarea id="ref_reason" rows="3" placeholder="의뢰 상세 사유 입력"></textarea>
+        </div>
+
+        <hr style="border:0; border-top:1px solid #eee; margin:15px 0;">
+
+        <div class="row">
+            <div class="input-group" style="flex:1">
+                <label>의뢰인 이름 (담당자)</label>
+                <input type="text" id="staffName" readonly>
+            </div>
+            <div class="input-group" style="flex:1">
+                <label>소속 연락처</label>
+                <input type="text" id="sender_contact" value="043-646-3074">
+            </div>
+        </div>
+
+        <div class="input-group">
+            <label>소속 기관 주소</label>
+            <input type="text" id="sender_address" value="제천시 의림대로242 제천시정신건강복지센터">
+        </div>
+
+        <div class="row">
+            <div class="input-group" style="flex:1"><label>소속 이메일</label><input type="text" id="sender_email"
+                    value="jcmind1004@naver.com"></div>
+            <div class="input-group" style="flex:1"><label>소속 팩스</label><input type="text" id="sender_fax"
+                    value="043-646-3076"></div>
+        </div>
+
+        <div class="row" style="display:none;">
+            <!-- Hidden inputs as they are controlled by the shell -->
+            <input type="date" id="issueDate">
+        </div>
+    </div>
+
+    <script>
+        const API_URL = `${(typeof window !== 'undefined' ? window.location.origin : 'http://localhost')}/api/auth`;
+
+        function updatePreview() {
+            const refCheckboxes = document.querySelectorAll('#refTypes input[type="checkbox"]:checked');
+            const refTypesArr = Array.from(refCheckboxes).map(cb => cb.value);
+
+            const activeIns = document.querySelector('input[name="insurance"]:checked');
+
+            const data = {
+                sender: document.getElementById('sender').value,
+                docNum: document.getElementById('docNum').value,
+                receiver: document.getElementById('receiver').value,
+                name: document.getElementById('name').value,
+                age: document.getElementById('age').value,
+                gender: document.getElementById('gender').value,
+                contact: document.getElementById('contact').value,
+                address: document.getElementById('address').value,
+                guardian: document.getElementById('guardian').value,
+                guardian_rel: document.getElementById('guardian_rel').value,
+                insurance: activeIns ? activeIns.value : '',
+                refTypes: refTypesArr,
+                symptoms: document.getElementById('symptoms').value,
+                ref_reason: document.getElementById('ref_reason').value,
+                staffName: document.getElementById('staffName').value,
+                sender_address: document.getElementById('sender_address').value,
+                sender_contact: document.getElementById('sender_contact').value,
+                sender_email: document.getElementById('sender_email').value,
+                sender_fax: document.getElementById('sender_fax').value,
+                issueDate: document.getElementById('issueDate').value
+            };
+            window.parent.postMessage({ type: 'updatePreview', payload: data }, '*');
+        }
+
+        function requestNumber() {
+            const formData = {
+                clientName: document.getElementById('name').value,
+                agencyDetail: document.getElementById('receiver').value,
+                formType: 'jejungyeon'
+            };
+            window.parent.postMessage({ type: 'requestDocNumber', ...formData }, '*');
+        }
+
+        document.querySelectorAll('input, select, textarea').forEach(el => {
+            ['input', 'change'].forEach(evt => {
+                el.addEventListener(evt, () => {
+                    if (window.updateTimeout) clearTimeout(window.updateTimeout);
+                    window.updateTimeout = setTimeout(updatePreview, 100);
+                });
+            });
+        });
+
+        setTimeout(updatePreview, 100);
+
+        window.addEventListener('message', function (event) {
+            if (event.data.action === 'save') {
+                saveData(event.data.commonData);
+            } else if (event.data.action === 'updateCommon') {
+                document.getElementById('staffName').value = event.data.commonData.issuer;
+                document.getElementById('issueDate').value = event.data.commonData.issueDate;
+                updatePreview();
+            } else if (event.data.action === 'unlockInputs') {
+                document.querySelectorAll('input, select, textarea').forEach(el => el.disabled = false);
+                // Cannot make btn block if flex is expected, but btn element uses default block/inline
+                document.querySelectorAll('button').forEach(el => el.style.display = 'inline-block');
+            } else if (event.data.action === 'receiveDocNumber') {
+                let numStr = String(event.data.number);
+                numStr = numStr.replace('제정연-', '').replace('제정연 - ', '').trim();
+                document.getElementById('docNum').value = numStr;
+                updatePreview();
+            } else if (event.data.action === 'loadDoc') {
+                const doc = event.data.data;
+                const content = doc.content || {};
+
+                document.getElementById('docNum').value = content.docNum || '';
+                document.getElementById('receiver').value = content.receiver || '';
+                document.getElementById('sender').value = content.sender || '제천시정신건강복지센터';
+                document.getElementById('name').value = content.name || '';
+                document.getElementById('age').value = content.age || '';
+                document.getElementById('gender').value = content.gender || '남';
+                document.getElementById('contact').value = content.contact || '';
+                document.getElementById('address').value = content.address || '';
+                document.getElementById('guardian').value = content.guardian || '';
+                document.getElementById('guardian_rel').value = content.guardian_rel || '';
+
+                const insValue = content.insurance || '건강보험';
+                const insRb = document.querySelector(`input[name="insurance"][value="${insValue}"]`);
+                if (insRb) insRb.checked = true;
+
+                const refTypesArr = content.refTypes || [];
+                document.querySelectorAll('#refTypes input[type="checkbox"]').forEach(cb => {
+                    cb.checked = refTypesArr.includes(cb.value);
+                });
+
+                document.getElementById('symptoms').value = content.symptoms || '';
+                document.getElementById('ref_reason').value = content.ref_reason || '';
+
+                document.getElementById('sender_address').value = content.sender_address || '제천시 의림대로242 제천시정신건강복지센터';
+                document.getElementById('sender_contact').value = content.sender_contact || '043-646-3074';
+                document.getElementById('sender_email').value = content.sender_email || 'jcmind1004@naver.com';
+                document.getElementById('sender_fax').value = content.sender_fax || '043-646-3076';
+
+                // Disable all for viewing
+                document.querySelectorAll('input, select, textarea').forEach(el => el.disabled = true);
+                document.querySelectorAll('button').forEach(el => el.style.display = 'none');
+                updatePreview();
+            }
+        });
+
+        async function saveData(commonData) {
+            window.parent.postMessage({ type: 'disableSave' }, '*');
+
+            const refCheckboxes = document.querySelectorAll('#refTypes input[type="checkbox"]:checked');
+            const refTypesArr = Array.from(refCheckboxes).map(cb => cb.value);
+            const activeIns = document.querySelector('input[name="insurance"]:checked');
+
+            const payload = {
+                sender: document.getElementById('sender').value,
+                docNum: document.getElementById('docNum').value,
+                receiver: document.getElementById('receiver').value,
+                name: document.getElementById('name').value,
+                age: document.getElementById('age').value,
+                gender: document.getElementById('gender').value,
+                contact: document.getElementById('contact').value,
+                address: document.getElementById('address').value,
+                guardian: document.getElementById('guardian').value,
+                guardian_rel: document.getElementById('guardian_rel').value,
+                insurance: activeIns ? activeIns.value : '',
+                refTypes: refTypesArr,
+                symptoms: document.getElementById('symptoms').value,
+                ref_reason: document.getElementById('ref_reason').value,
+                staffName: commonData.issuer,
+                sender_address: document.getElementById('sender_address').value,
+                sender_contact: document.getElementById('sender_contact').value,
+                sender_email: document.getElementById('sender_email').value,
+                sender_fax: document.getElementById('sender_fax').value,
+                issueDate: commonData.issueDate
+            };
+
+            try {
+
+                const res = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'save_issued_doc',
+                        docType: commonData.docType,
+                        targetName: payload.name,
+                        content: payload,
+                        issuer: commonData.issuer
+                    })
+                });
+                const response = await res.json();
+                if (response.result === 'success') {
+                    window.parent.postMessage({ type: 'saveSuccess' }, '*');
+                } else {
+                    window.parent.postMessage({ type: 'saveError', message: '저장 실패' }, '*');
+                }
+            } catch (e) {
+                window.parent.postMessage({ type: 'saveError', message: e.message }, '*');
+            }
+        }
+    </script>
+</body>
+
+</html>

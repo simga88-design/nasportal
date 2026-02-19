@@ -1,0 +1,1131 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <title>통합 관리 시스템 (MDM)</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #1e3a8a;
+            --secondary-color: #3b82f6;
+            --bg-color: #f3f4f6;
+            --border-color: #e5e7eb;
+        }
+
+        body {
+            font-family: 'Malgun Gothic', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: var(--bg-color);
+            color: #333;
+        }
+
+        /* Header */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        h2 {
+            margin: 0;
+            color: var(--primary-color);
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            border-bottom: 2px solid #ddd;
+            margin-bottom: 20px;
+        }
+
+        .tab-btn {
+            padding: 10px 20px;
+            cursor: pointer;
+            border: none;
+            background: none;
+            font-size: 16px;
+            font-weight: bold;
+            color: #666;
+            border-bottom: 3px solid transparent;
+        }
+
+        .tab-btn.active {
+            color: var(--secondary-color);
+            border-bottom-color: var(--secondary-color);
+        }
+
+        /* Content Areas */
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Tables */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .data-table th,
+        .data-table td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .data-table th {
+            background-color: #f9fafb;
+            font-weight: bold;
+            color: #4b5563;
+        }
+
+        .data-table tr:hover {
+            background-color: #f3f4f6;
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 8px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.2s;
+        }
+
+        .btn-primary {
+            background-color: var(--secondary-color);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: #2563eb;
+        }
+
+        .btn-danger {
+            background-color: #ef4444;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background-color: #dc2626;
+        }
+
+        .btn-sm {
+            padding: 4px 8px;
+            font-size: 12px;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 25px;
+            border-radius: 8px;
+            width: 400px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #d1d5db;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        .modal-footer {
+            text-align: right;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <h2><i class="fas fa-cogs"></i> 통합 관리 시스템 (MDM)</h2>
+        <div style="font-size: 12px; color: #666;">
+            Local DB Mode <i class="fas fa-database"></i>
+        </div>
+    </header>
+
+    <div class="tabs">
+        <button class="tab-btn active" onclick="switchTab('members')">직원 관리 (Members)</button>
+        <button class="tab-btn" onclick="switchTab('teams')">부서 관리 (Teams)</button>
+        <button class="tab-btn" onclick="switchTab('legacy')">엑셀 데이터 일괄 등록/다운로드</button>
+        <button class="tab-btn" onclick="switchTab('db')">DB 데이터 관리</button>
+    </div>
+
+    <!-- MEMBER TAB -->
+    <div id="tab-members" class="tab-content active">
+        <div style="display: flex; justify-content: flex-end; align-items: flex-end; margin-bottom: 15px;">
+            <button class="btn btn-primary" onclick="openMemberModal()">+ 직원 등록</button>
+        </div>
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>이름</th>
+                    <th>아이디</th>
+                    <th>직위</th>
+                    <th>소속팀</th>
+                    <th>연락처</th>
+                    <th>상태</th>
+                    <th>관리</th>
+                </tr>
+            </thead>
+            <tbody id="member-list">
+                <!-- Javascript Generated -->
+            </tbody>
+        </table>
+    </div>
+
+    <!-- TEAAM TAB -->
+    <div id="tab-teams" class="tab-content">
+        <div style="margin-bottom: 15px; text-align: right;">
+            <button class="btn btn-primary" onclick="openTeamModal()">+ 부서 등록</button>
+        </div>
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>부서코드</th>
+                    <th>부서명</th>
+                    <th>부서장</th>
+                    <th>설명</th>
+                    <th>관리</th>
+                </tr>
+            </thead>
+            <tbody id="team-list">
+                <!-- Javascript Generated -->
+            </tbody>
+        </table>
+    </div>
+
+    <!-- LEGACY DATA TAB -->
+    <div id="tab-legacy" class="tab-content">
+        <div
+            style="background: white; padding: 25px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); max-width: 600px;">
+            <h3>과거 내역 엑셀 파일 일괄 등록 (업로드)</h3>
+            <p style="color: #666; font-size: 14px; margin-bottom: 20px;">
+                기존에 사용하시던 엑셀 내역 파일을 시스템 데이터베이스로 이관합니다.<br>
+                양식의 첫 번째 시트 첫 줄은 반드시 헤더여야 합니다.
+            </p>
+            <div class="form-group">
+                <label>문서 종류 선택</label>
+                <select id="legacy-docType">
+                    <option value="제정공">제정공 (공문 발송 대장)</option>
+                    <option value="제정내">제정내 (내부 결재 대장)</option>
+                    <option value="제정연">제정연 (연계의뢰서)</option>
+                    <option value="성인대장">성인대장 (사례/회신대기)</option>
+                    <option value="자살대장">자살대장 (사례/회신대기)</option>
+                    <option value="아동대장">아동대장 (사례/회신대기)</option>
+                    <option value="퇴원사실통보">퇴원사실통보 (사례/회신대기)</option>
+                    <option value="강사비산출내역서">강사비산출내역서</option>
+                    <option value="강의확인서">강의확인서</option>
+                    <option value="사례종결보고서-2026년">사례종결보고서</option>
+                    <option value="응급개입기록지">응급개입기록지</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>엑셀 파일 (.xlsx, .csv)</label>
+                <input type="file" id="legacy-file" accept=".xlsx, .csv">
+            </div>
+            <div style="text-align: right; margin-top: 20px;">
+                <button class="btn btn-primary" id="btn-import-legacy" onclick="importLegacyData()">엑셀 데이터 일괄 등록
+                    실행</button>
+            </div>
+        </div>
+
+        <div
+            style="background: white; padding: 25px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); max-width: 600px; margin-top: 20px;">
+            <h3>현재 저장된 전체 데이터 다운로드 (엑셀 내보내기)</h3>
+            <p style="color: #666; font-size: 14px; margin-bottom: 20px;">
+                현재 데이터베이스에 누적 저장된 모든 전체 데이터를 엑셀 파일로 묶어서 다운로드합니다.
+            </p>
+            <div class="form-group">
+                <label>문서 종류 선택</label>
+                <select id="export-docType">
+                    <option value="제정공">제정공 (공문 발송 대장)</option>
+                    <option value="제정내">제정내 (내부 결재 대장)</option>
+                    <option value="제정연">제정연 (연계의뢰서)</option>
+                    <option value="성인대장">성인대장 (사례/회신대기)</option>
+                    <option value="자살대장">자살대장 (사례/회신대기)</option>
+                    <option value="아동대장">아동대장 (사례/회신대기)</option>
+                    <option value="퇴원사실통보">퇴원사실통보 (사례/회신대기)</option>
+                    <option value="강사비산출내역서">강사비산출내역서</option>
+                    <option value="강의확인서">강의확인서</option>
+                    <option value="사례종결보고서-2026년">사례종결보고서</option>
+                    <option value="응급개입기록지">응급개입기록지</option>
+                </select>
+            </div>
+            <div style="text-align: right; margin-top: 20px;">
+                <button class="btn btn-success" id="btn-export-legacy" onclick="exportLegacyData()"
+                    style="background-color: #10b981;">엑셀 내보내기 실행</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- DB MANAGEMENT TAB -->
+    <div id="tab-db" class="tab-content">
+        <div style="display: flex; gap: 10px; margin-bottom: 15px; align-items: flex-end;">
+            <div class="form-group" style="margin-bottom: 0; min-width: 250px;">
+                <label>대상 테이블 (Table)</label>
+                <select id="db-table-select">
+                    <option value="members">직원 테이블 (members)</option>
+                    <option value="teams">부서 테이블 (teams)</option>
+                    <option value="inquiries">사례/회신 대기 (inquiries)</option>
+                    <option value="doc_numbers">의뢰외공문 대장 (doc_numbers)</option>
+                    <option value="issued_docs">문서발급 원본 (issued_docs)</option>
+                    <option value="user_tasks">담당업무(user_tasks)</option>
+                    <option value="work_logs">업무일지(work_logs)</option>
+                    <option value="notices">공지사항 (notices)</option>
+                    <option value="events">일정표 (events)</option>
+                </select>
+            </div>
+            <button class="btn btn-primary" onclick="loadDbTable()">조회</button>
+        </div>
+
+        <div style="background: white; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); overflow-x: auto;">
+            <table class="data-table" id="db-data-table" style="min-width: 1000px; font-size: 13px;">
+                <thead id="db-thead">
+                    <!-- Dynamic Headers -->
+                </thead>
+                <tbody id="db-tbody">
+                    <tr>
+                        <td colspan="100%" style="text-align:center; padding: 30px; color:#9ca3af;">조회 버튼을 눌러주세요. 최대
+                            300건 표시.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- MODAL: MEMBER -->
+    <div id="modal-member" class="modal">
+        <div class="modal-content">
+            <h3 id="modal-member-title">직원 등록</h3>
+            <div class="form-group">
+                <label>이름</label>
+                <input type="text" id="m-name">
+            </div>
+            <div class="form-group">
+                <label>아이디 (로그인용)</label>
+                <input type="text" id="m-id">
+            </div>
+            <div class="form-group">
+                <label>비밀번호</label>
+                <input type="text" id="m-pw" value="1234">
+            </div>
+            <div class="form-group">
+                <label>이메일</label>
+                <input type="email" id="m-email">
+            </div>
+            <div class="form-group">
+                <label>직위 (Position)</label>
+                <select id="m-position">
+                    <option value="팀원">팀원</option>
+                    <option value="주임">주임</option>
+                    <option value="팀장">팀장</option>
+                    <option value="상임팀장">상임팀장</option>
+                    <option value="부센터장">부센터장</option>
+                    <option value="센터장">센터장</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>연락처</label>
+                <input type="text" id="m-phone" placeholder="010-0000-0000">
+            </div>
+            <div class="form-group">
+                <label>입사일</label>
+                <input type="date" id="m-joinDate">
+            </div>
+            <div class="form-group">
+                <label>시스템 권한</label>
+                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 5px;">
+                    <input type="checkbox" id="m-isSystemAdmin" style="width: auto;">
+                    <span>시스템 관리자 (MDM 접근 허용)</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <input type="checkbox" id="m-isCirculationAdmin" style="width: auto;">
+                    <span>공람 등록 권한 (일반직원도 공람함을 올릴 수 있게 허용)</span>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>소속팀</label>
+                <select id="m-team">
+                    <!-- Dynamic -->
+                </select>
+            </div>
+            <div class="form-group">
+                <label>상태</label>
+                <select id="m-status">
+                    <option value="Active">재직 (Active)</option>
+                    <option value="Inactive">퇴사/휴직 (Inactive)</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>전자결재 도장 (서명) 이미지</label>
+                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 5px;">
+                    <button class="btn btn-sm"
+                        style="border: 1px solid var(--border-color); background: white; color: #333;"
+                        onclick="document.getElementById('m-stamp-input').click()">업로드 (PNG 권장)</button>
+                    <button class="btn btn-sm btn-danger" onclick="clearAdminStamp()">삭제</button>
+                </div>
+                <input type="file" id="m-stamp-input" accept="image/png, image/gif, image/webp" style="display: none;"
+                    onchange="handleAdminStamp(this)">
+                <div
+                    style="margin-top: 10px; min-height: 50px; border: 1px dashed #ccc; padding: 5px; text-align: center; border-radius: 4px; background: #fafafa;">
+                    <img id="m-stamp-preview" src="" style="max-height: 50px; display: none; object-fit: contain;">
+                    <span id="m-stamp-placeholder" style="color: #999; font-size: 13px; line-height: 50px;">이미지
+                        없음</span>
+                </div>
+            </div>
+            <input type="hidden" id="m-origin-id"> <!-- For Edit -->
+
+            <div class="modal-footer">
+                <button class="btn" onclick="closeModal('modal-member')">취소</button>
+                <button class="btn btn-primary" onclick="saveMember()">저장</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: TEAM -->
+    <div id="modal-team" class="modal">
+        <div class="modal-content">
+            <h3 id="modal-team-title">부서 등록</h3>
+            <div class="form-group">
+                <label>부서코드 (예: T001)</label>
+                <input type="text" id="t-code">
+            </div>
+            <div class="form-group">
+                <label>부서명</label>
+                <input type="text" id="t-name">
+            </div>
+            <div class="form-group">
+                <label>부서장 (이름)</label>
+                <input type="text" id="t-leader" placeholder="이름 입력">
+            </div>
+            <div class="form-group">
+                <label>설명</label>
+                <input type="text" id="t-desc">
+            </div>
+            <input type="hidden" id="t-origin-code">
+
+            <div class="modal-footer">
+                <button class="btn" onclick="closeModal('modal-team')">취소</button>
+                <button class="btn btn-primary" onclick="saveTeam()">저장</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: DB EDIT -->
+    <div id="modal-db-edit" class="modal">
+        <div class="modal-content" style="width: 600px; max-width: 90vw;">
+            <h3 id="modal-db-title">데이터 수정</h3>
+            <p style="color: #666; font-size: 13px; margin-bottom: 10px;">
+                주의: JSON 형식의 속성 값을 직접 수정합니다. 키(Key) 이름은 변경하지 마세요. 잘못 입력할 경우 시스템 오류가 발생할 수 있습니다.
+            </p>
+            <div class="form-group">
+                <textarea id="db-edit-text"
+                    style="width: 100%; height: 350px; font-family: monospace; font-size: 13px; padding: 10px; border: 1px solid #d1d5db; border-radius: 4px; box-sizing: border-box;"
+                    spellcheck="false"></textarea>
+            </div>
+            <input type="hidden" id="db-edit-table">
+            <input type="hidden" id="db-edit-id">
+
+            <div class="modal-footer">
+                <button class="btn" onclick="closeModal('modal-db-edit')">취소</button>
+                <button class="btn btn-primary" onclick="saveDbRow()">저장</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="../js/config.js"></script>
+    <script src="../js/data_manager.js"></script>
+    <script>
+        if (window.module) module = window.module;
+    </script>
+    <script>
+        // STATE
+        let membersData = [];
+        let teamsData = [];
+
+        // Auth Check
+        window.onload = function () {
+            const userStr = sessionStorage.getItem('jc_user');
+            if (!userStr) {
+                parent.Modal.alert("로그인이 필요합니다.");
+                window.location.href = '../index.html'; // Fallback
+                return;
+            }
+            const user = JSON.parse(userStr);
+            if (!['관리자', '센터장', '시스템관리자'].includes(user.role) && !user.isSystemAdmin) {
+                parent.Modal.alert("접근 권한이 없습니다.");
+                history.back();
+                return;
+            }
+
+            loadData();
+            // rendering is done inside loadData callback
+        };
+
+        function loadData() {
+            // Members
+            DataManager.getMembers((json, isCache) => {
+                if (json.result === 'success') {
+                    membersData = json.list;
+                    renderMembers();
+                } else {
+                    if (!isCache) parent.Modal.alert("직원 목록 로드 실패: " + json.message);
+                }
+            });
+
+            // Teams
+            DataManager.getTeams((json, isCache) => {
+                if (json.result === 'success') {
+                    teamsData = json.list;
+                    renderTeams();
+                } else {
+                    if (!isCache) parent.Modal.alert("부서 목록 로드 실패: " + json.message);
+                }
+            });
+        }
+
+        // --- RENDER FUNCTIONS ---
+        function renderMembers() {
+            const tbody = document.getElementById('member-list');
+            tbody.innerHTML = '';
+            membersData.forEach(m => {
+                const tr = document.createElement('tr');
+
+                // Badge for System Admin
+                let nameHtml = m.name;
+                if (m.isSystemAdmin) {
+                    nameHtml += ` <span style="color:#ef4444;" title="시스템 관리자"><i class="fas fa-shield-alt"></i></span>`;
+                }
+
+                const displayPos = m.position || m.role || '-';
+
+                // Smart Affiliation for List
+                let affiliation = m.team;
+                if (typeof affiliation === 'object' && affiliation !== null) affiliation = affiliation.name || '(데이터오류)';
+                if (!affiliation || affiliation === '없음') affiliation = '(없음)';
+
+                if (['센터장', '부센터장', '상임팀장'].includes(m.position) && (affiliation === '(없음)' || affiliation === m.position)) {
+                    affiliation = '<span style="color:#6366f1; font-weight:bold;">[본부]</span>';
+                }
+
+                tr.innerHTML = `
+                    <td>${nameHtml}</td>
+                    <td>${m.id}</td>
+                    <td>${displayPos}</td>
+                    <td>${affiliation}</td>
+                    <td>${m.phone || '-'}</td>
+                    <td style="color:${m.status === 'Active' ? 'green' : 'red'}">${m.status}</td>
+                    <td>
+                        <button class="btn btn-sm" onclick="openMemberModal('${m.id}')">수정</button>
+                        <button class="btn btn-sm btn-danger" onclick="deleteMember('${m.id}')">삭제</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function renderTeams() {
+            const tbody = document.getElementById('team-list');
+            tbody.innerHTML = '';
+            teamsData.forEach(t => {
+                const tr = document.createElement('tr');
+
+                // Safety check for leader (handle object or string)
+                let leaderName = t.leader;
+                if (typeof leaderName === 'object' && leaderName !== null) leaderName = leaderName.name || '';
+                if (!leaderName) leaderName = '-';
+
+                tr.innerHTML = `
+                    <td>${t.code}</td>
+                    <td>${t.name}</td>
+                    <td>${leaderName}</td>
+                    <td>${t.description || ''}</td>
+                    <td>
+                        <button class="btn btn-sm" onclick="openTeamModal('${t.code}')">수정</button>
+                        <button class="btn btn-sm btn-danger" onclick="deleteTeam('${t.code}')">삭제</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // --- MEMBER ACTIONS ---
+        function openMemberModal(id = null) {
+            // Populate Team Dropdown
+            const teamSelect = document.getElementById('m-team');
+            teamSelect.innerHTML = '<option value="">(부서 없음)</option>';
+            teamSelect.innerHTML += '<option value="본부">본부 (Direct-Report)</option>';
+            teamsData.forEach(t => {
+                const tName = t.name || '(이름없음)';
+                teamSelect.innerHTML += `<option value="${tName}">${tName}</option>`;
+            });
+
+            if (id) {
+                // Edit Mode
+                const m = membersData.find(x => x.id === id);
+                document.getElementById('modal-member-title').innerText = "직원 수정";
+                document.getElementById('m-name').value = m.name;
+                document.getElementById('m-id').value = m.id;
+                // document.getElementById('m-id').disabled = true; 
+                document.getElementById('m-pw').value = m.password;
+                document.getElementById('m-email').value = m.email;
+                document.getElementById('m-position').value = m.position || m.role || '팀원';
+                document.getElementById('m-phone').value = m.phone || '';
+                document.getElementById('m-joinDate').value = m.joinDate || '';
+                document.getElementById('m-isSystemAdmin').checked = !!m.isSystemAdmin;
+                document.getElementById('m-isCirculationAdmin').checked = !!m.isCirculationAdmin;
+
+                // If high level role and team is empty, default to 본부
+                const isHighLevel = ['센터장', '부센터장', '상임팀장'].includes(m.position);
+                let teamVal = m.team || '';
+                // Handle object in teamVal if present
+                if (typeof teamVal === 'object' && teamVal !== null) teamVal = teamVal.name || '';
+
+                if (isHighLevel && (!teamVal || teamVal === '없음' || teamVal === '(없음)')) {
+                    teamVal = '본부';
+                }
+                document.getElementById('m-team').value = teamVal;
+
+                document.getElementById('m-status').value = m.status;
+                document.getElementById('m-origin-id').value = m.id;
+
+                window.currentAdminStampBase64 = m.stamp || '';
+                updateAdminStampPreview();
+            } else {
+                // Add Mode
+                document.getElementById('modal-member-title').innerText = "직원 등록";
+                document.getElementById('m-name').value = '';
+                document.getElementById('m-id').value = '';
+                document.getElementById('m-id').disabled = false;
+                document.getElementById('m-pw').value = '1234';
+                document.getElementById('m-email').value = '';
+                document.getElementById('m-position').value = '팀원';
+                document.getElementById('m-phone').value = '';
+                document.getElementById('m-joinDate').value = new Date().toISOString().split('T')[0];
+                document.getElementById('m-isSystemAdmin').checked = false;
+                document.getElementById('m-isCirculationAdmin').checked = false;
+                document.getElementById('m-status').value = 'Active';
+                document.getElementById('m-origin-id').value = '';
+
+                window.currentAdminStampBase64 = '';
+                updateAdminStampPreview();
+            }
+            document.getElementById('modal-member').style.display = 'flex';
+        }
+
+        function handleAdminStamp(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    window.currentAdminStampBase64 = e.target.result;
+                    updateAdminStampPreview();
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        function clearAdminStamp() {
+            window.currentAdminStampBase64 = '';
+            document.getElementById('m-stamp-input').value = '';
+            updateAdminStampPreview();
+        }
+
+        function updateAdminStampPreview() {
+            const preview = document.getElementById('m-stamp-preview');
+            const placeholder = document.getElementById('m-stamp-placeholder');
+            if (window.currentAdminStampBase64) {
+                preview.src = window.currentAdminStampBase64;
+                preview.style.display = 'inline-block';
+                placeholder.style.display = 'none';
+            } else {
+                preview.src = '';
+                preview.style.display = 'none';
+                placeholder.style.display = 'inline-block';
+            }
+        }
+
+        async function saveMember() {
+            const form = {
+                action: 'save_member', // GAS Action
+                name: document.getElementById('m-name').value,
+                id: document.getElementById('m-id').value,
+                password: document.getElementById('m-pw').value,
+                email: document.getElementById('m-email').value,
+                position: document.getElementById('m-position').value,
+                phone: document.getElementById('m-phone').value,
+                role: document.getElementById('m-position').value, // Merged
+                isSystemAdmin: document.getElementById('m-isSystemAdmin').checked,
+                isCirculationAdmin: document.getElementById('m-isCirculationAdmin').checked,
+                team: document.getElementById('m-team').value,
+                status: document.getElementById('m-status').value,
+                stamp: window.currentAdminStampBase64 || '',
+                joinDate: document.getElementById('m-joinDate').value || new Date().toISOString().split('T')[0]
+            };
+
+            const originId = document.getElementById('m-origin-id').value;
+
+            if (!form.name || !form.id) {
+                parent.Modal.alert("이름과 아이디는 필수입니다.");
+                return;
+            }
+
+            // Client-side validation for Duplicate ID (only on create)
+            if (!originId && membersData.find(x => x.id === form.id)) {
+                parent.Modal.alert("이미 존재하는 아이디입니다.");
+                return;
+            }
+
+            try {
+                const res = await fetch(BASE_URL, {
+                    method: 'POST',
+                    body: JSON.stringify(form)
+                });
+                const json = await res.json();
+
+                if (json.result === 'success') {
+                    // Cache Invalidation
+                    localStorage.removeItem(DataManager.CACHE_KEYS.MEMBERS);
+
+                    closeModal('modal-member');
+                    loadData(); // Refresh info
+                } else {
+                    parent.Modal.alert("저장 실패: " + json.message);
+                }
+            } catch (e) {
+                parent.Modal.alert("통신 오류 발생");
+                console.error(e);
+            }
+        }
+
+        async function deleteMember(id) {
+            if (await parent.Modal.confirm("정말로 삭제(비활성화) 하시겠습니까?")) {
+                try {
+                    const res = await fetch(BASE_URL, {
+                        method: 'POST',
+                        body: JSON.stringify({ action: 'delete_member', id: id })
+                    });
+                    const json = await res.json();
+                    if (json.result === 'success') {
+                        // Cache Invalidation
+                        localStorage.removeItem(DataManager.CACHE_KEYS.MEMBERS);
+                        loadData();
+                    } else {
+                        parent.Modal.alert("삭제 실패: " + json.message);
+                    }
+                } catch (e) {
+                    parent.Modal.alert("통신 오류 발생");
+                }
+            }
+        }
+
+        // --- TEAM ACTIONS ---
+        function openTeamModal(code = null) {
+            if (code) {
+                const t = teamsData.find(x => x.code === code);
+                document.getElementById('modal-team-title').innerText = "부서 수정";
+                document.getElementById('t-code').value = t.code;
+                document.getElementById('t-name').value = t.name;
+
+                let leaderName = t.leader;
+                if (typeof leaderName === 'object' && leaderName !== null) leaderName = leaderName.name || '';
+                document.getElementById('t-leader').value = leaderName || '';
+                document.getElementById('t-desc').value = t.description;
+                document.getElementById('t-origin-code').value = t.code;
+            } else {
+                document.getElementById('modal-team-title').innerText = "부서 등록";
+                document.getElementById('t-code').value = '';
+                document.getElementById('t-name').value = '';
+                document.getElementById('t-leader').value = '';
+                document.getElementById('t-desc').value = '';
+                document.getElementById('t-origin-code').value = '';
+            }
+            document.getElementById('modal-team').style.display = 'flex';
+        }
+
+        async function saveTeam() {
+            const form = {
+                action: 'save_team',
+                code: document.getElementById('t-code').value,
+                name: document.getElementById('t-name').value,
+                leader: document.getElementById('t-leader').value,
+                description: document.getElementById('t-desc').value
+            };
+            const originCode = document.getElementById('t-origin-code').value;
+
+            if (!form.code || !form.name) {
+                parent.Modal.alert("부서코드와 부서명은 필수입니다.");
+                return;
+            }
+
+            if (!originCode && teamsData.find(x => x.code === form.code)) {
+                parent.Modal.alert("이미 존재하는 부서코드입니다.");
+                return;
+            }
+
+            try {
+                const res = await fetch(BASE_URL, {
+                    method: 'POST',
+                    body: JSON.stringify(form)
+                });
+                const json = await res.json();
+
+                if (json.result === 'success') {
+                    // Cache Invalidation
+                    localStorage.removeItem(DataManager.CACHE_KEYS.TEAMS);
+
+                    closeModal('modal-team');
+                    loadData();
+                } else {
+                    parent.Modal.alert("저장 실패: " + json.message);
+                }
+            } catch (e) {
+                parent.Modal.alert("통신 오류 발생");
+            }
+        }
+
+        async function deleteTeam(code) {
+            if (await parent.Modal.confirm("이 부서를 삭제하시겠습니까?")) {
+                try {
+                    const res = await fetch(BASE_URL, {
+                        method: 'POST',
+                        body: JSON.stringify({ action: 'delete_team', code: code })
+                    });
+                    const json = await res.json();
+                    if (json.result === 'success') {
+                        // Cache Invalidation
+                        localStorage.removeItem(DataManager.CACHE_KEYS.TEAMS);
+                        loadData();
+                    }
+                    else parent.Modal.alert("삭제 실패: " + json.message);
+                } catch (e) {
+                    parent.Modal.alert("통신 오류 발생");
+                }
+            }
+        }
+
+        // --- LEGACY MIGRATION ---
+        async function importLegacyData() {
+            const docType = document.getElementById('legacy-docType').value;
+            const fileInput = document.getElementById('legacy-file');
+
+            if (!fileInput.files || fileInput.files.length === 0) {
+                parent.Modal.alert("업로드할 엑셀 파일을 선택해주세요.");
+                return;
+            }
+
+            if (!await parent.Modal.confirm(`선택한 파일을 '${docType}' 내역으로 DB에 가져오시겠습니까?`)) {
+                return;
+            }
+
+            const btn = document.getElementById('btn-import-legacy');
+            btn.disabled = true;
+            btn.innerText = "업로드 및 DB 저장 중...";
+
+            const formData = new FormData();
+            formData.append('docType', docType);
+            formData.append('excelFile', fileInput.files[0]);
+
+            try {
+                // Determine API URL based on host since it's an absolute Node.js backend route
+                // If BASE_URL is GAS script, we must use localhost for this newly built API.
+                const NODE_SERVER = window.location.origin;
+
+                const res = await fetch(`${NODE_SERVER}/api/import_legacy`, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const json = await res.json();
+
+                if (json.result === 'success') {
+                    parent.Modal.alert(`성공적으로 ${json.imported}건의 데이터를 이관했습니다.`);
+                    fileInput.value = '';
+                } else {
+                    parent.Modal.alert("업로드 실패: " + json.message);
+                }
+            } catch (e) {
+                parent.Modal.alert("서버 통신 오류가 발생했습니다.");
+                console.error(e);
+            } finally {
+                btn.disabled = false;
+                btn.innerText = "데이터 마이그레이션 실행";
+            }
+        }
+
+        // --- UTILS ---
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+
+            document.getElementById('tab-' + tabId).classList.add('active');
+            // Find button roughly
+            event.target.classList.add('active');
+        }
+
+        function closeModal(id) {
+            document.getElementById(id).style.display = 'none';
+        }
+
+        // ==========================================
+        // [MDM] DB Data Management Engine
+        // ==========================================
+        let currentDbTable = '';
+        let currentDbRows = [];
+        let currentDbColumns = [];
+
+        async function loadDbTable() {
+            const table = document.getElementById('db-table-select').value;
+            const tbody = document.getElementById('db-tbody');
+            const thead = document.getElementById('db-thead');
+
+            tbody.innerHTML = '<tr><td colspan="100%" style="text-align:center; padding: 30px;"><i class="fas fa-spinner fa-spin"></i> 데이터를 불러오는 중...</td></tr>';
+
+            try {
+                const res = await fetch(BASE_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({ action: 'admin_get_table_data', table: table })
+                });
+                const json = await res.json();
+
+                if (json.result === 'success') {
+                    currentDbTable = table;
+                    currentDbRows = json.list || [];
+                    currentDbColumns = json.columns || [];
+                    renderDbTable();
+                } else {
+                    parent.Modal.alert("데이터 불러오기 실패: " + json.message);
+                    tbody.innerHTML = '<tr><td colspan="100%" style="text-align:center; padding: 30px; color:#ef4444;">조회 실패</td></tr>';
+                }
+            } catch (e) {
+                parent.Modal.alert("서버 연결 실패");
+                tbody.innerHTML = '<tr><td colspan="100%" style="text-align:center; padding: 30px; color:#ef4444;">통신 오류</td></tr>';
+            }
+        }
+
+        function renderDbTable() {
+            const thead = document.getElementById('db-thead');
+            const tbody = document.getElementById('db-tbody');
+
+            if (currentDbColumns.length === 0) {
+                thead.innerHTML = '';
+                tbody.innerHTML = '<tr><td colspan="100%" style="text-align:center; padding: 30px; color:#9ca3af;">테이블 정보가 없습니다.</td></tr>';
+                return;
+            }
+
+            // Render Headers
+            let headHTML = '<tr>';
+            currentDbColumns.forEach(c => {
+                headHTML += `<th>${c}</th>`;
+            });
+            headHTML += '<th style="width: 120px;">관리</th></tr>';
+            thead.innerHTML = headHTML;
+
+            // Render Rows
+            if (currentDbRows.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="${currentDbColumns.length + 1}" style="text-align:center; padding: 30px; color:#9ca3af;">해당 테이블에 데이터가 없습니다.</td></tr>`;
+                return;
+            }
+
+            let bodyHTML = '';
+            const pkField = currentDbTable === 'teams' ? 'code' : 'id';
+
+            currentDbRows.forEach((row, i) => {
+                let rHTML = '<tr>';
+                currentDbColumns.forEach(c => {
+                    let val = row[c] === null ? '' : String(row[c]);
+                    // Truncate long texts
+                    if (val.length > 50) val = val.substring(0, 50) + '...';
+                    rHTML += `<td><span title="${String(row[c]).replace(/"/g, '&quot;')}">${val}</span></td>`;
+                });
+
+                // Escape JSON for onclick
+                const encodedRow = encodeURIComponent(JSON.stringify(row));
+
+                rHTML += `<td>
+                            <button class="btn btn-sm btn-primary" onclick="openDbEditModal('${encodedRow}', '${pkField}')">수정</button>
+                            <button class="btn btn-sm btn-danger" onclick="deleteDbRow('${row[pkField]}', '${pkField}')">삭제</button>
+                          </td>`;
+                rHTML += '</tr>';
+                bodyHTML += rHTML;
+            });
+
+            tbody.innerHTML = bodyHTML;
+        }
+
+        function openDbEditModal(encodedRow, pkField) {
+            const row = JSON.parse(decodeURIComponent(encodedRow));
+            const id = row[pkField];
+
+            document.getElementById('modal-db-title').innerText = `[${currentDbTable}] 데이터 수정`;
+            document.getElementById('db-edit-table').value = currentDbTable;
+            document.getElementById('db-edit-id').value = id;
+
+            // Format JSON prettily for easier editing
+            document.getElementById('db-edit-text').value = JSON.stringify(row, null, 2);
+            document.getElementById('modal-db-edit').style.display = 'flex';
+        }
+
+        function clearCacheForTable(table) {
+            // Remove exact matches known to DataManager
+            if (table === 'members') localStorage.removeItem(DataManager.CACHE_KEYS.MEMBERS);
+            if (table === 'teams') localStorage.removeItem(DataManager.CACHE_KEYS.TEAMS);
+            if (table === 'notices') localStorage.removeItem(DataManager.CACHE_KEYS.NOTICES);
+
+            // Remove fuzzy matches for other tables and events
+            const keysToRemove = [];
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key && (key.includes(table) || (table === 'events' && key.includes('jc_portal_events')))) {
+                    keysToRemove.push(key);
+                }
+            }
+            keysToRemove.forEach(k => localStorage.removeItem(k));
+        }
+
+        async function saveDbRow() {
+            const table = document.getElementById('db-edit-table').value;
+            const id = document.getElementById('db-edit-id').value;
+            let updateData;
+
+            try {
+                updateData = JSON.parse(document.getElementById('db-edit-text').value);
+            } catch (e) {
+                parent.Modal.alert("JSON 형식이 올바르지 않습니다.");
+                return;
+            }
+
+            try {
+                const res = await fetch(BASE_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        action: 'admin_update_row',
+                        table: table,
+                        id: id,
+                        updateData: updateData
+                    })
+                });
+                const json = await res.json();
+
+                if (json.result === 'success') {
+                    parent.Modal.alert("성공적으로 수정되었습니다.");
+                    closeModal('modal-db-edit');
+                    loadDbTable(); // Refresh the DB view table
+                    clearCacheForTable(table); // Clear local caches
+                    if (table === 'members' || table === 'teams') loadData(); // Refresh MDM first tabs
+                } else {
+                    parent.Modal.alert("수정 실패: " + json.message);
+                }
+            } catch (e) {
+                parent.Modal.alert("서버 연결 실패");
+            }
+        }
+
+        async function deleteDbRow(id, pkField) {
+            if (!await parent.Modal.confirm(`정말로 이 데이터를 삭제하시겠습니까?\n테이블: ${currentDbTable}\nID: ${id}`)) {
+                return;
+            }
+            try {
+                const res = await fetch(BASE_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        action: 'admin_delete_row',
+                        table: currentDbTable,
+                        id: id
+                    })
+                });
+                const json = await res.json();
+                if (json.result === 'success') {
+                    loadDbTable(); // Refresh the DB view table
+                    clearCacheForTable(currentDbTable); // Clear local caches
+                    if (currentDbTable === 'members' || currentDbTable === 'teams') loadData(); // Refresh MDM first tabs
+                } else {
+                    parent.Modal.alert("삭제 실패: " + json.message);
+                }
+            } catch (e) {
+                parent.Modal.alert("서버 연결 실패");
+            }
+        }
+
+        async function exportLegacyData() {
+            const docType = document.getElementById('export-docType').value;
+            const btn = document.getElementById('btn-export-legacy');
+            const originalText = btn.innerText;
+            btn.innerText = '엑셀 생성 중...';
+            btn.disabled = true;
+
+            try {
+                const res = await fetch(BASE_URL.replace('/api/auth', '/api/export_excel'), {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ docType })
+                });
+                const json = await res.json();
+
+                if (json.result === 'success' && json.file) {
+                    parent.Modal.alert(json.message + `\n총 ${json.targetCount}건 처리 완료.`);
+                    // Download the file from the relative path
+                    let filePath = json.file.replace(/\\/g, '/'); // Normalize windows slashes
+                    if (!filePath.startsWith('/')) filePath = '/' + filePath;
+                    const a = document.createElement('a');
+                    a.href = filePath; // server.js exposes /downloads as static
+                    a.download = filePath.split('/').pop();
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                } else {
+                    parent.Modal.alert("내보내기 실패: " + json.message);
+                }
+            } catch (e) {
+                parent.Modal.alert("통신 오류 발생: " + e.message);
+            } finally {
+                btn.innerText = originalText;
+                btn.disabled = false;
+            }
+        }
+    </script>
+</body>
+
+</html>

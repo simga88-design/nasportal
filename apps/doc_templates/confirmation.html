@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <title>상담확인서 템플릿</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: #fff;
+        }
+
+        .paper {
+            width: 21cm;
+            min-height: 29.7cm;
+            box-sizing: border-box;
+            position: relative;
+            color: #000;
+        }
+
+        .doc-verification {
+            position: absolute;
+            bottom: 10mm;
+            right: 10mm;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 5px;
+            z-index: 100;
+        }
+
+        .doc-id-text {
+            font-size: 9px;
+            color: #94a3b8;
+            font-family: monospace;
+        }
+
+        #preview-confirmation {
+            padding: 1.8cm;
+            font-family: '맑은 고딕', 'Malgun Gothic', sans-serif;
+            font-size: 11pt;
+            line-height: 1.6;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        #preview-confirmation .watermark {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(-45deg);
+            font-size: 40px;
+            color: rgba(0, 0, 0, 0.04);
+            font-weight: 800;
+            white-space: nowrap;
+            pointer-events: none;
+            letter-spacing: 10px;
+        }
+
+        #preview-confirmation .title {
+            text-align: center;
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 25px;
+            letter-spacing: 8px;
+            color: #111;
+            margin-top: 0;
+        }
+
+        #preview-confirmation .doc-table-group {
+            border-top: 1px solid #000;
+            border-bottom: 1px solid #000;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+        }
+
+        #preview-confirmation .doc-table-row {
+            width: 100%;
+            border-collapse: collapse;
+            border-spacing: 0;
+        }
+
+        #preview-confirmation .doc-table-row td {
+            border: 1px solid #000;
+            padding: 10px;
+            vertical-align: top;
+            line-height: 1.6;
+            color: #000;
+        }
+
+        #preview-confirmation .doc-table-group .doc-table-row+.doc-table-row td {
+            border-top: 0;
+        }
+
+        #preview-confirmation .label {
+            background: #D9D9D9;
+            font-weight: 700;
+            text-align: center;
+            vertical-align: middle;
+        }
+
+        #preview-confirmation .content-table-row {
+            flex-grow: 1;
+            height: 100%;
+        }
+
+        #preview-confirmation .content-cell {
+            height: 100%;
+            vertical-align: top !important;
+            white-space: pre-wrap;
+        }
+
+        #preview-confirmation .address-cell {
+            min-height: 50px;
+            vertical-align: top !important;
+        }
+
+        #preview-confirmation .org-cell {
+            font-size: 14px;
+            line-height: 1.8;
+            padding: 15px;
+            vertical-align: middle;
+            text-align: center;
+        }
+
+        #preview-confirmation .date-signature {
+            margin-top: 30px;
+            font-size: 13pt;
+            text-align: center;
+            font-weight: 500;
+        }
+
+        #preview-confirmation .chief {
+            font-size: 30px;
+            font-weight: 700;
+            margin-top: 40px;
+            text-align: center;
+            margin-bottom: 0;
+        }
+
+        #preview-confirmation .confirmation-text {
+            text-align: center;
+            font-size: 13pt;
+            margin-top: 10px;
+            margin-bottom: 0;
+        }
+
+        #preview-confirmation .logo-footer {
+            text-align: center;
+            padding-top: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+        }
+
+        #preview-confirmation .simple-grid-col-1 {
+            width: 110px;
+        }
+
+        #preview-confirmation .simple-grid-col-2 {
+            width: auto;
+        }
+
+        #preview-confirmation .complex-grid-col-1 {
+            width: 110px;
+        }
+
+        #preview-confirmation .complex-grid-col-2 {
+            width: 100px;
+        }
+
+        #preview-confirmation .complex-grid-col-3 {
+            width: auto;
+        }
+
+        #preview-confirmation .complex-grid-col-4 {
+            width: 80px;
+        }
+
+        #preview-confirmation .complex-grid-col-5 {
+            width: 160px;
+        }
+
+        #preview-confirmation .org-grid-col-1 {
+            width: 110px;
+        }
+
+        #preview-confirmation .org-grid-col-2 {
+            width: auto;
+        }
+
+        #preview-confirmation .org-grid-col-3 {
+            width: 55px;
+        }
+
+        #preview-confirmation .org-grid-col-4 {
+            width: 135px;
+        }
+
+        @media print {
+            @page {
+                size: A4;
+                margin: 0;
+            }
+
+            body {
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+
+            .doc-verification {
+                display: none !important;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div id="preview-confirmation" class="paper">
+        <div class="watermark">제천시정신건강복지센터</div>
+        <h1 class="title">상담확인서</h1>
+        <div class="doc-table-group">
+            <table class="doc-table-row">
+                <colgroup>
+                    <col class="simple-grid-col-1">
+                    <col class="simple-grid-col-2">
+                </colgroup>
+                <tbody>
+                    <tr>
+                        <td class="label">상담기간</td>
+                        <td id="fld_c_period" style="vertical-align: middle; text-align: center;"></td>
+                    </tr>
+                </tbody>
+            </table>
+            <table class="doc-table-row">
+                <colgroup>
+                    <col class="simple-grid-col-1">
+                    <col class="simple-grid-col-2">
+                </colgroup>
+                <tbody>
+                    <tr>
+                        <td class="label">상담형태</td>
+                        <td id="fld_c_type" style="vertical-align: middle;"></td>
+                    </tr>
+                </tbody>
+            </table>
+            <table class="doc-table-row">
+                <colgroup>
+                    <col class="complex-grid-col-1">
+                    <col class="complex-grid-col-2">
+                    <col class="complex-grid-col-3">
+                    <col class="complex-grid-col-4">
+                    <col class="complex-grid-col-5">
+                </colgroup>
+                <tbody>
+                    <tr>
+                        <td class="label" rowspan="2"
+                            style="text-align: center !important; vertical-align: middle !important;">인적사항</td>
+                        <td class="label" style="vertical-align: middle;">성명</td>
+                        <td id="fld_c_name" style="vertical-align: middle;"></td>
+                        <td class="label" style="vertical-align: middle;">연락처</td>
+                        <td id="fld_c_contact" style="vertical-align: middle;"></td>
+                    </tr>
+                    <tr>
+                        <td class="label">주소</td>
+                        <td colspan="3" class="address-cell" id="fld_c_address"></td>
+                    </tr>
+                </tbody>
+            </table>
+            <table class="doc-table-row content-table-row">
+                <colgroup>
+                    <col class="simple-grid-col-1">
+                    <col class="simple-grid-col-2">
+                </colgroup>
+                <tbody>
+                    <tr>
+                        <td class="label">상담내용</td>
+                        <td id="fld_c_content" class="content-cell"></td>
+                    </tr>
+                </tbody>
+            </table>
+            <table class="doc-table-row">
+                <colgroup>
+                    <col class="simple-grid-col-1">
+                    <col class="simple-grid-col-2">
+                </colgroup>
+                <tbody>
+                    <tr>
+                        <td class="label">제출용도</td>
+                        <td id="fld_c_purpose" style="vertical-align: middle;"></td>
+                    </tr>
+                </tbody>
+            </table>
+            <table class="doc-table-row">
+                <colgroup>
+                    <col class="org-grid-col-1">
+                    <col class="org-grid-col-2">
+                    <col class="org-grid-col-3">
+                    <col class="org-grid-col-4">
+                </colgroup>
+                <tbody>
+                    <tr>
+                        <td class="label">기 관 명</td>
+                        <td class="org-cell" style="vertical-align: middle !important;">
+                            <div
+                                style="display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; width: 100%; height: 100%;">
+                                <span
+                                    style="font-weight: bold; font-size: 1.05em; margin-bottom: 2px;">제천시정신건강복지센터</span>
+                                <span style="font-size: 0.9em;">(충청북도 제천시 내토로 242 제천시보건소 3층)</span>
+                            </div>
+                        </td>
+                        <td class="label">전 화</td>
+                        <td class="org-cell" style="vertical-align: middle !important;">
+                            <div
+                                style="display: flex; align-items: center; justify-content: center; text-align: center; width: 100%; height: 100%;">
+                                <span style="font-weight: 500;">043)646-3074~5</span>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <table class="doc-table-row">
+                <colgroup>
+                    <col class="simple-grid-col-1">
+                    <col class="simple-grid-col-2">
+                </colgroup>
+                <tbody>
+                    <tr>
+                        <td class="label">발 급 자</td>
+                        <td style="text-align: center; vertical-align: middle;">직위: <span id="fld_c_staffTitle"
+                                style="display: inline-block; min-width: 100px;"></span> &nbsp;&nbsp; 성명: <span
+                                id="fld_c_staffName" style="display: inline-block; min-width: 100px;"></span>
+                            &nbsp;&nbsp;<span id="fld_c_stamp"
+                                style="position:relative; display:inline-block; width:40px; text-align:center;">(인)</span>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <table class="doc-table-row">
+                <colgroup>
+                    <col class="simple-grid-col-1">
+                    <col class="simple-grid-col-2">
+                </colgroup>
+                <tbody>
+                    <tr>
+                        <td colspan="2"
+                            style="padding: 20px 40px; vertical-align: top; border-bottom:0; border-top:0; text-align: center;">
+                            <p class="confirmation-text">위와 같이 상담 사실을 확인하여 드립니다.</p>
+                            <p class="date-signature" id="fld_c_issueDateText" style="margin-top: 30px;"></p>
+                            <p class="chief" style="margin-top: 40px;">제천시정신건강복지센터장</p>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="logo-footer"><img src="로고.PNG" alt="제천시정신건강복지센터 로고"
+                style="width: 200px; display: block; margin: 0 auto;"></div>
+    </div>
+
+    <script>
+        window.addEventListener('message', function (e) {
+            const data = e.data;
+            if (!data) return;
+
+            if (data.action === 'render') {
+                const formatDtSimple = (str) => {
+                    if (!str) return '____년__월__일';
+                    const d = new Date(str);
+                    if (isNaN(d.getTime())) return '____년__월__일';
+                    const offset = d.getTimezoneOffset() * 60000;
+                    const cDate = new Date(d.getTime() + offset);
+                    return `${cDate.getFullYear()}년 ${cDate.getMonth() + 1}월 ${cDate.getDate()}일`;
+                };
+                const formatDt = (str) => {
+                    if (!str) return '____년 __월 __일';
+                    const d = new Date(str);
+                    if (isNaN(d.getTime())) return '____년 __월 __일';
+                    const offset = d.getTimezoneOffset() * 60000;
+                    const cDate = new Date(d.getTime() + offset);
+                    return `${cDate.getFullYear()}년  ${cDate.getMonth() + 1}월  ${cDate.getDate()}일`;
+                };
+
+                const start = formatDtSimple(data.data.c_start);
+                const end = formatDtSimple(data.data.c_end);
+
+                document.getElementById('fld_c_period').innerText = `${start} ~ ${end}`;
+                document.getElementById('fld_c_type').innerText = data.data.c_type || '';
+                document.getElementById('fld_c_name').innerText = data.data.c_name || '';
+                document.getElementById('fld_c_contact').innerText = data.data.c_contact || '';
+                document.getElementById('fld_c_address').innerHTML = (data.data.c_address || '').replace(/\n/g, '<br>');
+                document.getElementById('fld_c_content').innerHTML = (data.data.c_content || '').replace(/\n/g, '<br>');
+                document.getElementById('fld_c_purpose').innerText = data.data.c_purpose || '';
+                document.getElementById('fld_c_staffTitle').innerText = data.data.c_staffTitle || '';
+                document.getElementById('fld_c_staffName').innerText = data.data.issuer || '';
+
+                const stampContainer = document.getElementById('fld_c_stamp');
+                if (data.data.issuer_stamp) {
+                    stampContainer.innerHTML = `<img src="${data.data.issuer_stamp}" style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); max-width:50px; max-height:50px; opacity:0.9;" onerror="this.style.display='none'; this.parentElement.innerHTML='(인)';"/><span>(인)</span>`;
+                } else {
+                    stampContainer.innerHTML = '(인)';
+                }
+
+                document.getElementById('fld_c_issueDateText').innerText = formatDt(data.data.issueDate);
+            } else if (data.action === 'print') {
+                window.print();
+            }
+        });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,1319 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>전자결재 시스템</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #1e3a8a;
+            --secondary: #3b82f6;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --bg: #f8fafc;
+            --border: #e2e8f0;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+        }
+
+        body {
+            margin: 0;
+            padding: 24px;
+            font-family: 'Pretendard', sans-serif;
+            background: var(--bg);
+            color: var(--text-main);
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .header h2 {
+            margin: 0;
+            color: var(--primary);
+            font-size: 1.5rem;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 0;
+        }
+
+        .tab {
+            padding: 12px 20px;
+            cursor: pointer;
+            font-weight: 600;
+            color: var(--text-muted);
+            border-bottom: 3px solid transparent;
+            transition: all 0.2s;
+        }
+
+        .tab.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+
+        /* Approval List Table */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        th {
+            text-align: left;
+            padding: 12px;
+            border-bottom: 2px solid var(--border);
+            color: var(--text-muted);
+            font-size: 0.875rem;
+        }
+
+        td {
+            padding: 16px 12px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .status-badge {
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 700;
+        }
+
+        .status-IN_PROGRESS {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .status-APPROVED {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .status-REJECTED {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        /* Stepper / Flow */
+        .flow-container {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-top: 8px;
+        }
+
+        .flow-step {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-size: 0.75rem;
+            min-width: 60px;
+        }
+
+        .step-dot {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: #e2e8f0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            margin-bottom: 4px;
+            position: relative;
+            font-weight: bold;
+        }
+
+        .step-dot.active {
+            background: var(--primary);
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.2);
+        }
+
+        .step-dot.done {
+            background: var(--success);
+        }
+
+        .step-dot.rejected {
+            background: var(--danger);
+        }
+
+        .step-line {
+            flex-grow: 1;
+            height: 2px;
+            background: #e2e8f0;
+            margin-top: -14px;
+            min-width: 20px;
+        }
+
+        .step-line.done {
+            background: var(--success);
+        }
+
+        /* Hover Effects */
+        tr:hover {
+            background-color: #f8fafc;
+        }
+
+        .btn {
+            transition: all 0.2s;
+        }
+
+        .btn:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+
+        .step-dot.done {
+            background: var(--success);
+        }
+
+        .step-dot.rejected {
+            background: var(--danger);
+        }
+
+        .step-line {
+            flex-grow: 1;
+            height: 2px;
+            background: #e2e8f0;
+            margin-top: -18px;
+        }
+
+        .step-line.done {
+            background: var(--success);
+        }
+
+        /* Form */
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-family: inherit;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            transition: opacity 0.2s;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-success {
+            background: var(--success);
+            color: white;
+        }
+
+        .btn-danger {
+            background: var(--danger);
+            color: white;
+        }
+
+        .btn-outline {
+            background: white;
+            border: 1px solid var(--border);
+        }
+
+        .btn:hover {
+            opacity: 0.9;
+        }
+
+        /* Modal */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 32px;
+            border-radius: 16px;
+            width: 600px;
+            max-width: 95%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <h2><i class="fas fa-file-signature"></i> 전자결재 시스템</h2>
+            <div class="actions">
+            <!-- 사용 안함: 발급 및 기안에서 연동됨 -->
+            <button class="btn btn-primary" onclick="openDraftModal()" style="display:none;"><i class="fas fa-edit"></i> 신규 기안</button>
+        </div>
+        </div>
+
+        <div class="tabs">
+            <div class="tab active" onclick="loadApprovals('todo')">결재 대기함</div>
+            <div class="tab" onclick="loadApprovals('sent')">내가 보낸 기안</div>
+            <div class="tab" id="tab-all-docs" onclick="loadApprovals('all')" style="display:none;">전체 문서함</div>
+        </div>
+
+        <div class="card" id="list-container">
+            <div style="text-align:center; padding: 40px; color: var(--text-muted);">
+                <i class="fas fa-spinner fa-spin fa-2x"></i>
+                <p>문서를 불러오는 중...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Draft Modal -->
+    <div id="draft-modal" class="modal">
+        <div class="modal-content" style="width: 850px;">
+            <h3>신규 결재 기안</h3>
+            <div class="form-group">
+                <label>문서 제목</label>
+                <input type="text" id="draft-title" placeholder="결재문서 제목을 입력하세요">
+            </div>
+            <div class="form-group">
+                <label>문서 종류</label>
+                <select id="draft-type">
+                    <option value="GENERAL">일반 기안</option>
+                    <option value="LEAVE">휴가 신청서</option>
+                    <option value="TRIP">출장 신청서</option>
+                    <option value="CASE_CLOSURE">사례종결보고서</option>
+                    <option value="EMERGENCY_INTERVENTION">응급개입기록지</option>
+                    <option value="TRIP_REPORT">출장복명서</option>
+                    <option value="CASE_CONFERENCE">사례회의록</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>내용</label>
+                <textarea id="draft-content" rows="5" placeholder="상세 내용을 입력하세요"></textarea>
+            </div>
+            <div class="form-group">
+                <label>기안자 의견 (선택)</label>
+                <textarea id="draft-comment" rows="2" placeholder="결재자에게 전달할 추가 의견 수기"></textarea>
+            </div>
+            <div class="form-group">
+                <label>첨부파일 (PDF 등)</label>
+                <div id="current-attachments"
+                    style="font-size:0.8em; color:var(--secondary); margin-bottom:5px; min-height: 18px;"></div>
+                <input type="file" id="draft-attachments" multiple>
+            </div>
+            <div class="form-group">
+                <label>결재선 지정 (순서대로)</label>
+                <div style="display:flex; gap:10px; margin-bottom:10px;">
+                    <button class="btn btn-secondary" style="flex:1; font-size:0.8rem;" onclick="loadSavedLinesModal()">
+                        <i class="fas fa-folder-open"></i> 결재선 불러오기
+                    </button>
+                    <button class="btn btn-secondary" style="flex:1; font-size:0.8rem;" onclick="saveCurrentLine()">
+                        <i class="fas fa-save"></i> 결재선 저장
+                    </button>
+                </div>
+                <div id="approval-line-setup">
+                    <!-- Dynamic lines will go here -->
+                </div>
+                <div style="display: flex; gap: 8px; margin-top: 10px;">
+                    <button class="btn btn-outline" style="flex: 1" onclick="addApproverRow()">
+                        <i class="fas fa-user-plus"></i> 결재자 추가
+                    </button>
+                    <button class="btn btn-success" style="flex: 1" onclick="suggestApprovalLine()">
+                        <i class="fas fa-magic"></i> 자동 추천 결재선
+                    </button>
+                </div>
+            </div>
+            <div style="display:flex; justify-content:flex-end; gap:12px; margin-top:24px;">
+                <button class="btn btn-outline" onclick="closeModal('draft-modal')">취소</button>
+                <button class="btn btn-primary" onclick="submitApproval()">기안하기</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- View Modal -->
+    <div id="view-modal" class="modal">
+        <div class="modal-content" id="view-content" style="width: 850px;">
+            <!-- Dynamic view content -->
+        </div>
+    </div>
+
+    <script src="../js/config.js"></script>
+    <script>
+        const AppStore = window.parent ? window.parent.AppStore : null;
+        const currentUser = (AppStore && AppStore.state.currentUser) ? AppStore.state.currentUser : JSON.parse(sessionStorage.getItem('jc_user'));
+        let members = [];
+        let canViewAll = false;
+
+        // Status Translation Map
+        const STATUS_MAP = {
+            'IN_PROGRESS': '진행중',
+            'APPROVED': '승인',
+            'REJECTED': '반려',
+            'WAITING': '대기',
+            'PENDING': '결재중',
+            'WITHDRAWN': '회수됨'
+        };
+
+        const DOC_TYPE_MAP = {
+            'GENERAL': '일반 기안',
+            'LEAVE': '휴가 신청서',
+            'TRIP': '출장 신청서',
+            'CASE_CLOSURE': '사례종결보고서',
+            'EMERGENCY_INTERVENTION': '응급개입기록지',
+            'TRIP_REPORT': '출장복명서',
+            'CASE_CONFERENCE': '사례회의록'
+        };
+
+        if (AppStore) {
+            AppStore.subscribe('members', (m) => members = m || []);
+            AppStore.subscribe('approvals', (list) => { if (list) renderList(list); });
+        }
+
+
+        async function init() {
+            if (!currentUser) {
+                location.href = '../login.html';
+                return;
+            }
+
+            // 권한 체크: 센터장, 부센터장, 상임팀장, 팀장, 시스템관리자
+            if (['센터장', '부센터장', '상임팀장', '팀장'].includes(currentUser.position) || currentUser.isSystemAdmin) {
+                canViewAll = true;
+                document.getElementById('tab-all-docs').style.display = 'block';
+            }
+
+            await loadMembers();
+            loadApprovals('todo');
+
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('autoDraft') === 'true') {
+                const draftDataStr = sessionStorage.getItem('jc_draft_data');
+                if (draftDataStr) {
+                    try {
+                        const draftData = JSON.parse(draftDataStr);
+                        openDraftModal();
+
+                        let newTitle = draftData.title;
+                        if (draftData.originalApprovalId) {
+                            if (!newTitle.includes('[재상신]')) {
+                                newTitle = `[재상신] ${newTitle}`;
+                            }
+                            window.draftOriginalId = draftData.originalApprovalId;
+                        }
+
+                        document.getElementById('draft-title').value = newTitle;
+                        document.getElementById('draft-type').value = draftData.type || 'GENERAL';
+
+                        window.currentDraftData = draftData;
+                        document.getElementById('draft-content').style.display = 'none';
+
+                        let pm = document.getElementById('draft-preview-msg');
+                        if (!pm) {
+                            pm = document.createElement('div');
+                            pm.id = 'draft-preview-msg';
+                            pm.style = "padding: 15px; background: #f1f5f9; border-radius: 6px; font-weight: 600; color: var(--primary); margin-bottom: 10px; text-align: center;";
+                            document.getElementById('draft-content').parentNode.appendChild(pm);
+                        }
+                        pm.style.display = 'block';
+                        pm.innerHTML = `<i class="fas fa-file-contract"></i> [${draftData.title}] 연동 문서가 포함되어 있습니다.`;
+
+                        sessionStorage.removeItem('jc_draft_data');
+                    } catch (e) { console.error(e); }
+                }
+            }
+
+            // [추가] 대시보드에서 특정 문서 바로 열기
+            const openId = urlParams.get('open_id');
+            if (openId) {
+                // 약간의 딜레이를 주어 리스트 로딩 후 열리도록 함
+                setTimeout(() => {
+                    viewApproval(openId);
+                }, 300);
+            }
+        }
+
+        async function loadMembers() {
+            if (AppStore && AppStore.state.members && AppStore.state.members.length > 0) {
+                members = AppStore.state.members;
+                return;
+            }
+            const res = await fetch(BASE_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'get_members' })
+            });
+            const json = await res.json();
+            if (json.result === 'success') {
+                members = json.list;
+                if (AppStore) {
+                    // Update store if missing, will trigger subscriber silently
+                    AppStore.state.members = members;
+                }
+            }
+        }
+
+        async function loadApprovals(mode) {
+            const container = document.getElementById('list-container');
+
+            // Frontend Guard
+            if (mode === 'all' && !canViewAll) {
+                alert('접근 권한이 없습니다.');
+                loadApprovals('todo');
+                return;
+            }
+
+            document.querySelectorAll('.tab').forEach(t => {
+                t.classList.toggle('active', (mode === 'todo' && t.innerText === '결재 대기함') ||
+                    (mode === 'sent' && t.innerText === '내가 보낸 기안') ||
+                    (mode === 'all' && t.innerText === '전체 문서함'));
+            });
+
+            try {
+                const res = await fetch(BASE_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'get_approvals', user_id: currentUser.id, mode })
+                });
+                const json = await res.json();
+                if (json.result === 'success') {
+                    if (AppStore) {
+                        AppStore.state.approvals = json.list;
+                    } else {
+                        renderList(json.list);
+                    }
+                } else {
+                    container.innerHTML = `<div style="text-align:center; padding:40px; color:var(--danger)">Error: ${json.message || 'Unknown error'}</div>`;
+                }
+            } catch (e) {
+                console.error(e);
+                container.innerHTML = `<div style="text-align:center; padding:40px; color:var(--danger)">서버 통신 오류가 발생했습니다.</div>`;
+            }
+        }
+
+        function renderList(list) {
+            const container = document.getElementById('list-container');
+            if (list.length === 0) {
+                container.innerHTML = '<div style="text-align:center; padding:40px; color:var(--text-muted)">문서가 없습니다.</div>';
+                return;
+            }
+
+            let html = `<table><thead><tr><th>문서번호/기안자</th><th>제목</th><th>진행상태</th><th>생성일</th></tr></thead><tbody>`;
+            list.forEach(item => {
+                const drafterName = members.find(m => m.id === item.drafter_id)?.name || item.drafter_id;
+
+                // Detailed Status Logic
+                let statusDisplay = STATUS_MAP[item.status] || item.status;
+                let statusClass = item.status;
+
+                if (item.status === 'IN_PROGRESS') {
+                    // Find the Pending Approver
+                    const pendingLine = item.lines.find(l => l.status === 'PENDING');
+                    if (pendingLine) {
+                        // Priority: Custom Approver Name (if manual) -> Position -> Name
+                        const approverMember = members.find(m => m.id === pendingLine.approver_id);
+                        const label = approverMember ? (approverMember.position || approverMember.name) : pendingLine.approver_name;
+                        statusDisplay = `${label} 승인 대기`;
+                    } else {
+                        statusDisplay = '진행중';
+                    }
+                }
+
+                html += `
+                    <tr onclick="viewApproval('${item.id}')" style="cursor:pointer">
+                        <td><small>${item.id}</small><br><b>${drafterName}</b></td>
+                        <td>
+                            <div>${item.title}</div>
+                            <div class="flow-container">${renderFlow(item.lines)}</div>
+                        </td>
+                        <td><span class="status-badge status-${statusClass}">${statusDisplay}</span></td>
+                        <td><small>${new Date(item.created_at).toLocaleDateString()}</small></td>
+                    </tr>
+                `;
+            });
+            html += '</tbody></table>';
+            container.innerHTML = html;
+        }
+
+        function renderFlow(lines) {
+            return lines.map((line, idx) => {
+                let statusClass = '';
+                if (line.status === 'APPROVED') statusClass = 'done';
+                else if (line.status === 'PENDING') statusClass = 'active';
+                else if (line.status === 'REJECTED') statusClass = 'rejected';
+
+                const approverMember = members.find(m => m.id === line.approver_id);
+                // Display Position if available, else Name
+                const approverLabel = approverMember ? (approverMember.position || approverMember.name) : line.approver_name;
+
+                return `
+                    <div class="flow-step">
+                        <div class="step-dot ${statusClass}">${idx + 1}</div>
+                        <div style="font-size: 0.65rem">${approverLabel}</div>
+                    </div>
+                    ${idx < lines.length - 1 ? '<div class="step-line ' + (line.status === 'APPROVED' ? 'done' : '') + '"></div>' : ''}
+                `;
+            }).join('');
+        }
+        
+        // Helper to parse SQLite dates safely in KST 
+        function parseSafeDate(dateStr) {
+            if (!dateStr) return '날짜 없음';
+            // If it's pure SQL format '2026-03-09 15:30:00', append Z or treat as local explicitly.
+            // Actually, if we just replace space with 'T', the browser parses '2026-03-09T15:30:00' as LOCAL TIME in most modern browsers.
+            // If it has a 'Z', it parses as UTC. Since we stored KST in DB via datetime('now', 'localtime'), it lacks 'Z'.
+            const isoLikeStr = dateStr.replace(' ', 'T');
+            const d = new Date(isoLikeStr);
+            return isNaN(d) ? dateStr : d.toLocaleString();
+        }
+
+        function renderComments(lines, drafterComment, drafterLabel, drafterTime, history = []) {
+            const hasActiveComments = lines.some(l => l.comment && l.comment.trim() !== '') || (drafterComment && drafterComment.trim() !== '');
+            const hasHistory = history && history.length > 0;
+            if (!hasActiveComments && !hasHistory) return '';
+
+            let html = '<div style="margin-top: 20px; margin-bottom: 20px; border-top: 1px solid var(--border); padding-top: 15px;"><h4><i class="fas fa-comments"></i> 결재/기안 의견</h4>';
+
+            // 1. Add Current Drafter Comment
+            if (drafterComment && drafterComment.trim() !== '') {
+                html += `
+                    <div style="margin-bottom: 10px; background: #fffbe8; padding: 12px; border-radius: 6px; border-left: 4px solid var(--warning); border-bottom: 1px solid #e2e8f0; border-right: 1px solid #e2e8f0; border-top: 1px solid #e2e8f0;">
+                        <div style="font-weight: bold; margin-bottom: 6px; font-size: 0.9em; display: flex; justify-content: space-between;">
+                            <span><i class="fas fa-user-edit"></i> ${drafterLabel} <span style="color: var(--warning); margin-left: 5px;">[상신/기안]</span></span>
+                            <span style="color: var(--text-muted); font-size: 0.8em; font-weight: normal;">${parseSafeDate(drafterTime)}</span>
+                        </div>
+                        <div style="white-space: pre-wrap; color: #334155; font-size: 0.95em; line-height: 1.5; padding-left: 5px;">${drafterComment}</div>
+                    </div>
+                `;
+            }
+
+            // 2. Add Current Approver Comments
+            lines.forEach(line => {
+                if (!line.comment || line.comment.trim() === '') return;
+                const approverMember = members.find(m => m.id === line.approver_id);
+                const approverLabelObj = approverMember ? `${approverMember.name} ${approverMember.position || ''}` : line.approver_name;
+                const isApproved = line.status === 'APPROVED';
+                const statusColor = isApproved ? 'var(--success)' : 'var(--danger)';
+                const statusText = isApproved ? '승인' : '반려';
+
+                html += `
+                    <div style="margin-bottom: 10px; background: #f8fafc; padding: 12px; border-radius: 6px; border-left: 4px solid ${statusColor}; border-bottom: 1px solid #e2e8f0; border-right: 1px solid #e2e8f0; border-top: 1px solid #e2e8f0;">
+                        <div style="font-weight: bold; margin-bottom: 6px; font-size: 0.9em; display: flex; justify-content: space-between;">
+                            <span><i class="fas fa-user-circle"></i> ${approverLabelObj} <span style="color: ${statusColor}; margin-left: 5px;">[${statusText}]</span></span>
+                            <span style="color: var(--text-muted); font-size: 0.8em; font-weight: normal;">${parseSafeDate(line.acted_at)}</span>
+                        </div>
+                        <div style="white-space: pre-wrap; color: #334155; font-size: 0.95em; line-height: 1.5; padding-left: 5px;">${line.comment}</div>
+                    </div>
+                `;
+            });
+
+            // 3. Add Previous History Comments
+            if (hasHistory) {
+                html += `<div style="margin: 20px 0; border-top: 1px dashed #cbd5e1; padding-top: 15px; position:relative;">
+                            <span style="position:absolute; top:-10px; left:10px; background:white; padding:0 10px; font-size:0.8em; color:var(--text-muted); font-weight:bold;"><i class="fas fa-history"></i> 이전 결재 이력 (반려/회수 전)</span>
+                        </div>`;
+
+                history.forEach(h => {
+                    const approverMember = members.find(m => m.id === h.approver_id);
+                    const approverLabelObj = approverMember ? `${approverMember.name} ${approverMember.position || ''}` : h.approver_name;
+                    const isApproved = h.status === 'APPROVED';
+                    // Gray out legacy comments slightly
+                    const statusColor = isApproved ? '#94a3b8' : '#ef4444';
+                    const statusText = isApproved ? '승인' : '반려';
+
+                    html += `
+                        <div style="margin-bottom: 10px; background: #f1f5f9; padding: 12px; border-radius: 6px; border-left: 4px solid ${statusColor}; border: 1px dashed #cbd5e1; opacity: 0.85;">
+                            <div style="font-weight: bold; margin-bottom: 6px; font-size: 0.9em; display: flex; justify-content: space-between; color: #64748b;">
+                                <span><i class="fas fa-user-clock"></i> ${approverLabelObj} <span style="color: ${statusColor}; margin-left: 5px;">[${statusText}]</span></span>
+                                <span style="font-size: 0.8em; font-weight: normal;">${parseSafeDate(h.acted_at)}</span>
+                            </div>
+                            <div style="white-space: pre-wrap; color: #475569; font-size: 0.95em; line-height: 1.5; padding-left: 5px;">${h.comment}</div>
+                        </div>
+                    `;
+                });
+            }
+
+            html += '</div>';
+            return html;
+        }
+
+        // Drafting
+        function openDraftModal() {
+            document.body.style.overflow = 'hidden';
+            document.getElementById('draft-modal').style.display = 'flex';
+            document.getElementById('draft-title').value = '';
+            document.getElementById('draft-content').value = '';
+            document.getElementById('draft-comment').value = '';
+            document.getElementById('draft-content').style.display = 'block';
+            window.draftOriginalId = null; // Reset
+            window.draftExistingHistory = []; // Ensure clear
+            const pm = document.getElementById('draft-preview-msg');
+            if (pm) pm.style.display = 'none';
+            window.currentDraftData = null;
+            document.getElementById('draft-attachments').value = '';
+            document.getElementById('current-attachments').innerHTML = '';
+            window.draftExistingAttachments = [];
+            window.deleteQueue = [];
+            document.getElementById('approval-line-setup').innerHTML = '';
+            addApproverRow(); // At least one
+        }
+
+        function addApproverRow(targetId = null) {
+            const container = document.getElementById('approval-line-setup');
+            const row = document.createElement('div');
+            row.style.display = 'flex';
+            row.style.gap = '8px';
+            row.style.marginBottom = '8px';
+
+            // Group by Team
+            const teams = {};
+            // Sort Order: Center Director > Standing Team Manager > Team Manager > Member
+            const positionOrder = { '센터장': 0, '부센터장': 1, '상임팀장': 2, '팀장': 3, '주임': 4, '팀원': 5 };
+
+            // Current User Rank
+            const myRank = positionOrder[currentUser.position] ?? 99;
+
+            // Clone and Sort members
+            const sortedMembers = [...members]
+                .filter(m => {
+                    if (m.id === currentUser.id) return true; // Describe: Include self as requested
+                    const targetRank = positionOrder[m.position] ?? 99;
+                    // Strict "Higher Only": targetRank < myRank (smaller number is higher rank)
+                    // If user is top rank (0), they see no one? 
+                    // Let's assume for now strict higher rank as requested. 
+                    // Maybe allow same rank if myRank is 0 or 1? No, user was specific.
+                    return targetRank < myRank;
+                })
+                .sort((a, b) => {
+                    const posA = positionOrder[a.position] ?? 99;
+                    const posB = positionOrder[b.position] ?? 99;
+                    return posA - posB;
+                });
+
+            sortedMembers.forEach(m => {
+                const teamName = m.team || '기타';
+                if (!teams[teamName]) teams[teamName] = [];
+                teams[teamName].push(m);
+            });
+
+            let options = '<option value="">선택하세요</option>';
+            // Check if we have any valid approvers
+            if (sortedMembers.length === 0) {
+                options = '<option value="">가능한 상위 결재자가 없습니다</option>';
+            }
+
+            // Specific order for teams? Let's just sort keys
+            Object.keys(teams).sort().forEach(teamName => {
+                options += `<optgroup label="${teamName}">`;
+                teams[teamName].forEach(m => {
+                    options += `<option value="${m.id}" ${targetId === m.id ? 'selected' : ''}>
+                        ${m.name} ${m.position ? `(${m.position})` : ''}
+                    </option>`;
+                });
+                options += `</optgroup>`;
+            });
+
+            row.innerHTML = `
+                <select class="approver-select" style="flex-grow:1">${options}</select>
+                <button class="btn btn-outline" onclick="this.parentElement.remove()" style="padding: 5px 10px">&times;</button>
+            `;
+            container.appendChild(row);
+        }
+
+        function suggestApprovalLine() {
+            document.getElementById('approval-line-setup').innerHTML = ''; // Clear
+
+            const line = [];
+            const positionOrder = { '센터장': 0, '부센터장': 1, '상임팀장': 2, '팀장': 3, '주임': 4, '팀원': 5 };
+            const myRank = positionOrder[currentUser.position] ?? 99; // 99 means rank below 팀원 (null, etc)
+
+            // 1. Team Manager / Team Admin (주임) - Only if drafter is strictly below 주임 (rank > 4)
+            if (myRank > 4) {
+                const chief = members.find(m => m.team === currentUser.team && m.position === '주임');
+                if (chief) line.push(chief);
+            }
+
+            // 1.5 Team Leader (팀장) - If drafter is below 팀장 (rank > 3)
+            if (myRank > 3) {
+                let teamLeader = members.find(m => m.team === currentUser.team && m.position === '팀장');
+                if (!teamLeader) teamLeader = members.find(m => m.position === '팀장'); // Fallback to any team leader
+                if (teamLeader) line.push(teamLeader);
+            }
+
+            // 2. Standing Team Manager (상임팀장) - If drafter is below 상임팀장 (rank > 2)
+            if (myRank > 2) {
+                const standingTm = members.find(m => m.position === '상임팀장');
+                if (standingTm) line.push(standingTm);
+            }
+
+            // 3. Center Director (센터장) - If drafter is below 센터장 (rank > 0)
+            if (myRank > 0) {
+                const director = members.find(m => m.position === '센터장');
+                if (director) line.push(director);
+            }
+
+            if (line.length === 0) {
+                parent.Modal.toast('추천할 결재선이 없습니다 (본인 직위 확인).');
+                addApproverRow();
+            } else {
+                line.forEach(m => addApproverRow(m.id));
+                parent.Modal.toast('조직 체계에 맞게 추천 결재선을 구성했습니다.');
+            }
+        }
+
+        async function submitApproval() {
+            const title = document.getElementById('draft-title').value;
+            const type = document.getElementById('draft-type').value;
+            const contentText = document.getElementById('draft-content').value;
+
+            const attachFiles = document.getElementById('draft-attachments').files;
+            let attachmentNames = window.draftExistingAttachments || [];
+            if (window.deleteQueue && window.deleteQueue.length > 0) {
+                attachmentNames = attachmentNames.filter(n => !window.deleteQueue.includes(n));
+            }
+
+            const lineSelects = document.querySelectorAll('.approver-select');
+            const lines = Array.from(lineSelects).map(sel => ({
+                approver_id: sel.value,
+                approver_name: sel.options[sel.selectedIndex].text.split(' (')[0]
+            }));
+
+            const drafterComment = document.getElementById('draft-comment').value;
+
+            if (!title) return parent.Modal.alert('제목을 입력하세요.');
+            if (lines.length === 0) return parent.Modal.alert('결재자를 지정하세요.');
+            if (!lines.every(l => !!l.approver_id)) return parent.Modal.alert('선택되지 않은 결재자가 있습니다. 정확히 지정해주세요.');
+            if (!drafterComment || drafterComment.trim() === '') return parent.Modal.alert('의견/제안(기안 코멘트)을 필수로 작성해주세요.');
+
+            const docId = `temp_${Date.now()}`;
+
+            if (attachFiles.length > 0) {
+                const formData = new FormData();
+                formData.append('docId', docId);
+                for (let f of attachFiles) {
+                    formData.append('attachments', f);
+                }
+
+                try {
+                    const uploadRes = await fetch('/api/upload_approval', { method: 'POST', body: formData }).then(r => r.json());
+                    if (uploadRes.result === 'success') {
+                        attachmentNames = attachmentNames.concat(uploadRes.attachments.map(f => `${docId}/${f}`));
+                    } else {
+                        return parent.Modal.alert("파일 업로드 실패: " + uploadRes.message);
+                    }
+                } catch (e) {
+                    return parent.Modal.alert("파일 업로드 오류: " + e.message);
+                }
+            }
+
+            let content = {
+                text: contentText,
+                drafter_comment: document.getElementById('draft-comment').value,
+                attachments: attachmentNames
+            };
+
+            if (window.currentDraftData) {
+                content.docType = window.currentDraftData.docType;
+                content.reportData = window.currentDraftData.content;
+                content.text = `[연동 문서 기안] ${window.currentDraftData.title}`;
+                if (window.currentDraftData.linkedDocId) {
+                    content.linkedDocId = window.currentDraftData.linkedDocId;
+                }
+            }
+
+            const payload = {
+                action: 'create_approval',
+                drafter_id: currentUser.id,
+                title, type, content, lines
+            };
+            if (window.draftOriginalId) {
+                payload.id = window.draftOriginalId;
+            }
+
+            const res = await fetch(BASE_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            const json = await res.json();
+            if (json.result === 'success') {
+                closeModal('draft-modal');
+                loadApprovals('sent');
+                window.draftOriginalId = null;
+                parent.Modal.toast('결재가 상신되었습니다.');
+            }
+        }
+
+        window.markDeleteDraft = function (el, fname) {
+            window.deleteQueue.push(fname);
+            el.parentElement.style.textDecoration = "line-through";
+        }
+
+        // Viewing & Decision
+        let currentViewingId = '';
+        async function viewApproval(id) {
+            currentViewingId = id;
+            const res = await fetch(BASE_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'get_approvals', user_id: currentUser.id }) // All for lookup
+            });
+            const json = await res.json();
+            const item = json.list.find(a => a.id === id);
+            if (!item) return;
+
+            const isMyTurn = item.lines.find(l => l.approver_id === currentUser.id && l.status === 'PENDING');
+
+            const drafterMember = members.find(m => m.id === item.drafter_id);
+            const drafterLabel = drafterMember ? `${drafterMember.name} ${drafterMember.position ? `(${drafterMember.position})` : ''}` : item.drafter_id;
+            const typeLabel = DOC_TYPE_MAP[item.type] || item.type;
+
+            let attachHtml = '';
+            if (item.content.attachments && item.content.attachments.length > 0) {
+                attachHtml = '<div style="margin-bottom: 20px; padding: 10px; background: #f8fafc; border-radius: 8px;"><b>첨부파일:</b><br>';
+                item.content.attachments.forEach(f => {
+                    const fileName = f.split('/').pop();
+                    const fileUrl = `/api/download_approval?file=${encodeURIComponent(f)}`;
+
+                    if (fileName.toLowerCase().endsWith('.pdf')) {
+                        attachHtml += `
+                            <div style="margin-top: 10px;">
+                                <div style="color:var(--secondary); margin-bottom: 5px;"><i class="fas fa-file-pdf"></i> ${fileName}</div>
+                                <iframe src="${fileUrl}" width="100%" height="400px" style="border: 1px solid var(--border); border-radius: 4px;"></iframe>
+                            </div>`;
+                    } else if (/\.(png|jpg|jpeg|gif|webp)$/i.test(fileName)) {
+                        attachHtml += `
+                            <div style="margin-top: 10px;">
+                                <img src="${fileUrl}" style="max-width: 100%; border-radius: 4px;" alt="${fileName}" />
+                                <div style="cursor:pointer; color:var(--secondary); margin-top:5px; font-size: 0.8em;" onclick="window.open('${fileUrl}', '_blank')"><i class="fas fa-download"></i> 다운로드</div>
+                            </div>`;
+                    } else {
+                        attachHtml += `<div style="cursor:pointer; color:var(--secondary); margin-top:5px;" onclick="window.open('${fileUrl}', '_blank')"><i class="fas fa-paperclip"></i> ${fileName}</div>`;
+                    }
+                });
+                attachHtml += '</div>';
+            }
+
+            let reportHtml = '';
+            if (item.content.docType && item.content.reportData) {
+                reportHtml = `
+                <div style="margin-bottom: 20px;">
+                    <div style="display:flex; justify-content: space-between; align-items: center; background: #e2e8f0; padding: 8px 15px; border-radius: 8px 8px 0 0; border: 1px solid var(--border); border-bottom: none;">
+                        <span style="font-size: 13px; font-weight: bold; color: #475569;"><i class="fas fa-search-plus"></i> 문서 미리보기</span>
+                        <div style="display: flex; gap: 5px; align-items: center;">
+                            <button class="btn btn-outline" style="padding: 4px 8px; font-size: 12px;" onclick="setApprovalZoom(-0.1)" title="축소"><i class="fas fa-minus"></i></button>
+                            <span id="approvalZoomLabel" style="font-size: 12px; font-weight: bold; width: 40px; text-align: center;">100%</span>
+                            <button class="btn btn-outline" style="padding: 4px 8px; font-size: 12px;" onclick="setApprovalZoom(0.1)" title="확대"><i class="fas fa-plus"></i></button>
+                            <button class="btn btn-outline" style="padding: 4px 8px; font-size: 12px; margin-left: 5px;" onclick="fitApprovalZoom()" title="화면에 맞춤"><i class="fas fa-compress-arrows-alt"></i> 맞춤</button>
+                        </div>
+                    </div>
+                    <div style="width:100%; border:1px solid var(--border); border-radius: 0 0 8px 8px; background:#f8fafc; overflow-x:auto; overflow-y:hidden; position: relative;" id="approval-preview-container">
+                        <div id="approval-scale-wrapper" style="transform-origin: top center; transition: transform 0.2s;">
+                            <iframe id="approval-preview-frame" src="doc_templates/${item.content.docType}.html" style="width:794px; height:1123px; border:none; background:white; display:block; margin: 0 auto; box-shadow: 0 4px 10px rgba(0,0,0,0.1);"></iframe>
+                        </div>
+                    </div>
+                </div>`;
+            } else {
+                reportHtml = `<div style="min-height: 100px; padding: 10px; border: 1px solid var(--border); border-radius: 8px; margin-bottom: 20px; white-space: pre-wrap;">${item.content.text || ''}</div>`;
+            }
+
+            let html = `
+                <h3>문서 상세 보기</h3>
+                <div class="card" style="background:#f1f5f9; padding: 15px; margin-bottom: 20px;">
+                    <div><b>제목:</b> ${item.title}</div>
+                    <div><b>문서종류:</b> ${typeLabel}</div>
+                    <div><b>기안자:</b> ${drafterLabel}</div>
+                </div>
+                ${reportHtml}
+                ${attachHtml}
+                <h4>결재 흐름</h4>
+                <div class="flow-container" style="margin-bottom: 20px;">${renderFlow(item.lines)}</div>
+                ${renderComments(item.lines, item.content.drafter_comment, drafterLabel, item.created_at, item.content.history)}
+            `;
+
+            if (isMyTurn) {
+                html += `
+                    <div style="border-top: 1px solid var(--border); padding-top: 20px;">
+                        <div class="form-group">
+                            <label>결재 의견</label>
+                            <textarea id="approve-comment" placeholder="결재/반려 시 남길 내용을 입력하세요"></textarea>
+                        </div>
+                        <div style="display:flex; justify-content:flex-end; gap:12px;">
+                            <button class="btn btn-outline" onclick="closeModal('view-modal')">닫기</button>
+                            <button class="btn btn-danger" onclick="makeStepDecision('REJECTED')">반려</button>
+                            <button class="btn btn-success" onclick="makeStepDecision('APPROVED')">승인</button>
+                        </div>
+                    </div>
+                `;
+            } else {
+                let printBtn = '';
+                if (item.content.docType && item.status === 'APPROVED') {
+                    printBtn = `<button class="btn btn-secondary" onclick="printApproval()"><i class="fas fa-print"></i> 인쇄 (PDF 저장)</button>`;
+                }
+
+                // Feature: Re-submit (Re-draft) for WITHDRAWN or REJECTED docs
+                if (item.drafter_id === currentUser.id && (item.status === 'WITHDRAWN' || item.status === 'REJECTED')) {
+                    html += `
+                        <div style="text-align:right; gap:10px; display:flex; justify-content:flex-end;">
+                            ${printBtn}
+                            <button class="btn btn-primary" onclick="reDraft('${item.id}')">
+                                <i class="fas fa-edit"></i> 재상신 (내용 복사)
+                            </button>
+                            <button class="btn btn-outline" onclick="closeModal('view-modal')">닫기</button>
+                        </div>`;
+                } else if (item.drafter_id === currentUser.id && item.status === 'IN_PROGRESS') {
+                    html += `
+                        <div style="text-align:right; gap:10px; display:flex; justify-content:flex-end;">
+                            ${printBtn}
+                            <button class="btn btn-danger" onclick="withdrawApproval('${item.id}')">
+                                <i class="fas fa-undo"></i> 회수하기
+                            </button>
+                            <button class="btn btn-outline" onclick="closeModal('view-modal')">닫기</button>
+                        </div>`;
+                } else {
+                    html += `<div style="text-align:right; gap:10px; display:flex; justify-content:flex-end;">
+                        ${printBtn}
+                        <button class="btn btn-outline" onclick="closeModal('view-modal')">닫기</button>
+                    </div>`;
+                }
+            }
+
+            document.getElementById('view-content').innerHTML = html;
+            document.body.style.overflow = 'hidden';
+            document.getElementById('view-modal').style.display = 'flex';
+
+            if (item.content.docType && item.content.reportData) {
+                setTimeout(() => {
+                    const frm = document.getElementById('approval-preview-frame');
+                    if (frm && frm.contentWindow) {
+                        const drafter = members.find(m => m.id === item.drafter_id);
+                        const enhancedLines = item.lines.map(l => {
+                            const m = members.find(mbr => mbr.id === l.approver_id);
+                            return {
+                                ...l,
+                                approver_position: m ? (m.position || m.name) : l.approver_name,
+                                approver_stamp: m ? m.stamp : ''
+                            };
+                        });
+                        const enhancedData = {
+                            ...item.content.reportData,
+                            lines: enhancedLines,
+                            drafter_name: drafter ? drafter.name : item.drafter_id,
+                            drafter_stamp: drafter ? drafter.stamp : ''
+                        };
+                        frm.contentWindow.postMessage({ action: 'render', data: enhancedData }, '*');
+                        // Automatically fit the zoom on load
+                        fitApprovalZoom();
+                    }
+                }, 500);
+            }
+        }
+
+        function printApproval() {
+            const frm = document.getElementById('approval-preview-frame');
+            if (frm && frm.contentWindow) {
+                frm.contentWindow.focus();
+                // We send a print action or just call print if they are on same origin
+                try {
+                    frm.contentWindow.print();
+                } catch (e) {
+                    console.error("Print blocked by CORS or internal error:", e);
+                    parent.Modal.alert("인쇄를 실행할 수 없습니다.");
+                }
+            } else {
+                window.print();
+            }
+        }
+
+        let approvalCurrentZoom = 1.0;
+        let approvalIsFitMode = false;
+
+        function setApprovalZoom(delta) {
+            approvalIsFitMode = false;
+            approvalCurrentZoom = Math.max(0.3, Math.min(approvalCurrentZoom + delta, 2.5));
+            applyApprovalZoom();
+            document.getElementById('approvalZoomLabel').innerText = Math.round(approvalCurrentZoom * 100) + '%';
+        }
+
+        function fitApprovalZoom() {
+            approvalIsFitMode = true;
+            const container = document.getElementById('approval-preview-container');
+            if (!container) return;
+            const padding = 40;
+            const availableWidth = container.clientWidth - padding;
+            // standard A4 width is 794
+            const scaleX = availableWidth / 794;
+            approvalCurrentZoom = Math.max(0.4, Math.min(scaleX, 1));
+            applyApprovalZoom();
+            document.getElementById('approvalZoomLabel').innerText = 'Fit';
+        }
+
+        function applyApprovalZoom() {
+            const frame = document.getElementById('approval-preview-frame');
+            const scaleWrapper = document.getElementById('approval-scale-wrapper');
+            const container = document.getElementById('approval-preview-container');
+
+            if (frame && scaleWrapper) {
+                scaleWrapper.style.transform = `scale(${approvalCurrentZoom})`;
+                const scaledWidth = 794 * approvalCurrentZoom;
+                const scaledHeight = 1123 * approvalCurrentZoom;
+
+                scaleWrapper.style.width = `${scaledWidth}px`;
+                scaleWrapper.style.height = `${scaledHeight}px`;
+
+                if (container) {
+                    if (scaledHeight > container.clientHeight || scaledWidth > container.clientWidth) {
+                        scaleWrapper.style.margin = '20px auto';
+                    } else {
+                        scaleWrapper.style.margin = '0 auto';
+                    }
+                }
+            }
+        }
+
+        async function makeStepDecision(status) {
+            const comment = document.getElementById('approve-comment').value;
+            if (!comment || comment.trim() === '') {
+                return parent.Modal.alert('의견을 필수로 작성해주세요.');
+            }
+
+            const res = await fetch(BASE_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    action: 'update_approval_status',
+                    approval_id: currentViewingId,
+                    approver_id: currentUser.id,
+                    status, comment
+                })
+            });
+            const json = await res.json();
+            if (json.result === 'success') {
+                closeModal('view-modal');
+                loadApprovals('todo');
+                parent.Modal.toast(status === 'APPROVED' ? '승인되었습니다.' : '반려되었습니다.');
+            }
+        }
+
+        function closeModal(id) { 
+            document.getElementById(id).style.display = 'none'; 
+            document.body.style.overflow = '';
+        }
+
+        init();
+        async function withdrawApproval(id) {
+            if (!confirm("문서를 회수하시겠습니까?\n회수 후에는 더 이상 결재가 진행되지 않습니다.")) return;
+
+            try {
+                const res = await fetch(BASE_URL, {
+                    method: 'POST', body: JSON.stringify({ action: 'withdraw_approval', approval_id: id, user_id: currentUser.id })
+                });
+                const json = await res.json();
+                if (json.result === 'success') {
+                    alert('회수되었습니다.');
+                    closeModal('view-modal');
+                    loadApprovals('sent');
+                } else {
+                    alert('실패: ' + json.message);
+                }
+            } catch (e) { console.error(e); alert('오류 발생'); }
+        }
+
+        // --- Re-draft Feature ---
+        async function reDraft(id) {
+            // 1. Fetch details
+            try {
+                const res = await fetch(BASE_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'get_approvals', user_id: currentUser.id })
+                });
+                const json = await res.json();
+                const item = json.list.find(a => a.id === id);
+                if (!item) return alert('문서 정보를 찾을 수 없습니다.');
+
+                // Redirect to doc_issue.html for linked documents
+                if (item.content && item.content.linkedDocId) {
+                    window.location.href = `doc_issue.html?edit_id=${item.content.linkedDocId}&approval_id=${item.id}`;
+                    return;
+                }
+
+                // 2. Open Draft Modal
+                closeModal('view-modal');
+                openDraftModal();
+
+                // 3. Fill Data
+                let newTitle = item.title;
+                if (!newTitle.includes('[재상신]')) {
+                    newTitle = `[재상신] ${newTitle}`;
+                }
+                document.getElementById('draft-title').value = newTitle;
+                document.getElementById('draft-type').value = item.type;
+                document.getElementById('draft-content').value = item.content.text || '';
+
+                // When redrafting, the old comment is converted to history by the server. 
+                // Let the user write a *new* comment for the retry.
+                document.getElementById('draft-comment').value = '';
+
+                // Store Original ID and History
+                window.draftOriginalId = item.id;
+                window.draftExistingHistory = item.content.history || [];
+                window.draftExistingAttachments = item.content.attachments || [];
+                window.deleteQueue = [];
+                let attachHtml = '';
+                if (window.draftExistingAttachments.length > 0) {
+                    window.draftExistingAttachments.forEach(f => {
+                        const fileName = f.split('/').pop();
+                        attachHtml += `<div><i class="fas fa-paperclip"></i> ${fileName} <span style="color:var(--danger); cursor:pointer;" onclick="markDeleteDraft(this, '${f}')">[삭제]</span></div>`;
+                    });
+                }
+                document.getElementById('current-attachments').innerHTML = attachHtml;
+                document.getElementById('draft-attachments').value = '';
+
+                // 4. Fill Lines (excluding those who rejected? No, usually keep original and let user adjust)
+                document.getElementById('approval-line-setup').innerHTML = '';
+                item.lines.forEach(l => addApproverRow(l.approver_id));
+
+                parent.Modal.toast('기존 내용을 불러왔습니다.');
+            } catch (e) { console.error(e); alert('재상신 준비 중 오류가 발생했습니다.'); }
+        }
+
+        // --- Saved Lines Feature ---
+        async function saveCurrentLine() {
+            const lines = [];
+            document.querySelectorAll('.approver-select').forEach(sel => {
+                lines.push({ approver_id: sel.value, approver_name: sel.options[sel.selectedIndex].text });
+            });
+            if (lines.length === 0) return alert('저장할 결재선이 없습니다.');
+
+            const title = prompt('결재선 이름을 입력하세요 (예: 휴가 결재선)');
+            if (!title) return;
+
+            try {
+                const res = await fetch(BASE_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'save_line', user_id: currentUser.id, title, lines })
+                });
+                const json = await res.json();
+                if (json.result === 'success') parent.Modal.toast('결재선이 저장되었습니다.');
+                else alert('저장 실패: ' + json.message);
+            } catch (e) { console.error(e); }
+        }
+
+        async function loadSavedLinesModal() {
+            // Simple prompt/list for now, or a small overlay. Let's use a dynamic overlay inside the modal.
+            // For simplicity, let's just fetch and show a simple selection via confirm/alert flow is too hard.
+            // Let's create a temporary overlay div.
+            let overlay = document.getElementById('saved-line-overlay');
+            if (!overlay) {
+                overlay = document.createElement('div');
+                overlay.id = 'saved-line-overlay';
+                overlay.style.cssText = 'position:absolute; top:50px; left:50%; transform:translateX(-50%); background:white; border:1px solid #ccc; padding:20px; box-shadow:0 0 10px rgba(0,0,0,0.2); z-index:2000; width:300px; border-radius:8px;';
+                document.body.appendChild(overlay);
+            }
+            overlay.innerHTML = '<div style="text-align:center"><i class="fas fa-spinner fa-spin"></i> 불러오는 중...</div>';
+            overlay.style.display = 'block';
+
+            try {
+                const res = await fetch(BASE_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'get_saved_lines', user_id: currentUser.id })
+                });
+                const json = await res.json();
+                if (json.result === 'success') {
+                    if (json.list.length === 0) {
+                        overlay.innerHTML = `
+                            <h4>저장된 결재선</h4>
+                            <p>저장된 내역이 없습니다.</p>
+                            <button class="btn btn-outline" onclick="document.getElementById('saved-line-overlay').style.display='none'">닫기</button>
+                        `;
+                    } else {
+                        let listHtml = json.list.map(sl => `
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; border-bottom:1px solid #eee; padding-bottom:5px;">
+                                <span style="font-weight:bold; cursor:pointer;" onclick='applySavedLine(${JSON.stringify(sl.lines)})'>${sl.title}</span>
+                                <button onclick="deleteSavedLine('${sl.id}')" style="border:none; bg:transparent; color:red; cursor:pointer;">&times;</button>
+                            </div>
+                        `).join('');
+                        overlay.innerHTML = `
+                            <h4 style="margin-top:0">저장된 결재선 선택</h4>
+                            <div style="max-height:200px; overflow-y:auto; margin-bottom:10px;">${listHtml}</div>
+                            <button class="btn btn-outline" style="width:100%" onclick="document.getElementById('saved-line-overlay').style.display='none'">닫기</button>
+                        `;
+                    }
+                }
+            } catch (e) {
+                console.error(e);
+                overlay.innerHTML = '오류 발생 <button onclick="this.parentElement.style.display=\'none\'">닫기</button>';
+            }
+        }
+
+        async function deleteSavedLine(id) {
+            if (!confirm('삭제하시겠습니까?')) return;
+            try {
+                await fetch(BASE_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'delete_saved_line', id })
+                });
+                loadSavedLinesModal(); // Reload
+            } catch (e) { console.error(e); }
+        }
+
+        function applySavedLine(lines) {
+            document.getElementById('approval-line-setup').innerHTML = '';
+            lines.forEach(l => {
+                // Compatibility check: if user ID no longer exists, we might need fallback
+                addApproverRow(l.approver_id);
+            });
+            document.getElementById('saved-line-overlay').style.display = 'none';
+            parent.Modal.toast('결재선이 적용되었습니다.');
+        }
+
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <title>사례회의록</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: white;
+            font-family: 'Malgun Gothic', '맑은 고딕', sans-serif;
+        }
+
+        .a4-container {
+            width: 100%;
+            max-width: 210mm;
+            min-height: 297mm;
+            padding: 20mm 15mm;
+            margin: 0 auto;
+            background-color: white;
+            box-sizing: border-box;
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 24pt;
+            letter-spacing: 5px;
+            margin-bottom: 20px;
+        }
+
+        .approval-table {
+            float: right;
+            margin-bottom: 20px;
+            border-collapse: collapse;
+            text-align: center;
+        }
+
+        .approval-table th,
+        .approval-table td {
+            border: 1px solid black;
+            width: 80px;
+            font-size: 11pt;
+        }
+
+        .approval-table th {
+            background-color: #f0f0f0;
+            padding: 5px;
+        }
+
+        .approval-table td {
+            height: 60px;
+        }
+
+        .clear {
+            clear: both;
+        }
+
+        .header-info {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-size: 11pt;
+            align-items: flex-end;
+        }
+
+        .main-table {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: fixed;
+        }
+
+        .main-table tr {
+            page-break-inside: avoid;
+        }
+
+        .report-content-row {
+            page-break-inside: auto;
+        }
+
+        .main-table th,
+        .main-table td {
+            border: 1px solid black;
+            padding: 8px 10px;
+            font-size: 11pt;
+            vertical-align: middle;
+        }
+
+        .main-table th {
+            background-color: #f0f0f0;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .main-table td {
+            text-align: left;
+        }
+
+        .val-text {
+            min-height: 20px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            font-family: inherit;
+            line-height: 1.5;
+        }
+
+        .section-header {
+            background-color: #e2e8f0 !important;
+            font-size: 12pt;
+            letter-spacing: 1px;
+        }
+
+        .check-box {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border: 1px solid black;
+            margin-right: 4px;
+            text-align: center;
+            line-height: 12px;
+            font-size: 10px;
+            font-weight: bold;
+        }
+
+        @media print {
+            @page {
+                size: a4;
+                margin: 20mm 15mm;
+            }
+
+            body {
+                background-color: white;
+            }
+
+            .a4-container {
+                margin: 0;
+                padding: 0;
+                box-shadow: none;
+                width: 100%;
+                height: auto;
+                min-height: auto;
+            }
+
+            .main-table,
+            .report-content-row,
+            .report-content-row td,
+            .val-text {
+                /* Let printer decide natural breaks */
+                page-break-inside: auto !important;
+                break-inside: auto !important;
+            }
+
+            /* Add some visual breathing room for split rows during print if needed */
+            tr {
+                page-break-inside: auto !important;
+                break-inside: auto !important;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="a4-container">
+        <h1>사 례 회 의 록</h1>
+
+        <table class="approval-table" id="dynamic-approval-table">
+            <tr>
+                <th>담당자</th>
+                <th>주임</th>
+                <th>팀장</th>
+                <th>센터장</th>
+            </tr>
+            <tr>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+        </table>
+        <div class="clear"></div>
+
+        <table class="main-table">
+            <colgroup>
+                <col style="width: 20%;">
+                <col style="width: 30%;">
+                <col style="width: 18%;">
+                <col style="width: 32%;">
+            </colgroup>
+
+            <tr>
+                <th>일 시</th>
+                <td colspan="3"><span id="t_datetime"></span></td>
+            </tr>
+            <tr>
+                <th>구 분</th>
+                <td><span id="t_type"></span></td>
+                <th>사례담당자</th>
+                <td><span id="t_manager"></span></td>
+            </tr>
+            <tr>
+                <th>참 석 자</th>
+                <td colspan="3"><span id="t_attendees"></span></td>
+            </tr>
+            <tr>
+                <th>주요안건</th>
+                <td colspan="3">
+                    <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                        <span class="val-text" id="t_agenda" style="flex:1;"></span>
+                        <div style="white-space:nowrap; margin-left: 15px;">
+                            ( <span class="check-box" id="t_is_chronic"></span> 만성 / <span class="check-box"
+                                id="t_is_suicide"></span> 자살 / <span class="check-box" id="t_is_child"></span> 아동 )
+                        </div>
+                    </div>
+                </td>
+            </tr>
+
+            <tr>
+                <th colspan="4" class="section-header">사 례 개 요</th>
+            </tr>
+
+            <tr class="report-content-row">
+                <td colspan="4" style="padding: 15px 20px;">
+                    <div id="t_overview_container" style="font-size:11pt; line-height:1.6;"></div>
+                </td>
+            </tr>
+
+            <tbody id="t_feedbacks_container">
+                <!-- Dynamically populated rows by Javascript -->
+            </tbody>
+
+            <tr>
+                <th colspan="4" class="section-header">결론 및 슈퍼비전</th>
+            </tr>
+            <tr>
+                <th>회의결과</th>
+                <td colspan="3"><span id="t_result" style="font-weight:bold; color:#0f172a;"></span></td>
+            </tr>
+            <tr class="report-content-row">
+                <th>슈퍼비전 내용</th>
+                <td colspan="3">
+                    <div class="val-text" id="t_supervision" style="min-height: 80px;"></div>
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    <script>
+        window.addEventListener('message', function (event) {
+            if (event.data.action === 'render' || event.data.action === 'loadDoc') {
+                const data = event.data.data;
+
+                let dtStr = data.v_datetime || '';
+                if (dtStr.includes('T')) {
+                    const dt = new Date(dtStr);
+                    if (!isNaN(dt.getTime())) {
+                        const days = ['일', '월', '화', '수', '목', '금', '토'];
+                        const ampm = dt.getHours() >= 12 ? '오후' : '오전';
+                        let h12 = dt.getHours() % 12;
+                        if (h12 === 0) h12 = 12;
+                        dtStr = `${dt.getFullYear()}년 ${dt.getMonth() + 1}월 ${dt.getDate()}일(${days[dt.getDay()]}) ${ampm} ${h12}:${String(dt.getMinutes()).padStart(2, '0')}`;
+                    }
+                }
+                document.getElementById('t_datetime').innerText = dtStr;
+
+                document.getElementById('t_type').innerText = data.v_type ? `사례회의 (${data.v_type})` : '';
+                document.getElementById('t_manager').innerText = data.v_manager || '';
+                document.getElementById('t_attendees').innerText = data.v_attendees || '';
+                document.getElementById('t_agenda').innerText = data.v_agenda || '';
+
+                document.getElementById('t_is_chronic').innerHTML = data.v_is_chronic ? 'V' : '&nbsp;';
+                document.getElementById('t_is_suicide').innerHTML = data.v_is_suicide ? 'V' : '&nbsp;';
+                document.getElementById('t_is_child').innerHTML = data.v_is_child ? 'V' : '&nbsp;';
+
+                // Overview texts sequentially
+                const titles = ["1. 인적사항", "2. 진단명 및 병력", "3. 회원등록경로", "4. 주 호 소", "5. 주요증상", "6. 가족사항 및 지지체계", "7. ISP 현황 및 평가도구", "8. 담당자 의견"];
+                let ovHtml = '';
+                for (let i = 1; i <= 8; i++) {
+                    const val = data[`v_ov_${i}`] || '';
+                    ovHtml += `<div style="font-weight:bold; margin-top:${i === 1 ? '0' : '12px'}; color:#1e293b; font-size:11pt;">${titles[i - 1]}</div>`;
+                    ovHtml += `<div class="val-text" style="padding-left:14px; margin-top:2px;">${val}</div>`;
+                }
+                document.getElementById('t_overview_container').innerHTML = ovHtml;
+
+                document.getElementById('t_result').innerText = data.v_result || '';
+                document.getElementById('t_supervision').innerText = data.v_supervision || '';
+
+                // Dynamic feedback rows
+                const feedbacks = data.v_feedbacks || [];
+                const feedbackContainer = document.getElementById('t_feedbacks_container');
+                let html = `<tr><th colspan="4" class="section-header">회 의 내 용</th></tr>`;
+
+                if (feedbacks.length > 0) {
+                    feedbacks.forEach((f, idx) => {
+                        html += `
+                        <tr class="report-content-row">
+                            <th style="font-weight:normal; font-size:10pt;">${f.name || '직원 ' + (idx + 1)}</th>
+                            <td colspan="3"><div class="val-text">${f.content || ''}</div></td>
+                        </tr>
+                        `;
+                    });
+                } else {
+                    html += `
+                    <tr>
+                        <td colspan="4" style="text-align:center; color:#999; height:40px;">의견 내용이 없습니다.</td>
+                    </tr>
+                    `;
+                }
+
+                feedbackContainer.innerHTML = html;
+                if (data.lines && data.lines.length > 0) {
+                    const table = document.getElementById('dynamic-approval-table');
+                    let thHtml = '<tr><th>담당자</th>';
+                    const createStampHtml = (stampSrc, name) => {
+                        const fallBackName = (name || '').substring(0, 3);
+                        const hasRealStamp = stampSrc && typeof stampSrc === 'string' && stampSrc.length > 10 && stampSrc !== 'null' && stampSrc !== 'undefined';
+                        if (hasRealStamp) {
+                            return `<img src="${stampSrc}" style="max-height: 50px; max-width: 50px; object-fit: contain;" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"/>
+                            <div style="display:none; border: 2px solid #ef4444; color: #ef4444; border-radius: 50%; width: 45px; height: 45px; align-items: center; justify-content: center; font-weight: bold; font-size: 13px; margin: 0 auto; letter-spacing: 1px;">${fallBackName}</div>`;
+                        } else {
+                            return `<div style="border: 2px solid #ef4444; color: #ef4444; border-radius: 50%; width: 45px; height: 45px; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 13px; margin: 0 auto; letter-spacing: 1px;">${fallBackName}</div>`;
+                        }
+                    };
+
+                    let tdHtml = `<tr><td style="height:60px; vertical-align:middle; text-align:center;">${createStampHtml(data.drafter_stamp, data.drafter_name)}</td>`;
+
+                    data.lines.forEach(line => {
+                        const position = line.approver_position || line.approver_name;
+                        thHtml += `<th>${position}</th>`;
+
+                        let stampHtml = '';
+                        if (line.status === 'APPROVED') {
+                            stampHtml = createStampHtml(line.approver_stamp, line.approver_name);
+                        } else if (line.status === 'REJECTED') {
+                            stampHtml = `<div style="color:white; background:#ef4444; border-radius: 4px; padding: 4px 8px; display: inline-block; font-size:12px; font-weight:bold;">반려</div>`;
+                        }
+
+                        tdHtml += `<td style="height:60px; vertical-align:middle; text-align:center;">${stampHtml}</td>`;
+                    });
+                    
+                    table.innerHTML = thHtml + '</tr>' + tdHtml + '</tr>';
+                }
+            } else if (event.data.action === 'print') {
+                window.print();
+            }
+        });
+    </script>
+</body>
+
+</html>

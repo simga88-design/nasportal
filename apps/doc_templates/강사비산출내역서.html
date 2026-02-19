@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <title>강사비 산출내역서</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: white;
+            font-family: 'Malgun Gothic', '맑은 고딕', sans-serif;
+        }
+
+        /* 워터마크 CSS */
+        .watermark {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(-45deg);
+            font-size: 50px;
+            color: rgba(0, 0, 0, 0.04);
+            font-weight: 800;
+            white-space: nowrap;
+            pointer-events: none;
+            letter-spacing: 10px;
+            z-index: 0;
+        }
+
+        .a4-container {
+            width: 210mm;
+            min-height: 297mm;
+            padding: 20mm;
+            margin: 0 auto;
+            background-color: white;
+            box-sizing: border-box;
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 24pt;
+            letter-spacing: 5px;
+            margin-bottom: 40px;
+        }
+
+        .info-row {
+            font-size: 13pt;
+            line-height: 1.8;
+            margin-bottom: 10px;
+            display: flex;
+        }
+
+        .info-row span.val {
+            font-size: 13pt;
+            font-family: inherit;
+            flex: 1;
+            padding: 2px 5px;
+            min-height: 25px;
+        }
+
+        .table-title-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            margin-top: 30px;
+            margin-bottom: 10px;
+        }
+
+        .table-title {
+            font-size: 14pt;
+            font-weight: bold;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: center;
+            margin-bottom: 30px;
+            table-layout: fixed;
+        }
+
+        th,
+        td {
+            border: 1px solid black;
+            padding: 10px;
+            font-size: 12pt;
+        }
+
+        th {
+            background-color: #f0f0f0;
+            font-weight: bold;
+        }
+
+        .val-textarea {
+            white-space: pre-wrap;
+            text-align: center;
+            min-height: 40px;
+        }
+
+        .footer-section {
+            margin-top: 50px;
+            text-align: center;
+            font-size: 14pt;
+            line-height: 1.8;
+        }
+
+        .date-row {
+            margin-top: 30px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .date-row span.val {
+            display: inline-block;
+            min-width: 200px;
+            min-height: 25px;
+        }
+
+        .signature-row {
+            text-align: right;
+            font-size: 14pt;
+        }
+
+        .signature-row span.val {
+            display: inline-block;
+            min-width: 300px;
+            text-align: right;
+            min-height: 25px;
+        }
+
+        /* 인쇄용 CSS */
+        @media print {
+            @page {
+                margin: 0;
+            }
+
+            body {
+                background-color: white;
+            }
+
+            .a4-container {
+                margin: 0;
+                padding: 20mm;
+                box-shadow: none;
+                width: 100%;
+                height: 100%;
+            }
+
+            span.val,
+            .date-row span.val,
+            .signature-row span.val,
+            .info-row span.val {
+                border-bottom: none !important;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="watermark">제천시정신건강복지센터</div>
+
+    <div class="a4-container">
+        <h1>강사비 산출내역서</h1>
+
+        <div class="info-row">
+            <span style="white-space:nowrap; margin-right:5px;">◯ 건 명 : </span>
+            <span class="val" id="t_title"></span>
+        </div>
+        <div class="info-row">
+            <span style="white-space:nowrap; margin-right:5px;">◯ 일 시 : </span>
+            <span class="val" id="t_datetime"></span>
+        </div>
+
+        <div class="table-title-container">
+            <div class="table-title">강사비 지급 산출내역</div>
+        </div>
+
+        <table id="calc-table">
+            <thead id="t_thead">
+                <tr>
+                    <th rowspan="2" style="width: 20%;">구분</th>
+                    <th id="calc-header" colspan="1">강사비 지급 산출내역</th>
+                </tr>
+                <tr id="row-date">
+                    <!-- Dates -->
+                </tr>
+            </thead>
+            <tbody id="t_tbody">
+                <tr id="row-participants">
+                    <th>참여자수</th>
+                    <!-- Participants -->
+                </tr>
+                <tr>
+                    <th>산출내역</th>
+                    <td id="detail-content" colspan="1">
+                        <div class="val-textarea" id="t_detail"></div>
+                    </td>
+                </tr>
+                <tr>
+                    <th>비고</th>
+                    <td id="remark-content" colspan="1" style="text-align: left;">
+                        <span class="val" id="t_remark" style="display:block; text-align:left;"></span>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="info-row" style="font-weight: bold; margin-bottom: 50px;">
+            <span style="white-space:nowrap; margin-right:5px;">◯ 총 강사비: </span>
+            <span class="val" id="t_total" style="font-weight: bold; width: 50%; flex:none;"></span>
+        </div>
+
+        <div class="footer-section">
+            <div style="text-align: right; font-weight: bold;">
+                <div>상기와 같이 강사로 활동하였음을 확인하고</div>
+                <div>강사비를 산출합니다.</div>
+            </div>
+
+            <div class="date-row">
+                <span class="val" id="t_date"></span>
+            </div>
+
+            <div class="signature-row">
+                확인자 : <span class="val" id="t_reviewer"></span> <span id="t_reviewer_stamp"
+                    style="position:relative; display:inline-block; width:50px; text-align:center;">(인)</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        window.addEventListener('message', function (event) {
+            const data = event.data;
+            if (data.type === 'updatePreview' || data.action === 'updatePreview' || data.action === 'render') {
+                const payload = data.payload || data.data || {};
+
+                document.getElementById('t_title').innerText = payload.v_title || '';
+                document.getElementById('t_datetime').innerText = payload.v_datetime || '';
+                document.getElementById('t_total').innerText = payload.v_total || '';
+                document.getElementById('t_date').innerText = payload.v_date || '';
+                document.getElementById('t_reviewer').innerText = payload.v_reviewer || '';
+
+                const stampContainer = document.getElementById('t_reviewer_stamp');
+                if (payload.issuer_stamp) {
+                    stampContainer.innerHTML = `<img src="${payload.issuer_stamp}" style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); max-width:60px; max-height:60px; opacity:0.9;" onerror="this.style.display='none'; this.parentElement.innerHTML='(인)';"/><span>(인)</span>`;
+                } else {
+                    stampContainer.innerHTML = '(인)';
+                }
+
+                const cols = payload.v_cols || [];
+                const colCount = Math.max(1, cols.length);
+                const totalSpan = colCount + 1; // 1열을 추가(합계 공간)
+
+                document.getElementById('calc-header').setAttribute('colspan', totalSpan);
+                document.getElementById('detail-content').setAttribute('colspan', totalSpan);
+                document.getElementById('remark-content').setAttribute('colspan', totalSpan);
+
+                const rowDate = document.getElementById('row-date');
+                rowDate.innerHTML = '';
+
+                let totalCount = 0;
+                let totalParts = 0;
+
+                cols.forEach(c => {
+                    // 날짜 밑의 회(count) 표시 제거, 날짜만 출력
+                    rowDate.innerHTML += `<td>${c.date || ''}</td>`;
+
+                    // 총합 계산용 파싱
+                    const countMatch = (c.count || '').match(/[\d.]+/);
+                    totalCount += countMatch ? parseFloat(countMatch[0]) : 0;
+
+                    const partMatch = (c.participants || '').match(/[\d.]+/);
+                    totalParts += partMatch ? parseFloat(partMatch[0]) : 0;
+                });
+
+                // 마지막 열에 횟수 총합 추가
+                rowDate.innerHTML += `<td style="font-weight:bold; background-color:#fafafa;">총 ${totalCount}회</td>`;
+
+                const rowPart = document.getElementById('row-participants');
+                rowPart.innerHTML = '<th>참여자수</th>';
+                cols.forEach(c => {
+                    rowPart.innerHTML += `<td>${c.participants || ''}</td>`;
+                });
+
+                // 마지막 열에 참여자수 총합 추가
+                rowPart.innerHTML += `<td style="font-weight:bold; background-color:#fafafa;">총 ${totalParts}명</td>`;
+
+                document.getElementById('t_detail').innerText = cols.map(c => c.detail).filter(Boolean).join('\n------------------\n');
+                document.getElementById('t_remark').innerText = cols.map(c => c.remark).filter(Boolean).join(' / ');
+
+            } else if (data.action === 'print') {
+                window.print();
+            }
+        });
+    </script>
+</body>
+
+</html>

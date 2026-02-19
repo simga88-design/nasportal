@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>프로필 수정</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #1e3a8a;
+            --bg-color: #f8fafc;
+            --border: #e2e8f0;
+        }
+
+        body {
+            font-family: 'Pretendard', sans-serif;
+            background: var(--bg-color);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .profile-card {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+            width: 100%;
+            max-width: 500px;
+        }
+
+        h2 {
+            margin-top: 0;
+            color: var(--primary);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #4b5563;
+        }
+
+        input,
+        select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 16px;
+        }
+
+        input:read-only {
+            background: #f3f4f6;
+            cursor: not-allowed;
+        }
+
+        .btn-save {
+            width: 100%;
+            padding: 12px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+
+        .btn-save:hover {
+            opacity: 0.9;
+        }
+
+        .btn-save:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+        }
+
+        /* Avatar Styles */
+        .avatar-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 24px;
+            gap: 12px;
+        }
+
+        .avatar-preview {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: #e2e8f0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            color: #94a3b8;
+            overflow: hidden;
+            border: 2px solid var(--border);
+        }
+
+        .avatar-preview img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .btn-upload {
+            background: white;
+            border: 1px solid var(--border);
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .btn-upload:hover {
+            background: #f8fafc;
+        }
+
+        #avatar-input {
+            display: none;
+        }
+
+        .stamp-preview {
+            width: 80px;
+            height: 80px;
+            border-radius: 8px;
+            background: #e2e8f0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 30px;
+            color: #94a3b8;
+            overflow: hidden;
+            border: 2px dashed var(--border);
+        }
+
+        .stamp-preview img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        #stamp-input {
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="profile-card">
+        <h2><i class="fas fa-user-edit"></i> 프로필 수정</h2>
+
+        <div class="avatar-section">
+            <div class="avatar-preview" id="preview-box">
+                <i class="fas fa-user"></i>
+            </div>
+            <div style="display: flex; gap: 8px;">
+                <label for="avatar-input" class="btn-upload">프로필 사진 변경</label>
+                <button type="button" class="btn-upload" style="color: #ef4444; border-color: #fca5a5;"
+                    onclick="resetImage()">기본 이미지로 변경</button>
+            </div>
+            <input type="file" id="avatar-input" accept="image/*" onchange="handleImagePreview(this, 'preview-box')">
+        </div>
+
+        <hr style="border:0; border-top:1px solid #e2e8f0; margin: 20px 0;">
+
+        <div class="avatar-section">
+            <label style="font-size: 14px; font-weight: 600; color: #4b5563; margin-bottom: 5px;">전자결재 도장(서명)
+                이미지</label>
+            <div class="stamp-preview" id="stamp-preview-box">
+                <i class="fas fa-stamp"></i>
+            </div>
+            <div style="display: flex; gap: 8px;">
+                <label for="stamp-input" class="btn-upload">도장 이미지 업로드</label>
+                <button type="button" class="btn-upload" style="color: #ef4444; border-color: #fca5a5;"
+                    onclick="resetStamp()">도장 삭제</button>
+            </div>
+            <input type="file" id="stamp-input" accept="image/png, image/gif, image/webp"
+                onchange="handleImagePreview(this, 'stamp-preview-box')">
+            <div style="font-size: 12px; color: #94a3b8; margin-top: 5px; text-align: center;">* 배경이 투명한 PNG 이미지를 권장합니다
+                (가로세로 비율 1:1).</div>
+        </div>
+
+        <hr style="border:0; border-top:1px solid #e2e8f0; margin: 20px 0;">
+
+        <div class="form-group">
+            <label>아이디 (ID)</label>
+            <input type="text" id="user-id" readonly>
+        </div>
+        <div class="form-group">
+            <label>이름</label>
+            <input type="text" id="user-name" readonly>
+        </div>
+        <div class="form-group">
+            <label>새 비밀번호</label>
+            <input type="password" id="user-pw" placeholder="비밀번호를 입력하세요">
+        </div>
+        <div class="form-group">
+            <label>입사일</label>
+            <input type="date" id="user-join-date">
+        </div>
+        <div class="form-group">
+            <label>소속 팀</label>
+            <select id="user-team">
+                <option value="">팀 선택...</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>직위</label>
+            <select id="user-position">
+                <option value="팀원">팀원</option>
+                <option value="주임">주임</option>
+                <option value="팀장">팀장</option>
+                <option value="상임팀장">상임팀장</option>
+                <option value="부센터장">부센터장</option>
+                <option value="센터장">센터장</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>연락처</label>
+            <input type="text" id="user-phone" placeholder="예: 010-0000-0000">
+        </div>
+        <button class="btn-save" id="btn-save" onclick="handleSave()">변경사항 저장</button>
+    </div>
+
+    <script src="../js/config.js"></script>
+    <script>
+        const currentUser = JSON.parse(sessionStorage.getItem('jc_user'));
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            if (!currentUser) {
+                alert('로그인이 필요합니다.');
+                return;
+            }
+
+            // Populate static info
+            document.getElementById('user-id').value = currentUser.id;
+            document.getElementById('user-name').value = currentUser.name;
+            document.getElementById('user-pw').value = currentUser.password;
+            document.getElementById('user-join-date').value = currentUser.joinDate || '';
+            document.getElementById('user-position').value = currentUser.position || '팀원';
+            document.getElementById('user-phone').value = currentUser.phone || '';
+
+            // Restriction for All Users (These core fields must be edited via MDM only)
+            document.getElementById('user-join-date').disabled = true;
+            document.getElementById('user-team').disabled = true;
+            document.getElementById('user-position').disabled = true;
+
+            if (currentUser.avatar) {
+                document.getElementById('preview-box').innerHTML = `<img src="${currentUser.avatar}" alt="profile">`;
+            }
+
+            if (currentUser.stamp) {
+                document.getElementById('stamp-preview-box').innerHTML = `<img src="${currentUser.stamp}" alt="stamp">`;
+            }
+
+            // Load teams
+            try {
+                const res = await fetch(BASE_URL, {
+                    method: 'POST',
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ action: 'get_teams' })
+                });
+                const json = await res.json();
+                if (json.result === 'success') {
+                    const select = document.getElementById('user-team');
+                    json.list.forEach(team => {
+                        const opt = document.createElement('option');
+                        opt.value = team.name;
+                        opt.innerText = team.name;
+                        if (team.name === currentUser.team) opt.selected = true;
+                        select.appendChild(opt);
+                    });
+                }
+            } catch (err) {
+                console.error('Failed to load teams', err);
+            }
+        });
+
+        async function handleSave() {
+            const btn = document.getElementById('btn-save');
+            const pw = document.getElementById('user-pw').value;
+            // Core HR fields are strictly managed by MDM database, pull original value
+            const joinDate = currentUser.joinDate || '';
+            const team = currentUser.team || '';
+            const position = currentUser.position || '';
+
+            const phone = document.getElementById('user-phone').value;
+            const avatarImg = document.querySelector('#preview-box img');
+            const avatar = avatarImg ? avatarImg.src : '';
+
+            const stampImg = document.querySelector('#stamp-preview-box img');
+            const stamp = stampImg ? stampImg.src : '';
+
+            if (!pw) {
+                alert('비밀번호를 입력해주세요.');
+                return;
+            }
+
+            btn.innerText = '저장 중...';
+            btn.disabled = true;
+
+            try {
+                const res = await fetch(BASE_URL, {
+                    method: 'POST',
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        action: 'update_profile',
+                        id: currentUser.id,
+                        password: pw,
+                        joinDate: joinDate,
+                        team: team,
+                        position: position,
+                        phone: phone,
+                        avatar: avatar,
+                        stamp: stamp
+                    })
+                });
+                const json = await res.json();
+                if (json.result === 'success') {
+                    // Update session storage
+                    sessionStorage.setItem('jc_user', JSON.stringify(json.user));
+                    alert('프로필이 성공적으로 수정되었습니다.');
+                    // Refresh parent if needed or just notify
+                    if (window.parent && window.parent.initSystem) {
+                        window.parent.initSystem(json.user);
+                    }
+                } else {
+                    alert('수정 실패: ' + json.message);
+                }
+            } catch (err) {
+                console.error(err);
+                alert('서버 통신 오류가 발생했습니다.');
+            } finally {
+                btn.innerText = '변경사항 저장';
+                btn.disabled = false;
+            }
+        }
+
+        function handleImagePreview(input, boxId = 'preview-box') {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    document.getElementById(boxId).innerHTML = `<img src="${e.target.result}" alt="preview">`;
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        function resetImage() {
+            document.getElementById('preview-box').innerHTML = '<i class="fas fa-user"></i>';
+            document.getElementById('avatar-input').value = '';
+        }
+
+        function resetStamp() {
+            document.getElementById('stamp-preview-box').innerHTML = '<i class="fas fa-stamp"></i>';
+            document.getElementById('stamp-input').value = '';
+        }
+    </script>
+</body>
+
+</html>

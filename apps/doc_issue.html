@@ -1,0 +1,1174 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>문서 발급 (통합)</title>
+    <link rel="stylesheet" as="style" crossorigin
+        href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.8/dist/web/static/pretendard.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+    <script src="../js/config.js"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-hover: #1d4ed8;
+            --surface: #ffffff;
+            --background: #f1f5f9;
+            --border: #e2e8f0;
+            --text: #334155;
+            --text-muted: #64748b;
+        }
+
+        body {
+            font-family: 'Pretendard', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: var(--background);
+            color: var(--text);
+            height: 100vh;
+            box-sizing: border-box;
+            overflow: hidden;
+        }
+
+        .wrapper {
+            display: flex;
+            gap: 20px;
+            height: 100%;
+            max-width: 1920px;
+            margin: 0;
+        }
+
+        .left-panel {
+            flex: 0 0 350px;
+            background: var(--surface);
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            border: 1px solid var(--border);
+            z-index: 10;
+        }
+
+        .panel-header {
+            padding: 18px 20px;
+            border-bottom: 1px solid var(--border);
+            background: var(--surface);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .panel-title {
+            font-size: 16px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .doc-selector {
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border);
+            background: #f8fafc;
+        }
+
+        .doc-selector select {
+            width: 100%;
+            padding: 10px 12px;
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--primary);
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            background-color: var(--surface);
+            cursor: pointer;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .doc-selector select:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        .panel-content {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 6px;
+            color: #475569;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            font-size: 14px;
+            font-family: inherit;
+            box-sizing: border-box;
+            transition: border-color 0.2s;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        textarea.form-control {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .row {
+            display: flex;
+            gap: 12px;
+        }
+
+        .col {
+            flex: 1;
+        }
+
+        .checkbox-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            align-items: center;
+            margin-top: 6px;
+        }
+
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 13px;
+            cursor: pointer;
+        }
+
+        .score-input {
+            width: 50px !important;
+            text-align: center;
+            padding: 4px !important;
+        }
+
+        .btn {
+            padding: 10px 16px;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            transition: 0.2s;
+            width: 100%;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-hover);
+        }
+
+        .btn-secondary {
+            background: #e2e8f0;
+            color: var(--text);
+            width: auto;
+            font-size: 12px;
+            padding: 6px 10px;
+        }
+
+        .btn-secondary:hover {
+            background: #cbd5e1;
+        }
+
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid var(--border);
+            background: #f8fafc;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 12px 16px;
+            text-align: center;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-muted);
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: 0.3s ease;
+        }
+
+        .tab-btn:hover {
+            color: var(--primary);
+            background: #f1f5f9;
+        }
+
+        .tab-btn.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+            background: var(--surface);
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .center-panel {
+            flex: 1;
+            background: #1e293b;
+            /* Dark Slate Background for Premium PDF Viewer feel */
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.3);
+            position: relative;
+        }
+
+        .preview-header {
+            padding: 12px 20px;
+            background: #0f172a;
+            /* Even darker header */
+            border-bottom: 1px solid #334155;
+            color: white;
+            font-size: 14px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .zoom-toolbar {
+            display: flex;
+            align-items: center;
+            background: #334155;
+            border-radius: 8px;
+            padding: 4px;
+            gap: 2px;
+        }
+
+        .zoom-btn {
+            background: transparent;
+            color: #e2e8f0;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .zoom-btn:hover {
+            background: #475569;
+            color: white;
+        }
+
+        .zoom-label {
+            color: #94a3b8;
+            font-size: 13px;
+            padding: 0 10px;
+            min-width: 50px;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .drawer-toggle-btn {
+            background: #3b82f6;
+            /* Accent color visible on dark background */
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: 0.2s;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .drawer-toggle-btn:hover {
+            background: #2563eb;
+            transform: translateY(-1px);
+        }
+
+        .preview-wrapper {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: auto;
+            padding: 20px;
+            /* Using position relative so its absolute children can reference it if needed */
+            position: relative;
+        }
+
+        #preview-scale-wrapper {
+            position: relative;
+            width: 794px;
+            height: 1123px;
+            flex-shrink: 0;
+            transition: width 0.2s, height 0.2s;
+        }
+
+        #preview-frame {
+            background: white;
+            border: none;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+            width: 794px;
+            height: 1123px;
+            transform-origin: top left;
+            transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+
+        .drawer-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 998;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .drawer-overlay.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .history-drawer {
+            position: fixed;
+            top: 0;
+            right: 0;
+            width: 380px;
+            height: 100vh;
+            background: var(--surface);
+            box-shadow: -5px 0 25px rgba(0, 0, 0, 0.1);
+            z-index: 999;
+            transform: translateX(100%);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .history-drawer.active {
+            transform: translateX(0);
+        }
+
+        .history-drawer-header {
+            padding: 20px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .history-drawer-header h3 {
+            margin: 0;
+            font-size: 16px;
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .close-drawer-btn {
+            background: transparent;
+            border: none;
+            font-size: 18px;
+            color: var(--text-muted);
+            cursor: pointer;
+            padding: 4px;
+        }
+
+        .close-drawer-btn:hover {
+            color: var(--text);
+        }
+
+        .history-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 0;
+            margin: 0;
+        }
+
+        .history-item {
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border);
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .history-item:hover {
+            background: #f8fafc;
+        }
+
+        .history-item:last-child {
+            border-bottom: none;
+        }
+
+        .history-info h4 {
+            margin: 0 0 6px 0;
+            font-size: 14px;
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .history-info p {
+            margin: 0;
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .doc-id {
+            font-size: 10px;
+            color: #94a3b8;
+            font-family: monospace;
+            margin-top: 4px;
+            display: block;
+        }
+
+        .badge {
+            padding: 2px 8px;
+            border-radius: 99px;
+            font-size: 11px;
+            font-weight: 700;
+        }
+
+        .badge-blue {
+            background: #dbeafe;
+            color: #2563eb;
+        }
+
+        .badge-green {
+            background: #dcfce7;
+            color: #15803d;
+        }
+
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+
+            #preview-frame,
+            #preview-frame * {
+                visibility: visible;
+            }
+
+            #preview-frame {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 210mm !important;
+                height: 297mm !important;
+                transform: scale(1) !important;
+                margin: 0;
+                padding: 0;
+                box-shadow: none;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="wrapper">
+        <div class="left-panel">
+            <div class="panel-header">
+                <div class="panel-title"><i class="fas fa-file-contract"></i> 발급 양식 작성</div>
+            </div>
+            <div class="tabs">
+                <button class="tab-btn active" id="tab-general" onclick="switchTab('general')">📄 일반 발급 문서</button>
+                <button class="tab-btn" id="tab-approval" onclick="switchTab('approval')">🖊️ 전자결재 기안</button>
+            </div>
+            <div class="doc-selector">
+                <select id="docTypeSelect" onchange="switchDocType(this.value)">
+                    <!-- Options populated via JS -->
+                </select>
+            </div>
+            <div class="panel-content" style="padding: 0; display: flex; flex-direction: column;">
+                <iframe id="form-frame" style="width: 100%; height: 100%; border: none; flex: 1;"
+                    src="doc_forms/voucher.html"></iframe>
+            </div>
+            <div style="padding: 20px; border-top: 1px solid var(--border); background: #f8fafc;">
+                <div class="form-group" style="margin-bottom: 10px;">
+                    <label class="form-label" style="font-size:12px;">발급일</label>
+                    <input type="date" id="issueDate" class="form-control" style="padding:6px; font-size:13px;">
+                </div>
+                <div class="form-group" style="margin-bottom: 15px;">
+                    <label class="form-label" style="font-size:12px;">담당자 (발급자)</label>
+                    <input type="text" id="issuer" class="form-control" style="padding:6px; font-size:13px;" readonly>
+                </div>
+                <div id="defaultActionContainer">
+                    <button id="btnSave" class="btn btn-primary" onclick="saveAndPrint()"><i class="fas fa-print"></i>
+                        발급 및 인쇄</button>
+                    <button id="btnApproval" class="btn btn-success"
+                        style="width:100%; padding:10px; font-size:14px; margin-top:8px; display: none; background:#10b981; color:white; border:none; border-radius:6px; cursor:pointer; font-weight:600;"
+                        onclick="sendToApproval()">
+                        <i class="fas fa-file-signature"></i> 전자결재 상신</button>
+                </div>
+                <div id="historyActionContainer" style="display: none; flex-direction: column; gap: 8px;">
+                    <button class="btn btn-secondary"
+                        style="width:100%; padding:10px; font-size:14px; background:#e2e8f0; color:#1e293b; border:1px solid #cbd5e1"
+                        onclick="reprintOriginal()"><i class="fas fa-print"></i> 원본 그대로 재출력</button>
+                    <button class="btn btn-primary" style="width:100%; padding:10px; font-size:14px;"
+                        onclick="enableCopyEditMode()"><i class="fas fa-copy"></i> 복사하여 수정 발급(새 문서)</button>
+                    <button class="btn btn-secondary"
+                        style="width:100%; padding:8px; font-size:12px; margin-top:5px; background:transparent; border:none; text-decoration:underline; color:#64748b"
+                        onclick="cancelHistoryMode()">취소 (작성 초기화)</button>
+                </div>
+            </div>
+        </div>
+        <div class="center-panel">
+            <div class="preview-header">
+                <div>
+                    <span><i class="fas fa-eye"></i> 템플릿 실시간 미리보기</span>
+                    <span style="font-size: 12px; color: #a0aec0; margin-left: 10px;"><i
+                            class="fas fa-expand-arrows-alt"></i> 화면 최적화 모드</span>
+                </div>
+
+                <div class="zoom-toolbar">
+                    <button class="zoom-btn" onclick="setZoom(currentZoom - 0.1)" title="축소"><i
+                            class="fas fa-minus"></i></button>
+                    <span class="zoom-label" id="zoomLevelText">Fit</span>
+                    <button class="zoom-btn" onclick="setZoom(currentZoom + 0.1)" title="확대"><i
+                            class="fas fa-plus"></i></button>
+                    <div style="width: 1px; height: 16px; background: #475569; margin: 0 4px;"></div>
+                    <button class="zoom-btn" onclick="fitToScreen()" title="화면에 맞춤"><i
+                            class="fas fa-compress-arrows-alt"></i></button>
+                    <button class="zoom-btn" onclick="setZoom(1.0)" title="원본 크기(100%)"><i class="fas fa-search"></i>
+                        100%</button>
+                </div>
+
+                <button class="drawer-toggle-btn" onclick="toggleDrawer()">
+                    <i class="fas fa-history"></i> 발급대장 서랍 열기
+                </button>
+            </div>
+            <div class="preview-wrapper" id="preview-wrapper">
+                <div id="preview-scale-wrapper">
+                    <iframe id="preview-frame" src="doc_templates/voucher.html"></iframe>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="drawer-overlay" id="drawerOverlay" onclick="toggleDrawer()"></div>
+    <div class="history-drawer" id="historyDrawer">
+        <div class="history-drawer-header">
+            <h3><i class="fas fa-history"></i> 발급 내역</h3>
+            <div style="display: flex; gap: 10px; align-items: center;">
+                <i class="fas fa-sync-alt" style="cursor:pointer; color:#94a3b8;" onclick="loadHistory()"
+                    title="새로고침"></i>
+                <button class="close-drawer-btn" onclick="toggleDrawer()"><i class="fas fa-times"></i></button>
+            </div>
+        </div>
+        <div id="historyList" class="history-list">
+            <div style="padding:20px; text-align:center; color:#94a3b8;"><i class="fas fa-spinner fa-spin"></i> 내역 불러오는
+                중...</div>
+        </div>
+    </div>
+    <script>
+        const API_URL = `${(typeof window !== 'undefined' ? window.location.origin : 'http://localhost')}/api/auth`;
+        let currentMode = 'voucher';
+        let user = JSON.parse(sessionStorage.getItem('jc_user') || '{}');
+        let updateTimeout;
+        let currentZoom = 1.0;
+        let isFitMode = true;
+
+        function adjustPreviewScale() {
+            if (!isFitMode) return; // Only auto-adjust if Fit mode is active
+
+            const wrapper = document.getElementById('preview-wrapper');
+            const frame = document.getElementById('preview-frame');
+            if (!wrapper || !frame) return;
+            const padding = 60; // Increased padding for 24-inch look
+            // We use standard A4 dimensions for the document model
+            const availableWidth = wrapper.clientWidth - padding;
+            const availableHeight = wrapper.clientHeight - padding;
+
+            const scaleX = availableWidth / 794;
+            const scaleY = availableHeight / 1123;
+
+            // Set a minimum scale of 0.6 so the text doesn't become absolutely unreadable
+            currentZoom = Math.max(0.6, Math.min(scaleX, scaleY, 1));
+
+            applyZoom();
+            document.getElementById('zoomLevelText').innerText = 'Fit';
+        }
+
+        function setZoom(level) {
+            isFitMode = false;
+            // Clamp zoom between 0.3x and 2.5x
+            currentZoom = Math.max(0.3, Math.min(level, 2.5));
+            applyZoom();
+            document.getElementById('zoomLevelText').innerText = Math.round(currentZoom * 100) + '%';
+        }
+
+        function fitToScreen() {
+            isFitMode = true;
+            adjustPreviewScale();
+        }
+
+        function applyZoom() {
+            const frame = document.getElementById('preview-frame');
+            const scaleWrapper = document.getElementById('preview-scale-wrapper');
+            const outerWrapper = document.getElementById('preview-wrapper');
+
+            if (frame && scaleWrapper) {
+                frame.style.transform = `scale(${currentZoom})`;
+
+                const scaledWidth = 794 * currentZoom;
+                const scaledHeight = 1123 * currentZoom;
+
+                scaleWrapper.style.width = `${scaledWidth}px`;
+                scaleWrapper.style.height = `${scaledHeight}px`;
+
+                // Address the flexbox minimum size clipping issue:
+                // If the scaled size is larger than the scrolling wrapper, flex centering will clip the top/left.
+                // We must switch to flex-start when it overflows.
+                if (outerWrapper) {
+                    if (scaledHeight > outerWrapper.clientHeight || scaledWidth > outerWrapper.clientWidth) {
+                        outerWrapper.style.alignItems = 'flex-start';
+                        outerWrapper.style.justifyContent = 'flex-start';
+                        // Add some spacing so it doesn't glue to the edges when scrolling
+                        scaleWrapper.style.margin = '20px';
+                    } else {
+                        outerWrapper.style.alignItems = 'center';
+                        outerWrapper.style.justifyContent = 'center';
+                        scaleWrapper.style.margin = '0';
+                    }
+                }
+            }
+        }
+
+        const docCategories = {
+            general: [
+                { value: "voucher", text: "마음투자 의뢰서" },
+                { value: "confirmation", text: "상담확인서" },
+                { value: "reply_letter", text: "의뢰회신서" },
+                { value: "퇴사통회신서발행기", text: "퇴원사실통보 회신서" },
+                { value: "jejungyeon", text: "제정연" },
+                { value: "강사비산출내역서", text: "강사비산출내역서" },
+                { value: "강의확인서", text: "강의확인서" }
+            ],
+            approval: [
+                { value: "사례종결보고서-2026년", text: "사례종결보고서" },
+                { value: "응급개입 기록지(수정본)", text: "응급개입기록지" },
+                { value: "출장복명서", text: "출장복명서" },
+                { value: "사례회의록", text: "사례회의록" }
+            ]
+        };
+
+        let currentTab = 'general';
+
+        function switchTab(tabId) {
+            currentTab = tabId;
+            document.getElementById('tab-general').classList.remove('active');
+            document.getElementById('tab-approval').classList.remove('active');
+            document.getElementById('tab-' + tabId).classList.add('active');
+
+            const selectEl = document.getElementById('docTypeSelect');
+            selectEl.innerHTML = '';
+
+            docCategories[tabId].forEach(doc => {
+                const opt = document.createElement('option');
+                opt.value = doc.value;
+                opt.textContent = doc.text;
+                selectEl.appendChild(opt);
+            });
+
+            // Automatically switch to the first document in the selected tab
+            switchDocType(selectEl.value);
+        }
+
+        window.onload = function () {
+            document.getElementById('issuer').value = user.name || '';
+            document.getElementById('issueDate').valueAsDate = new Date();
+            window.addEventListener('resize', adjustPreviewScale);
+            setTimeout(adjustPreviewScale, 100);
+            loadHistory();
+            const urlParams = new URLSearchParams(window.location.search);
+            const autoSelect = urlParams.get('autoSelect');
+            const openHistoryId = urlParams.get('openHistoryId');
+            const editId = urlParams.get('edit_id'); // From approval redraft
+
+            if (editId) {
+                // Determine which target doc belongs to
+                // Default handling for redrafts logic starts at approval
+                switchTab('approval');
+                // Temporarily just set to 사례종결보고서 for now. Ideally should deduce document type from DB.
+                // It will be fixed inside the switchDocType or later if needed.
+                document.getElementById('docTypeSelect').value = '사례종결보고서-2026년';
+                switchDocType('사례종결보고서-2026년');
+                setTimeout(() => {
+                    loadHistoryDetail(editId);
+                    // Automatically click "Copy & Edit" mode to unlock the form
+                    setTimeout(() => {
+                        enableCopyEditMode();
+                        Toastify({ text: "반려된 문서를 수정 모드로 불러왔습니다.", style: { background: "#3b82f6" }, duration: 3000 }).showToast();
+                    }, 800);
+                }, 300);
+            } else if (openHistoryId) {
+                let docType = 'voucher';
+                if (openHistoryId.startsWith('CNF')) docType = 'confirmation';
+                if (openHistoryId.startsWith('REP')) docType = 'reply_letter';
+                if (openHistoryId.startsWith('DIS')) docType = '퇴사통회신서발행기';
+                if (openHistoryId.startsWith('JJY')) docType = 'jejungyeon';
+
+                // It belongs to general
+                switchTab('general');
+                document.getElementById('docTypeSelect').value = docType;
+                switchDocType(docType);
+
+                setTimeout(() => {
+                    loadHistoryDetail(openHistoryId);
+                }, 300);
+            } else if (autoSelect) {
+                // Find which tab it belongs to
+                let targetTab = 'general';
+                if (docCategories.approval.find(d => d.value === autoSelect)) targetTab = 'approval';
+
+                switchTab(targetTab);
+                document.getElementById('docTypeSelect').value = autoSelect;
+                switchDocType(autoSelect);
+            } else {
+                switchTab('general');
+            }
+        };
+
+        window.switchDocType = function (type) {
+            currentMode = type;
+            const formIframe = document.getElementById('form-frame');
+            const previewIframe = document.getElementById('preview-frame');
+            formIframe.src = `doc_forms/${type}.html`;
+            previewIframe.src = `doc_templates/${type}.html`;
+
+            const btnSave = document.getElementById('btnSave');
+            const btnApproval = document.getElementById('btnApproval');
+
+            // Find out which tab this belongs to based on categories
+            const isApprovalDoc = docCategories.approval.some(d => d.value === type);
+
+            if (isApprovalDoc) {
+                if (btnApproval) btnApproval.style.display = 'block';
+                if (btnSave) btnSave.style.display = 'none'; // Optional: hide general print button
+            } else {
+                if (btnApproval) btnApproval.style.display = 'none';
+                if (btnSave) btnSave.style.display = 'inline-flex';
+            }
+
+            formIframe.onload = function () {
+                const urlParams = new URLSearchParams(window.location.search);
+                const initParams = {
+                    mode: urlParams.get('mode'),
+                    rowIndex: urlParams.get('rowIndex'),
+                    category: urlParams.get('category')
+                };
+                formIframe.contentWindow.postMessage({ action: 'initParams', params: initParams }, '*');
+                sendCommonDataToForm();
+            };
+        };
+
+        function sendCommonDataToForm() {
+            const commonData = {
+                issuer: document.getElementById('issuer').value,
+                issueDate: document.getElementById('issueDate').value,
+                currentMode: currentMode,
+                issuer_dept: user.team || '',
+                issuer_pos: user.position || ''
+            };
+            const formIframe = document.getElementById('form-frame');
+            if (formIframe && formIframe.contentWindow) {
+                const members = window.parent && window.parent.AppStore ? window.parent.AppStore.state.members : [];
+                formIframe.contentWindow.postMessage({ action: 'updateCommon', commonData: commonData, members: members }, '*');
+            }
+        }
+
+        document.getElementById('issuer').addEventListener('input', sendCommonDataToForm);
+        document.getElementById('issueDate').addEventListener('change', sendCommonDataToForm);
+
+        window.addEventListener('message', function (event) {
+            const data = event.data;
+            if (!data) return;
+            if (data.type === 'updatePreview' && data.payload) {
+                const previewIframe = document.getElementById('preview-frame');
+                if (previewIframe && previewIframe.contentWindow) {
+                    const enhancedPayload = {
+                        ...data.payload,
+                        issuer: document.getElementById('issuer').value,
+                        issueDate: document.getElementById('issueDate').value,
+                        issuer_stamp: user.stamp
+                    };
+                    previewIframe.contentWindow.postMessage({ action: 'render', data: enhancedPayload }, '*');
+                }
+            } else if (data.type === 'saveSuccess') {
+                const btn = document.getElementById('btnSave');
+                btn.innerHTML = '<i class="fas fa-print"></i> 발급 및 인쇄';
+                btn.disabled = false;
+                Toastify({ text: "처리 완료! 인쇄를 시작합니다.", style: { background: "#10b981" }, duration: 3000 }).showToast();
+                loadHistory();
+                setTimeout(() => {
+                    const previewIframe = document.getElementById('preview-frame');
+                    if (previewIframe && previewIframe.contentWindow) {
+                        previewIframe.contentWindow.postMessage({ action: 'print' }, '*');
+                    }
+                }, 500);
+            } else if (data.type === 'saveError') {
+                const btn = document.getElementById('btnSave');
+                btn.innerHTML = '<i class="fas fa-print"></i> 발급 및 인쇄';
+                btn.disabled = false;
+                if (data.message) {
+                    Toastify({ text: "오류: " + data.message, style: { background: "#ef4444" }, duration: 4000 }).showToast();
+                }
+            } else if (data.type === 'disableSave') {
+                const btn = document.getElementById('btnSave');
+                btn.style.display = 'none';
+                btn.disabled = true;
+            } else if (data.type === 'setPrintPreview') {
+                const previewIframe = document.getElementById('preview-frame');
+                if (previewIframe && previewIframe.contentWindow) {
+                    previewIframe.contentWindow.postMessage({ action: 'setPrintPreview', data: data.data }, '*');
+                }
+            } else if (data.type === 'requestDocNumber') {
+                const formType = data.formType;
+                Toastify({ text: "문서 번호를 채번 중입니다...", style: { background: "#3b82f6" }, duration: 2000 }).showToast();
+
+                const title = data.clientName ? `${data.clientName} 통합의뢰회신서` : '통합의뢰회신서';
+                const sender = document.getElementById('issuer').value || '시스템관리자';
+                const target = data.agencyDetail || '';
+                const todayStr = new Date().toISOString().slice(0, 10);
+
+                let docTypeTarget = '기안문';
+                if (formType === 'reply_letter') docTypeTarget = '제정공';
+                if (formType === 'jejungyeon') docTypeTarget = '제정연';
+
+                // BASE_URL comes from config.js
+                fetch(BASE_URL, {
+                    method: 'POST',
+                    redirect: 'follow',
+                    headers: { "Content-Type": "text/plain;charset=utf-8" },
+                    body: JSON.stringify({
+                        action: "issue",
+                        docType: docTypeTarget,
+                        title: title,
+                        sender: sender,
+                        target: target,
+                        sentDate: todayStr
+                    })
+                })
+                    .then(res => res.json())
+                    .then(json => {
+                        console.log("Numbering Response:", json);
+                        if (json.result === 'success' || json.success) {
+                            let newNum = (json.data && json.data.message) || (json.data && json.data.docNum) || json.docNum || (typeof json.data === 'string' ? json.data : JSON.stringify(json));
+                            const formIframe = document.getElementById('form-frame');
+                            if (formIframe && formIframe.contentWindow && newNum) {
+                                formIframe.contentWindow.postMessage({ action: 'receiveDocNumber', number: newNum }, '*');
+                            }
+                            Toastify({ text: "문서 번호가 발급되었습니다: " + newNum, style: { background: "#10b981" }, duration: 2000 }).showToast();
+                        } else {
+                            Toastify({ text: "채번 실패: " + (json.message || ''), style: { background: "#ef4444" }, duration: 3000 }).showToast();
+                        }
+                    })
+                    .catch(err => {
+                        Toastify({ text: "채번 중 서버 통신 오류: " + err.message, style: { background: "#ef4444" }, duration: 3000 }).showToast();
+                    });
+            } else if (data.type === 'readyForApproval') {
+                const btn = document.getElementById('btnApproval');
+                btn.innerHTML = '<i class="fas fa-file-signature"></i> 전자결재 상신';
+                btn.disabled = false;
+
+                const urlParams = new URLSearchParams(window.location.search);
+                const originalApprovalId = urlParams.get('approval_id');
+
+                let draftTitle = `기안문(${data.targetName})`;
+                let draftType = 'GENERAL';
+
+                if (currentMode === '사례종결보고서-2026년') {
+                    draftTitle = `사례종결보고서(${data.targetName})`;
+                    draftType = 'CASE_CLOSURE';
+                } else if (currentMode === '응급개입 기록지(수정본)') {
+                    draftTitle = `응급개입기록지(${data.targetName})`;
+                    draftType = 'EMERGENCY_INTERVENTION';
+                } else if (currentMode === '출장복명서') {
+                    draftTitle = `출장복명서(${data.reportData.v_title})`;
+                    draftType = 'TRIP_REPORT';
+                } else if (currentMode === '사례회의록') {
+                    draftTitle = `사례회의록(${data.targetName})`;
+                    draftType = 'CASE_CONFERENCE';
+                }
+
+                sessionStorage.setItem('jc_draft_data', JSON.stringify({
+                    title: draftTitle,
+                    type: draftType,
+                    content: data.reportData,
+                    docType: currentMode,
+                    linkedDocId: data.linkedDocId,
+                    originalApprovalId: originalApprovalId
+                }));
+                const mainWindowUrl = './apps/approval.html?autoDraft=true';
+                if (window.parent && window.parent.loadFrame) {
+                    window.parent.loadFrame(mainWindowUrl, '전자결재');
+                } else {
+                    window.parent.location.href = window.location.pathname.replace('doc_issue.html', 'approval.html') + '?autoDraft=true';
+                }
+            } else if (data.type === 'approvalError') {
+                const btn = document.getElementById('btnApproval');
+                btn.innerHTML = '<i class="fas fa-file-signature"></i> 전자결재 상신';
+                btn.disabled = false;
+                Toastify({ text: "오류: " + (data.message || '상신 준비 중 오류가 발생했습니다.'), style: { background: "#ef4444" }, duration: 4000 }).showToast();
+            }
+        });
+
+        window.toggleDrawer = function () {
+            const drawer = document.getElementById('historyDrawer');
+            const overlay = document.getElementById('drawerOverlay');
+            drawer.classList.toggle('active');
+            overlay.classList.toggle('active');
+            if (drawer.classList.contains('active')) {
+                loadHistory();
+            }
+        };
+
+        function saveAndPrint() {
+            const btn = document.getElementById('btnSave');
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 처리중...';
+            btn.disabled = true;
+            const commonData = {
+                issuer: document.getElementById('issuer').value,
+                issueDate: document.getElementById('issueDate').value,
+                docType: currentMode
+            };
+            const formIframe = document.getElementById('form-frame');
+            if (formIframe && formIframe.contentWindow) {
+                formIframe.contentWindow.postMessage({ action: 'save', commonData: commonData }, '*');
+            }
+        }
+
+        function sendToApproval() {
+            const btn = document.getElementById('btnApproval');
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 처리중...';
+            btn.disabled = true;
+            const commonData = {
+                issuer: document.getElementById('issuer').value,
+                issueDate: document.getElementById('issueDate').value,
+                docType: currentMode
+            };
+            const formIframe = document.getElementById('form-frame');
+            if (formIframe && formIframe.contentWindow) {
+                formIframe.contentWindow.postMessage({ action: 'prepareApproval', commonData: commonData }, '*');
+            }
+        }
+
+        function loadHistory() {
+            const container = document.getElementById('historyList');
+            container.innerHTML = '<div style="padding:20px; text-align:center; color:#94a3b8;"><i class="fas fa-spinner fa-spin"></i> 내역 갱신 중...</div>';
+            fetch(API_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'get_issued_docs' })
+            })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.result !== 'success' && !data.success) {
+                        container.innerHTML = '<div style="padding:20px; text-align:center; color:#ef4444;">데이터 이동 실패</div>';
+                        return;
+                    }
+                    let html = '';
+                    const items = data.list || data.data || data.items || [];
+                    if (items.length === 0) {
+                        html = '<div style="padding:40px 20px; text-align:center; color:#94a3b8;"><i class="fas fa-inbox fa-2x" style="margin-bottom:10px; opacity:0.5;"></i><br>발급 내역이 없습니다.</div>';
+                    } else {
+                        items.forEach(item => {
+                            const docType = item.type || item.doc_type || 'voucher';
+                            let badge = '<span class="badge" style="background:#e2e8f0; color:#475569;">알수없음</span>';
+
+                            if (docType === 'voucher' || docType === '의뢰서') {
+                                badge = '<span class="badge" style="background:#dbeafe; color:#2563eb;">마음투자의뢰서</span>';
+                            } else if (docType === 'confirmation' || docType === '상담확인서') {
+                                badge = '<span class="badge" style="background:#dcfce7; color:#15803d;">상담확인서</span>';
+                            } else if (docType === 'reply_letter' || docType === '의뢰회신서') {
+                                badge = '<span class="badge" style="background:#f3e8ff; color:#7e22ce;">통합의뢰회신서</span>';
+                            } else if (docType === 'jejungyeon' || docType === '제정연') {
+                                badge = '<span class="badge" style="background:#fef08a; color:#854d0e;">제정연의뢰서</span>';
+                            } else if (docType === '퇴사통회신서발행기' || docType === '퇴원사실통보') {
+                                badge = '<span class="badge" style="background:#ffe4e6; color:#e11d48;">퇴원통보회신서</span>';
+                            } else if (docType === '강사비산출내역서') {
+                                badge = '<span class="badge" style="background:#ccfbf1; color:#0f766e;">강사비내역</span>';
+                            } else if (docType === '강의확인서') {
+                                badge = '<span class="badge" style="background:#ffedd5; color:#c2410c;">강의확인서</span>';
+                            } else if (docType === '사례종결보고서-2026년') {
+                                badge = '<span class="badge" style="background:#e0e7ff; color:#4338ca;">사례종결</span>';
+                            } else if (docType === '응급개입기록지') {
+                                badge = '<span class="badge" style="background:#fce7f3; color:#be185d;">응급개입</span>';
+                            } else if (docType === '출장복명서') {
+                                badge = '<span class="badge" style="background:#ecfdf5; color:#059669;">출장복명</span>';
+                            }
+                            const date = item.created_at ? item.created_at.split(' ')[0] : '날짜없음';
+                            html += `
+                        <div class="history-item" onclick="loadHistoryDetail('${item.id}')">
+                            <div class="history-info">
+                                <h4>${badge} ${item.target_name || '이름없음'}</h4>
+                                <p>${date} | ${item.issuer || '작성자없음'}</p>
+                            </div>
+                            <span class="doc-id">${item.id || ''}</span>
+                        </div>`;
+                        });
+                    }
+                    container.innerHTML = html;
+                }).catch(err => {
+                    container.innerHTML = '<div style="padding:20px; text-align:center; color:#ef4444;">오류가 발생했습니다.</div>';
+                });
+        }
+
+        window.loadHistoryDetail = function (id) {
+            Toastify({ text: "기존 문서를 불러옵니다...", style: { background: "#3b82f6" }, duration: 2000 }).showToast();
+            fetch(API_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'get_issued_doc', id: id })
+            })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.result === 'success' && data.data) {
+                        const doc = data.data;
+                        const docTypeMapping = {
+                            'voucher': 'voucher',
+                            '의뢰서': 'voucher',
+                            'confirmation': 'confirmation',
+                            '상담확인서': 'confirmation',
+                            'reply_letter': 'reply_letter',
+                            '의뢰회신서': 'reply_letter',
+                            'jejungyeon': 'jejungyeon',
+                            '제정연': 'jejungyeon',
+                            '퇴사통회신서발행기': '퇴사통회신서발행기',
+                            '퇴원사실통보': '퇴사통회신서발행기',
+                            '강사비산출내역서': '강사비산출내역서',
+                            '강의확인서': '강의확인서',
+                            '사례종결보고서-2026년': '사례종결보고서-2026년',
+                            '응급개입기록지': '응급개입 기록지(수정본)',
+                            '출장복명서': '출장복명서',
+                            '사례회의록': '사례회의록'
+                        };
+                        const mappedType = docTypeMapping[doc.type] || docTypeMapping[doc.doc_type] || 'voucher';
+
+                        if (currentMode !== mappedType) {
+                            document.getElementById('docTypeSelect').value = mappedType;
+                            switchDocType(mappedType);
+
+                            const formIframe = document.getElementById('form-frame');
+                            formIframe.onload = function () {
+                                sendCommonDataToForm();
+                                setTimeout(() => {
+                                    formIframe.contentWindow.postMessage({ action: 'loadDoc', data: doc }, '*');
+                                    setHistoryMode(true);
+                                }, 300);
+                            };
+                        } else {
+                            const formIframe = document.getElementById('form-frame');
+                            if (formIframe && formIframe.contentWindow) {
+                                formIframe.contentWindow.postMessage({ action: 'loadDoc', data: doc }, '*');
+                                setHistoryMode(true);
+                            }
+                        }
+                        if (document.getElementById('historyDrawer').classList.contains('active')) {
+                            toggleDrawer(); // This will close the drawer if it was open
+                        }
+                    } else {
+                        Toastify({ text: "문서를 찾을 수 없습니다.", style: { background: "#ef4444" }, duration: 3000 }).showToast();
+                    }
+                })
+                .catch(err => {
+                    Toastify({ text: "서버 오류발생", style: { background: "#ef4444" }, duration: 3000 }).showToast();
+                });
+        };
+
+        function setHistoryMode(isActive) {
+            const defAct = document.getElementById('defaultActionContainer');
+            const histAct = document.getElementById('historyActionContainer');
+            if (isActive) {
+                defAct.style.display = 'none';
+                histAct.style.display = 'flex';
+                document.getElementById('docTypeSelect').disabled = true;
+
+                // 결재 기안 문서인 경우 '원본 그대로 재출력' 숨기기
+                const isApprovalDoc = docCategories.approval.some(d => d.value === currentMode);
+                const btnReprint = histAct.querySelector('button[onclick="reprintOriginal()"]');
+                if (btnReprint) {
+                    btnReprint.style.display = isApprovalDoc ? 'none' : 'block';
+                }
+            } else {
+                defAct.style.display = 'block';
+                histAct.style.display = 'none';
+                document.getElementById('docTypeSelect').disabled = false;
+            }
+        }
+
+        window.reprintOriginal = function () {
+            Toastify({ text: "원본 그대로 인쇄를 준비합니다.", style: { background: "#10b981" }, duration: 2000 }).showToast();
+            setTimeout(() => {
+                const previewIframe = document.getElementById('preview-frame');
+                if (previewIframe && previewIframe.contentWindow) {
+                    previewIframe.contentWindow.postMessage({ action: 'print' }, '*');
+                }
+            }, 500);
+        };
+
+        window.enableCopyEditMode = function () {
+            setHistoryMode(false);
+            Toastify({ text: "복사된 내용으로 신규 문서를 작성합니다.", style: { background: "#3b82f6" }, duration: 3000 }).showToast();
+
+            // Clear generated components that specify it's a new document
+            const formIframe = document.getElementById('form-frame');
+            if (formIframe && formIframe.contentWindow) {
+                formIframe.contentWindow.postMessage({ action: 'receiveDocNumber', number: '' }, '*'); // Clear old Doc Number
+                formIframe.contentWindow.postMessage({ action: 'unlockInputs' }, '*'); // Unlock inputs for editing
+            }
+            document.getElementById('issueDate').valueAsDate = new Date();
+            sendCommonDataToForm();
+        };
+
+        window.cancelHistoryMode = function () {
+            if (confirm("작성 중인 내용이 모두 초기화됩니다. 계속하시겠습니까?")) {
+                window.location.reload();
+            }
+        };
+    </script>
+</body>
+
+</html>

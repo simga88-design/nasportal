@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>사례회의록 입력 폼</title>
+    <link rel="stylesheet" as="style" crossorigin
+        href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.8/dist/web/static/pretendard.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+    <style>
+        :root {
+            --primary: #2563eb;
+            --border: #e2e8f0;
+            --text: #334155;
+            --background: #f8fafc;
+        }
+
+        body {
+            font-family: 'Pretendard', sans-serif;
+            margin: 0;
+            padding: 0;
+            color: var(--text);
+            font-size: 14px;
+            background: transparent;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 6px;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 6px 10px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 13px;
+            transition: border-color 0.2s;
+            box-sizing: border-box;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        textarea.form-control {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 5px;
+        }
+
+        .flex-1 {
+            flex: 1;
+        }
+
+        .flex-2 {
+            flex: 2;
+        }
+
+        .flex-3 {
+            flex: 3;
+        }
+
+        .radio-group {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .radio-label {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            cursor: pointer;
+            font-size: 13px;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="form-content" style="padding: 15px 20px 30px;">
+        <!-- 기본 정보 -->
+        <h4 style="margin-top:0; color:var(--text); margin-bottom:10px;">기본 정보</h4>
+
+        <div class="form-group">
+            <label class="form-label">회의 일시</label>
+            <input type="datetime-local" id="v_datetime" class="form-control">
+        </div>
+        <div class="form-group">
+            <label class="form-label">사례회의 구분</label>
+            <div class="radio-group" style="margin-top: 8px;">
+                <label class="radio-label"><input type="radio" name="v_type" value="내부" checked
+                        onchange="triggerPreview()"> 내부</label>
+                <label class="radio-label"><input type="radio" name="v_type" value="통합" onchange="triggerPreview()">
+                    통합</label>
+                <label class="radio-label"><input type="radio" name="v_type" value="기타" onchange="triggerPreview()">
+                    기타</label>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">사례담당자</label>
+            <input type="text" id="v_manager" class="form-control" placeholder="자동 연동됨 (수정 가능)">
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">참석자 <span style="font-weight: normal; font-size: 11px; color: #64748b;">(전체 직원 자동
+                    연동)</span></label>
+            <textarea id="v_attendees" class="form-control" style="min-height: 40px;">전직원</textarea>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label" style="display:flex; justify-content:space-between; align-items:center;">
+                주요 안건
+                <div style="font-weight:normal; font-size:12px; display:flex; gap:10px;">
+                    <label style="cursor:pointer;"><input type="checkbox" id="v_is_chronic" onchange="triggerPreview()">
+                        만성</label>
+                    <label style="cursor:pointer;"><input type="checkbox" id="v_is_suicide" onchange="triggerPreview()">
+                        자살</label>
+                    <label style="cursor:pointer;"><input type="checkbox" id="v_is_child" onchange="triggerPreview()">
+                        아동</label>
+                </div>
+            </label>
+            <textarea id="v_agenda" class="form-control" placeholder="회의의 주요 안건을 기재하세요"
+                style="min-height:60px;"></textarea>
+        </div>
+
+        <div style="border-top: 2px dashed var(--border); margin: 20px 0;"></div>
+        <h4 style="margin-top:0; color:var(--text); margin-bottom:10px;">사례 개요</h4>
+
+        <div class="form-group">
+            <label class="form-label">1. 인적사항</label>
+            <textarea id="v_ov_1" class="form-control"></textarea>
+        </div>
+        <div class="form-group">
+            <label class="form-label">2. 진단명 및 병력</label>
+            <textarea id="v_ov_2" class="form-control"></textarea>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">3. 회원등록 경로</label>
+            <textarea id="v_ov_3" class="form-control"></textarea>
+        </div>
+        <div class="form-group">
+            <label class="form-label">4. 주 호소</label>
+            <textarea id="v_ov_4" class="form-control"></textarea>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">5. 주요 증상</label>
+            <textarea id="v_ov_5" class="form-control"></textarea>
+        </div>
+        <div class="form-group">
+            <label class="form-label">6. 가족사항 및 지지체계</label>
+            <textarea id="v_ov_6" class="form-control"></textarea>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">7. ISP 현황 및 평가도구</label>
+            <textarea id="v_ov_7" class="form-control"></textarea>
+        </div>
+        <div class="form-group">
+            <label class="form-label">8. 담당자 의견</label>
+            <textarea id="v_ov_8" class="form-control"></textarea>
+        </div>
+
+        <div style="border-top: 2px dashed var(--border); margin: 20px 0;"></div>
+
+        <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom: 6px;">
+            <h4 style="margin:0; color:var(--text);">회의 내용 (직원별 피드백)</h4>
+            <button type="button"
+                style="font-size:12px; padding:4px 8px; border:1px solid #ccc; background:#fff; border-radius:4px; cursor:pointer;"
+                onclick="addFeedback()">+ 의견 추가</button>
+        </div>
+        <div id="feedbacks-container"
+            style="border: 1px solid var(--border); border-radius: 6px; padding: 10px; background: #f1f5f9; margin-bottom: 15px;">
+            <!-- feedbacks rendered here -->
+        </div>
+
+        <div style="border-top: 2px dashed var(--border); margin: 20px 0;"></div>
+        <h4 style="margin-top:0; color:var(--text); margin-bottom:10px;">결론 및 슈퍼비전</h4>
+
+        <div class="form-group">
+            <label class="form-label">회의 결과</label>
+            <div class="radio-group">
+                <label class="radio-label"><input type="radio" name="v_result" value="사례관리" checked
+                        onchange="triggerPreview()"> 사례관리</label>
+                <label class="radio-label"><input type="radio" name="v_result" value="응급개입 및 입원"
+                        onchange="triggerPreview()"> 응급개입 및 입원</label>
+                <label class="radio-label"><input type="radio" name="v_result" value="서비스 연계"
+                        onchange="triggerPreview()"> 서비스 연계</label>
+                <label class="radio-label"><input type="radio" name="v_result" value="치료비 지원"
+                        onchange="triggerPreview()"> 치료비 지원</label>
+                <label class="radio-label"><input type="radio" name="v_result" value="프로그램 지원"
+                        onchange="triggerPreview()"> 프로그램 지원</label>
+                <label class="radio-label"><input type="radio" name="v_result" value="퇴록" onchange="triggerPreview()">
+                    퇴록</label>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">슈퍼비전 내용</label>
+            <textarea id="v_supervision" class="form-control" placeholder="슈퍼비전 내용 기재"
+                style="min-height:100px;"></textarea>
+        </div>
+
+    </div>
+
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+    <script>
+        const API_URL = `${(typeof window !== 'undefined' ? window.location.origin : 'http://localhost')}/api/auth`;
+
+        // We will receive this from parent doc_issue.html via postMessage if needed
+        let membersData = [];
+        let feedbacks = [];
+
+        function renderFeedbacks() {
+            let html = '';
+            feedbacks.forEach((f, i) => {
+                html += `
+                <div class="row" style="margin-bottom: 10px; align-items:flex-start;">
+                    <div style="flex:1;">
+                        <input type="text" class="form-control update-trigger" placeholder="의견자 성명(직위)" value="${f.name}" oninput="updateFeedback(${i}, 'name', this.value)" list="member-list-${i}">
+                        <datalist id="member-list-${i}">
+                            <option value="외부위원(직접입력)"></option>
+                            ${membersData.map(m => `<option value="${m.name}(${m.position || '팀원'})">`).join('')}
+                        </datalist>
+                    </div>
+                    <div style="flex:3;">
+                        <textarea class="form-control update-trigger" placeholder="의견 내용" style="min-height:40px;" oninput="updateFeedback(${i}, 'content', this.value)">${f.content}</textarea>
+                    </div>
+                    ${`<button type="button" onclick="removeFeedback(${i})" style="color:#ef4444; border:none; background:none; cursor:pointer; padding:5px; margin-top:5px;"><i class="fas fa-times"></i></button>`}
+                </div>
+                `;
+            });
+            if (feedbacks.length === 0) {
+                html += `<div style="text-align:center; color:#94a3b8; font-size:12px; padding: 10px;">등록된 의견이 없습니다.</div>`;
+            }
+            document.getElementById('feedbacks-container').innerHTML = html;
+        }
+
+        function updateFeedback(idx, field, val) {
+            feedbacks[idx][field] = val;
+            triggerPreview();
+        }
+
+        function addFeedback() {
+            feedbacks.push({ name: '', content: '' });
+            renderFeedbacks();
+            triggerPreview();
+        }
+
+        function removeFeedback(idx) {
+            feedbacks.splice(idx, 1);
+            renderFeedbacks();
+            triggerPreview();
+        }
+
+        function getRadioValue(name) {
+            const els = document.getElementsByName(name);
+            for (let i = 0; i < els.length; i++) {
+                if (els[i].checked) return els[i].value;
+            }
+            return '';
+        }
+
+        function getPayload() {
+            return {
+                v_datetime: document.getElementById('v_datetime').value,
+                v_type: getRadioValue('v_type'),
+                v_manager: document.getElementById('v_manager').value,
+                v_attendees: document.getElementById('v_attendees').value,
+                v_is_chronic: document.getElementById('v_is_chronic').checked,
+                v_is_suicide: document.getElementById('v_is_suicide').checked,
+                v_is_child: document.getElementById('v_is_child').checked,
+                v_agenda: document.getElementById('v_agenda').value,
+
+                v_ov_1: document.getElementById('v_ov_1').value,
+                v_ov_2: document.getElementById('v_ov_2').value,
+                v_ov_3: document.getElementById('v_ov_3').value,
+                v_ov_4: document.getElementById('v_ov_4').value,
+                v_ov_5: document.getElementById('v_ov_5').value,
+                v_ov_6: document.getElementById('v_ov_6').value,
+                v_ov_7: document.getElementById('v_ov_7').value,
+                v_ov_8: document.getElementById('v_ov_8').value,
+
+                v_feedbacks: feedbacks,
+                v_result: getRadioValue('v_result'),
+                v_supervision: document.getElementById('v_supervision').value
+            };
+        }
+
+        function triggerPreview() {
+            if (window.updateTimeout) clearTimeout(window.updateTimeout);
+            window.updateTimeout = setTimeout(() => {
+                window.parent.postMessage({ type: 'updatePreview', payload: getPayload() }, '*');
+            }, 100);
+        }
+
+        document.querySelectorAll('input:not([type="radio"]), select, textarea').forEach(el => {
+            el.addEventListener('input', triggerPreview);
+            el.addEventListener('change', triggerPreview);
+        });
+
+        document.addEventListener('DOMContentLoaded', () => {
+            renderFeedbacks();
+        });
+
+        // Communication with parent (doc_issue.html)
+        window.addEventListener('message', function (event) {
+            if (event.data.action === 'save') {
+                saveData(event.data.commonData);
+            } else if (event.data.action === 'prepareApproval') {
+                prepareApproval(event.data.commonData);
+            } else if (event.data.action === 'updateCommon') {
+                const cm = event.data.commonData;
+                if (cm.issuer && !document.getElementById('v_manager').value) {
+                    document.getElementById('v_manager').value = `${cm.issuer_dept ? cm.issuer_dept + ' ' : ''}${cm.issuer_pos || ''} ${cm.issuer}`.trim();
+                }
+
+                if (event.data.members && event.data.members.length > 0) {
+                    const positionOrder = { '센터장': 0, '부센터장': 1, '상임팀장': 2, '팀장': 3, '주임': 4, '팀원': 5 };
+                    membersData = [...event.data.members].sort((a, b) => {
+                        const posA = positionOrder[a.position] ?? 99;
+                        const posB = positionOrder[b.position] ?? 99;
+                        if (posA !== posB) return posA - posB;
+                        const jd_a = a.join_date || '9999-12-31';
+                        const jd_b = b.join_date || '9999-12-31';
+                        return jd_a.localeCompare(jd_b);
+                    });
+
+                    renderFeedbacks(); // Re-render to update datalists
+
+                    // Populate attendees automatically if not explicitly set
+                    const attendeesEl = document.getElementById('v_attendees');
+                    if (attendeesEl.value === '전직원' || attendeesEl.value === '') {
+                        const sortedNames = membersData.map(m => `${m.name}(${m.position || '팀원'})`);
+                        attendeesEl.value = sortedNames.join(', ');
+                    }
+                }
+                triggerPreview();
+            } else if (event.data.action === 'unlockInputs') {
+                document.querySelectorAll('input, select, textarea, button').forEach(el => el.disabled = false);
+            } else if (event.data.action === 'loadDoc') {
+                const doc = event.data.data;
+                const content = doc.content || {};
+
+                document.getElementById('v_datetime').value = content.v_datetime || '';
+
+                // Radio buttons
+                const typeRadios = document.getElementsByName('v_type');
+                typeRadios.forEach(r => { if (r.value === content.v_type) r.checked = true; });
+
+                document.getElementById('v_manager').value = content.v_manager || '';
+                document.getElementById('v_attendees').value = content.v_attendees || '전직원';
+                document.getElementById('v_is_chronic').checked = content.v_is_chronic || false;
+                document.getElementById('v_is_suicide').checked = content.v_is_suicide || false;
+                document.getElementById('v_is_child').checked = content.v_is_child || false;
+                document.getElementById('v_agenda').value = content.v_agenda || '';
+
+                document.getElementById('v_ov_1').value = content.v_ov_1 || '';
+                document.getElementById('v_ov_2').value = content.v_ov_2 || '';
+                document.getElementById('v_ov_3').value = content.v_ov_3 || '';
+                document.getElementById('v_ov_4').value = content.v_ov_4 || '';
+                document.getElementById('v_ov_5').value = content.v_ov_5 || '';
+                document.getElementById('v_ov_6').value = content.v_ov_6 || '';
+                document.getElementById('v_ov_7').value = content.v_ov_7 || '';
+                document.getElementById('v_ov_8').value = content.v_ov_8 || '';
+
+                if (content.v_feedbacks) feedbacks = content.v_feedbacks;
+                renderFeedbacks();
+
+                const resultRadios = document.getElementsByName('v_result');
+                resultRadios.forEach(r => { if (r.value === content.v_result) r.checked = true; });
+
+                document.getElementById('v_supervision').value = content.v_supervision || '';
+
+                // Lock fields in view mode
+                document.querySelectorAll('input, select, textarea, button').forEach(el => el.disabled = true);
+                triggerPreview();
+            }
+        });
+
+        function saveData(commonData) {
+            const content = getPayload();
+            // In draft saving, we might not require strict titles, but case conference might want something
+            const titleDate = content.v_datetime ? content.v_datetime.split(' ')[0] : new Date().toLocaleDateString();
+            const fullTitle = `사례회의록(${titleDate})`;
+
+            fetch(API_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    action: 'save_issued_doc',
+                    type: '사례회의록',
+                    target_name: '(사례의)',
+                    title: fullTitle,
+                    content: { ...commonData, ...content },
+                    issuer: commonData.issuer
+                })
+            })
+                .then(res => res.json())
+                .then(json => {
+                    if (json.result === 'success') {
+                        window.parent.postMessage({ type: 'saveSuccess', id: json.id }, '*');
+                    } else {
+                        Toastify({ text: "오류 발생: " + json.message, style: { background: "#ef4444" }, duration: 4000 }).showToast();
+                        window.parent.postMessage({ type: 'saveError' }, '*');
+                    }
+                })
+                .catch(err => {
+                    Toastify({ text: "서버 오류", style: { background: "#ef4444" }, duration: 4000 }).showToast();
+                    window.parent.postMessage({ type: 'saveError' }, '*');
+                });
+        }
+
+        function prepareApproval(commonData) {
+            const payload = getPayload();
+            const titleDate = payload.v_datetime ? payload.v_datetime.split(' ')[0] : new Date().toLocaleDateString();
+
+            window.parent.postMessage({
+                type: 'readyForApproval',
+                targetName: `${titleDate}_${payload.v_manager}`,
+                reportData: { ...commonData, ...payload }
+            }, '*');
+        }
+    </script>
+</body>
+
+</html>

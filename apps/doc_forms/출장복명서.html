@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>출장복명서 입력 폼</title>
+    <link rel="stylesheet" as="style" crossorigin
+        href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.8/dist/web/static/pretendard.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+    <style>
+        :root {
+            --primary: #2563eb;
+            --border: #e2e8f0;
+            --text: #334155;
+            --background: #f8fafc;
+        }
+
+        body {
+            font-family: 'Pretendard', sans-serif;
+            margin: 0;
+            padding: 0;
+            color: var(--text);
+            font-size: 14px;
+            background: transparent;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 6px;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 6px 10px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 13px;
+            transition: border-color 0.2s;
+            box-sizing: border-box;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        textarea.form-control {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 5px;
+            flex-wrap: wrap;
+        }
+
+        .flex-1 {
+            flex: 1;
+            min-width: 0; /* Prevents flex items from overflowing */
+        }
+
+        .flex-2 {
+            flex: 2;
+            min-width: 0;
+        }
+        
+        /* Media query for narrow panels */
+        @media (max-width: 400px) {
+            .row {
+                flex-direction: column;
+                gap: 5px;
+            }
+            .flex-2 {
+                flex: 1;
+            }
+            .traveler-row {
+                flex-direction: column;
+                gap: 5px;
+            }
+            .traveler-row > div {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div id="form-content" style="padding: 15px 20px 30px;">
+        <div class="form-group row">
+            <div class="flex-1">
+                <label class="form-label">작성일자</label>
+                <input type="date" id="v_date" class="form-control">
+            </div>
+            <div class="flex-1">
+            </div>
+        </div>
+
+        <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom: 6px;">
+            <label class="form-label" style="margin-bottom:0;">출장자 목록</label>
+            <button type="button"
+                style="font-size:12px; padding:4px 8px; border:1px solid #ccc; background:#fff; border-radius:4px; cursor:pointer;"
+                onclick="addTraveler()">+ 인원 추가</button>
+        </div>
+        <div id="travelers-container"
+            style="border: 1px solid var(--border); border-radius: 6px; padding: 10px; background: #f1f5f9; margin-bottom: 15px;">
+            <!-- travelers rendered here -->
+        </div>
+
+        <div style="border-top: 2px dashed var(--border); margin: 20px 0;"></div>
+        <h4 style="margin-top:0; color:var(--text); margin-bottom:10px;">하명</h4>
+
+        <div class="form-group row">
+            <div class="flex-2">
+                <label class="form-label">하명 목적</label>
+                <input type="text" id="v_instruction_purpose" class="form-control" placeholder="출장 목적 요약">
+            </div>
+            <div class="flex-1">
+                <label class="form-label">출장지</label>
+                <input type="text" id="v_destination" class="form-control" placeholder="출장 장소">
+            </div>
+        </div>
+
+        <div class="form-group row">
+            <div class="flex-2">
+                <label class="form-label">출발 일시</label>
+                <input type="text" id="v_start_time" class="form-control" placeholder="예: 2026. 3. 5. (14:00)">
+            </div>
+            <div class="flex-1">
+                <label class="form-label">이동 방법</label>
+                <input type="text" id="v_transport" class="form-control" placeholder="관용차 / 자차 등">
+            </div>
+        </div>
+
+        <div class="form-group row">
+            <div class="flex-2">
+                <label class="form-label">귀사 일시</label>
+                <input type="text" id="v_end_time" class="form-control" placeholder="예: 2026. 3. 5. (16:00)">
+            </div>
+            <div class="flex-1">
+                <label class="form-label">숙박 일수</label>
+                <input type="text" id="v_lodging" class="form-control" placeholder="무박 / 1박 등">
+            </div>
+        </div>
+
+        <div style="border-top: 2px dashed var(--border); margin: 20px 0;"></div>
+        <h4 style="margin-top:0; color:var(--text);">복명사항 (내용)</h4>
+
+        <div class="form-group row">
+            <div class="flex-1">
+                <label class="form-label">제목</label>
+                <input type="text" id="v_title" class="form-control" placeholder="출장복명서 제목">
+            </div>
+            <div class="flex-1">
+                <label class="form-label">일시</label>
+                <input type="text" id="v_datetime" class="form-control" placeholder="실제 수행 일시">
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">목적</label>
+            <textarea id="v_purpose" class="form-control" placeholder="상세 복명 목적"></textarea>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">내용</label>
+            <textarea id="v_content" class="form-control" style="min-height: 150px;"
+                placeholder="출장 내용 상세 기재"></textarea>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label" style="display: flex; align-items: center; gap: 8px;">
+                사진 첨부
+                <input type="checkbox" id="v_include_photo" checked onchange="togglePhotoRow()">
+                <span style="font-weight: normal; font-size: 12px; color: var(--text);">(템플릿에 사진란 포함시 체크)</span>
+            </label>
+            <div class="row" id="photo_upload_row">
+                <div class="flex-1" style="display: flex; gap: 5px;">
+                    <input type="file" id="v_photo1_file" accept="image/*" class="form-control"
+                        onchange="encodeImage(this, 'v_photo1')">
+                    <button type="button" class="form-control"
+                        style="width: auto; padding: 6px 12px; cursor: pointer; background: #f1f5f9; border: 1px solid var(--border);"
+                        onclick="clearFile('v_photo1')" title="첨부 취소"><i class="fas fa-times"></i></button>
+                    <input type="hidden" id="v_photo1">
+                </div>
+                <div class="flex-1" style="display: flex; gap: 5px;">
+                    <input type="file" id="v_photo2_file" accept="image/*" class="form-control"
+                        onchange="encodeImage(this, 'v_photo2')">
+                    <button type="button" class="form-control"
+                        style="width: auto; padding: 6px 12px; cursor: pointer; background: #f1f5f9; border: 1px solid var(--border);"
+                        onclick="clearFile('v_photo2')" title="첨부 취소"><i class="fas fa-times"></i></button>
+                    <input type="hidden" id="v_photo2">
+                </div>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">환류 계획</label>
+            <textarea id="v_feedback" class="form-control" placeholder="환류 계획 요약"></textarea>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">첨부문서 (텍스트 설명)</label>
+            <input type="text" id="v_attachment_text" class="form-control" placeholder="예: 영수증 1부">
+        </div>
+
+        <div class="form-group">
+            <label class="form-label" style="display: flex; align-items: center; gap: 8px;">
+                관련공문 첨부
+                <input type="checkbox" id="v_include_scan" onchange="toggleScanRow()">
+                <span style="font-weight: normal; font-size: 12px; color: var(--text);">(인쇄 시 별도 페이지에 첨부)</span>
+            </label>
+            <div class="row" id="scan_upload_row" style="display:none;">
+                <div class="flex-1" style="display: flex; gap: 5px;">
+                    <input type="file" id="v_scan1_file" accept="image/*" class="form-control"
+                        onchange="encodeImage(this, 'v_scan1')">
+                    <button type="button" class="form-control"
+                        style="width: auto; padding: 6px 12px; cursor: pointer; background: #f1f5f9; border: 1px solid var(--border);"
+                        onclick="clearFile('v_scan1')" title="첨부 취소"><i class="fas fa-times"></i></button>
+                    <input type="hidden" id="v_scan1">
+                </div>
+                <div class="flex-1" style="display: flex; gap: 5px;">
+                    <input type="file" id="v_scan2_file" accept="image/*" class="form-control"
+                        onchange="encodeImage(this, 'v_scan2')">
+                    <button type="button" class="form-control"
+                        style="width: auto; padding: 6px 12px; cursor: pointer; background: #f1f5f9; border: 1px solid var(--border);"
+                        onclick="clearFile('v_scan2')" title="첨부 취소"><i class="fas fa-times"></i></button>
+                    <input type="hidden" id="v_scan2">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+    <script>
+        const API_URL = `${(typeof window !== 'undefined' ? window.location.origin : 'http://localhost')}/api/auth`;
+
+        let travelers = [{ type: '직원', team: '', position: '', name: '' }];
+
+        function renderTravelers() {
+            let html = '';
+            travelers.forEach((t, i) => {
+                html += `
+                <div class="row traveler-row" style="align-items: center; background: white; padding: 8px; border: 1px solid var(--border); border-radius: 4px; margin-bottom: ${i === travelers.length - 1 ? '0' : '8px'};">
+                    <div style="flex:1">
+                        <input type="text" class="form-control update-trigger" placeholder="구분 (예: 직원)" value="${t.type}" oninput="updateTraveler(${i}, 'type', this.value)">
+                    </div>
+                    <div style="flex:2">
+                        <input type="text" class="form-control update-trigger" placeholder="소속 (예: 사례팀)" value="${t.team}" oninput="updateTraveler(${i}, 'team', this.value)">
+                    </div>
+                    <div style="flex:1">
+                        <input type="text" class="form-control update-trigger" placeholder="직위" value="${t.position}" oninput="updateTraveler(${i}, 'position', this.value)">
+                    </div>
+                    <div style="flex:1; display:flex; gap:5px;">
+                        <input type="text" class="form-control update-trigger" placeholder="성명" value="${t.name}" oninput="updateTraveler(${i}, 'name', this.value)">
+                    ${i > 0 ? `<button type="button" onclick="removeTraveler(${i})" style="color:#ef4444; border:none; background:none; cursor:pointer; padding:5px;"><i class="fas fa-times"></i></button>` : `<div style="width:24px;"></div>`}
+                    </div>
+                </div>
+                `;
+            });
+            document.getElementById('travelers-container').innerHTML = html;
+        }
+
+        function updateTraveler(idx, field, val) {
+            travelers[idx][field] = val;
+            triggerPreview();
+        }
+
+        function addTraveler() {
+            travelers.push({ type: '직원', team: '', position: '', name: '' });
+            renderTravelers();
+            triggerPreview();
+        }
+
+        function removeTraveler(idx) {
+            travelers.splice(idx, 1);
+            renderTravelers();
+            triggerPreview();
+        }
+
+        function encodeImage(element, hiddenId) {
+            const file = element.files[0];
+            if (file) {
+                // To avoid QuotaExceededError in localStorage drafts, we compress the image
+                const reader = new FileReader();
+                reader.onloadend = function (e) {
+                    const img = new Image();
+                    img.onload = function () {
+                        const canvas = document.createElement('canvas');
+                        let width = img.width;
+                        let height = img.height;
+
+                        // Max dimension 1200px
+                        const MAX_DIM = 1200;
+                        if (width > height) {
+                            if (width > MAX_DIM) {
+                                height *= MAX_DIM / width;
+                                width = MAX_DIM;
+                            }
+                        } else {
+                            if (height > MAX_DIM) {
+                                width *= MAX_DIM / height;
+                                height = MAX_DIM;
+                            }
+                        }
+
+                        canvas.width = width;
+                        canvas.height = height;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, width, height);
+
+                        // Compress to JPEG with 0.7 quality
+                        const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
+                        document.getElementById(hiddenId).value = dataUrl;
+                        triggerPreview();
+                    };
+                    img.src = e.target.result;
+                }
+                reader.readAsDataURL(file);
+            } else {
+                document.getElementById(hiddenId).value = '';
+                triggerPreview();
+            }
+        }
+
+        function clearFile(baseId) {
+            document.getElementById(baseId + '_file').value = '';
+            document.getElementById(baseId).value = '';
+            triggerPreview();
+        }
+
+        function togglePhotoRow() {
+            const chk = document.getElementById('v_include_photo').checked;
+            document.getElementById('photo_upload_row').style.display = chk ? 'flex' : 'none';
+            triggerPreview();
+        }
+
+        function toggleScanRow() {
+            const chk = document.getElementById('v_include_scan').checked;
+            document.getElementById('scan_upload_row').style.display = chk ? 'flex' : 'none';
+            triggerPreview();
+        }
+
+        function getPayload() {
+            return {
+                v_date: document.getElementById('v_date').value,
+                v_travelers: travelers,
+                v_manager: travelers.length > 0 ? travelers[0].name : '',
+                v_instruction_purpose: document.getElementById('v_instruction_purpose').value,
+                v_destination: document.getElementById('v_destination').value,
+                v_start_time: document.getElementById('v_start_time').value,
+                v_transport: document.getElementById('v_transport').value,
+                v_end_time: document.getElementById('v_end_time').value,
+                v_lodging: document.getElementById('v_lodging').value,
+                v_title: document.getElementById('v_title').value,
+                v_datetime: document.getElementById('v_datetime').value,
+                v_purpose: document.getElementById('v_purpose').value,
+                v_content: document.getElementById('v_content').value,
+                v_include_photo: document.getElementById('v_include_photo').checked,
+                v_photo1: document.getElementById('v_photo1').value,
+                v_photo2: document.getElementById('v_photo2').value,
+                v_include_scan: document.getElementById('v_include_scan').checked,
+                v_scan1: document.getElementById('v_scan1').value,
+                v_scan2: document.getElementById('v_scan2').value,
+                v_feedback: document.getElementById('v_feedback').value,
+                v_attachment_text: document.getElementById('v_attachment_text').value
+            };
+        }
+
+        function triggerPreview() {
+            if (window.updateTimeout) clearTimeout(window.updateTimeout);
+            window.updateTimeout = setTimeout(() => {
+                window.parent.postMessage({ type: 'updatePreview', payload: getPayload() }, '*');
+            }, 100);
+        }
+
+        document.querySelectorAll('input:not([type="file"]), select, textarea').forEach(el => {
+            el.addEventListener('input', triggerPreview);
+            el.addEventListener('change', triggerPreview);
+        });
+
+        document.addEventListener('DOMContentLoaded', () => {
+            renderTravelers();
+            // Give parent a chance to send common data first
+            setTimeout(triggerPreview, 200);
+        });
+
+        window.addEventListener('message', function (event) {
+            if (event.data.action === 'save') {
+                saveData(event.data.commonData);
+            } else if (event.data.action === 'prepareApproval') {
+                prepareApproval(event.data.commonData);
+            } else if (event.data.action === 'updateCommon') {
+                const cm = event.data.commonData;
+                // Pre-fill name and team if not set
+                if (cm.issuer && travelers.length > 0 && !travelers[0].name) {
+                    travelers[0].name = cm.issuer;
+                    if (cm.issuer_dept && !travelers[0].team) {
+                        travelers[0].team = cm.issuer_dept;
+                    }
+                    renderTravelers();
+                }
+                triggerPreview();
+            } else if (event.data.action === 'unlockInputs') {
+                document.querySelectorAll('input, select, textarea, button').forEach(el => el.disabled = false);
+            } else if (event.data.action === 'loadDoc') {
+                const doc = event.data.data;
+                const content = doc.content || {};
+
+                document.getElementById('v_date').value = content.v_date || '';
+
+                if (content.v_travelers && content.v_travelers.length > 0) {
+                    travelers = content.v_travelers;
+                } else {
+                    travelers = [{
+                        type: content.v_trip_type || '',
+                        team: content.v_team || '',
+                        position: content.v_position || '',
+                        name: content.v_name || content.v_manager || ''
+                    }];
+                }
+                renderTravelers();
+
+                document.getElementById('v_instruction_purpose').value = content.v_instruction_purpose || '';
+                document.getElementById('v_destination').value = content.v_destination || '';
+                document.getElementById('v_start_time').value = content.v_start_time || '';
+                document.getElementById('v_transport').value = content.v_transport || '';
+                document.getElementById('v_end_time').value = content.v_end_time || '';
+                document.getElementById('v_lodging').value = content.v_lodging || '';
+
+                document.getElementById('v_title').value = content.v_title || '';
+                document.getElementById('v_datetime').value = content.v_datetime || '';
+                document.getElementById('v_purpose').value = content.v_purpose || '';
+                document.getElementById('v_content').value = content.v_content || '';
+
+                if (content.v_include_photo !== undefined) {
+                    document.getElementById('v_include_photo').checked = content.v_include_photo;
+                    togglePhotoRow();
+                }
+
+                document.getElementById('v_photo1').value = content.v_photo1 || '';
+                document.getElementById('v_photo2').value = content.v_photo2 || '';
+
+                if (content.v_include_scan !== undefined) {
+                    document.getElementById('v_include_scan').checked = content.v_include_scan;
+                    toggleScanRow();
+                }
+
+                document.getElementById('v_scan1').value = content.v_scan1 || '';
+                document.getElementById('v_scan2').value = content.v_scan2 || '';
+
+                document.getElementById('v_feedback').value = content.v_feedback || '';
+                document.getElementById('v_attachment_text').value = content.v_attachment_text || '';
+
+                // Lock fields in view mode
+                document.querySelectorAll('input:not([type="hidden"]), select, textarea, button').forEach(el => el.disabled = true);
+                triggerPreview();
+            }
+        });
+
+        function saveData(commonData) {
+            const content = getPayload();
+            const title = content.v_title;
+            if (!title) {
+                Toastify({ text: "제목을 입력해주세요.", style: { background: "#ef4444" }, duration: 3000 }).showToast();
+                window.parent.postMessage({ type: 'saveError' }, '*');
+                return;
+            }
+
+            fetch(API_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    action: 'save_issued_doc',
+                    type: '출장복명서',
+                    target_name: '(출장)',
+                    title: `출장복명서(${title})`,
+                    content: { ...commonData, ...content },
+                    issuer: commonData.issuer
+                })
+            })
+                .then(res => res.json())
+                .then(json => {
+                    if (json.result === 'success') {
+                        window.parent.postMessage({ type: 'saveSuccess', id: json.id }, '*');
+                    } else {
+                        Toastify({ text: "오류 발생: " + json.message, style: { background: "#ef4444" }, duration: 4000 }).showToast();
+                        window.parent.postMessage({ type: 'saveError' }, '*');
+                    }
+                })
+                .catch(err => {
+                    Toastify({ text: "서버 오류", style: { background: "#ef4444" }, duration: 4000 }).showToast();
+                    window.parent.postMessage({ type: 'saveError' }, '*');
+                });
+        }
+
+        function prepareApproval(commonData) {
+            const content = getPayload();
+            const title = content.v_title;
+            if (!title) {
+                Toastify({ text: "제목을 입력해주세요.", style: { background: "#ef4444" }, duration: 3000 }).showToast();
+                window.parent.postMessage({ type: 'approvalError', message: '제목을 입력해주세요.' }, '*');
+                return;
+            }
+            const fullData = { ...commonData, ...content };
+
+            fetch(API_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    action: 'save_issued_doc',
+                    type: '출장복명서',
+                    target_name: '(출장)',
+                    title: `출장복명서(${title})`,
+                    content: fullData,
+                    issuer: commonData.issuer,
+                    status: '결재 대기'
+                })
+            })
+                .then(res => res.json())
+                .then(json => {
+                    if (json.result === 'success') {
+                        window.parent.postMessage({
+                            type: 'readyForApproval',
+                            targetName: '(출장)',
+                            reportData: fullData,
+                            linkedDocId: json.id
+                        }, '*');
+                    } else {
+                        Toastify({ text: "사전 임시저장 오류: " + json.message, style: { background: "#ef4444" }, duration: 4000 }).showToast();
+                        window.parent.postMessage({ type: 'approvalError', message: json.message }, '*');
+                    }
+                })
+                .catch(err => {
+                    Toastify({ text: "서버 오류 (사전 임시저장 실패)", style: { background: "#ef4444" }, duration: 4000 }).showToast();
+                    window.parent.postMessage({ type: 'approvalError', message: '사전 임시저장 실패' }, '*');
+                });
+        }
+    </script>
+</body>
+
+</html>

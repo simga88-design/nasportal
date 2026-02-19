@@ -1,0 +1,1479 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>응급개입 기록지 폼</title>
+    <link rel="stylesheet" as="style" crossorigin
+        href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.8/dist/web/static/pretendard.css" />
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-light: #eff6ff;
+            --border: #e2e8f0;
+            --text: #1e293b;
+            --text-light: #64748b;
+            --background: #ffffff;
+            --bg-sub: #f8fafc;
+            --radius: 6px;
+        }
+
+        body {
+            font-family: 'Pretendard', sans-serif;
+            margin: 0;
+            padding: 0;
+            color: var(--text);
+            font-size: 13px;
+            background: var(--background);
+            line-height: 1.4;
+        }
+
+        .form-container {
+            padding: 24px 20px 40px;
+            background: var(--background);
+            min-height: 100vh;
+            max-width: 100%;
+            overflow-x: hidden;
+        }
+
+        .section-title {
+            font-size: 15px;
+            font-weight: 700;
+            color: #0f172a;
+            margin: 32px 0 16px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #e2e8f0;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .section-title::before {
+            content: '';
+            display: block;
+            width: 3px;
+            height: 15px;
+            background: var(--primary);
+            border-radius: 2px;
+        }
+
+        .section-title:first-child {
+            margin-top: 0;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-label {
+            display: flex;
+            align-items: center;
+            font-size: 12.5px;
+            font-weight: 600;
+            color: #334155;
+            margin-bottom: 6px;
+            word-break: keep-all;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: var(--radius);
+            font-size: 13px;
+            font-family: inherit;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            box-sizing: border-box;
+            background-color: #fff;
+            color: var(--text);
+        }
+
+        .form-control:hover {
+            border-color: #94a3b8;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px var(--primary-light);
+            background-color: #fff;
+        }
+
+        .form-control::placeholder {
+            color: #94a3b8;
+        }
+
+        .form-control-inline {
+            display: inline-block;
+            width: auto;
+            min-width: 100px;
+        }
+
+        textarea.form-control {
+            resize: vertical;
+            min-height: 60px;
+            line-height: 1.5;
+        }
+
+        /* 패널 너비에 따른 자연스러운 스태킹을 위한 반응형 레이아웃 */
+        .row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .col {
+            flex: 1 1 160px;
+            /* 각 요소가 최소 160px를 유지하되, 패널이 좁으면 자동으로 아래로 떨어짐 */
+            min-width: 0;
+        }
+
+        .col-2 {
+            flex: 2 1 240px;
+            min-width: 0;
+        }
+
+        .checkbox-group {
+            background: var(--bg-sub);
+            padding: 10px 12px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            font-size: 12.5px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px 8px;
+            align-items: center;
+        }
+
+        .checkbox-group.grid-col {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+            gap: 6px 8px;
+        }
+
+        .checkbox-group label {
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            color: var(--text);
+            white-space: nowrap;
+            background: #fff;
+            padding: 5px 10px;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            transition: all 0.2s;
+        }
+
+        .checkbox-group label:hover {
+            border-color: #cbd5e1;
+            background: #f1f5f9;
+        }
+
+        .checkbox-group label:has(input:checked) {
+            border-color: var(--primary);
+            background: var(--primary-light);
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        .checkbox-group input[type="text"] {
+            width: 110px;
+            padding: 4px 8px;
+            border: 1px solid #cbd5e1;
+            border-radius: 4px;
+            font-size: 12.5px;
+            transition: all 0.2s;
+            margin-left: 2px;
+            background: #fff;
+            font-weight: 400;
+            color: var(--text);
+        }
+
+        .checkbox-group input[type="text"]:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px var(--primary-light);
+        }
+
+        .checkbox-group input[type="checkbox"],
+        .checkbox-group input[type="radio"] {
+            width: 14px;
+            height: 14px;
+            margin: 0;
+            cursor: pointer;
+            accent-color: var(--primary);
+        }
+
+        /* 불필요한 다중 박스 여백을 제거하고 패널 전체를 하나의 폼으로 느끼게 플랫 UI 적용 */
+        .card {
+            background: transparent;
+            border: none;
+            padding: 0;
+            margin-bottom: 32px;
+            box-shadow: none;
+        }
+
+        .card>.row:last-child,
+        .card>.form-group:last-child {
+            margin-bottom: 0;
+        }
+
+        .top-info {
+            background: var(--bg-sub);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 32px;
+            box-shadow: none;
+        }
+
+        .subsection-label {
+            font-size: 13.5px;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .subsection-label::before {
+            content: '';
+            display: block;
+            width: 4px;
+            height: 4px;
+            border-radius: 50%;
+            background: #64748b;
+        }
+
+        .divider {
+            height: 1px;
+            background: var(--border);
+            margin: 20px 0;
+        }
+
+        .highlight-box {
+            background: var(--bg-sub);
+            padding: 16px;
+            border-radius: var(--radius);
+            margin-bottom: 16px;
+            border: 1px solid var(--border);
+        }
+
+        /* CRI Wizard Styles */
+        #wizard-container {
+            display: none;
+            padding: 24px 20px 40px;
+            background: var(--background);
+            min-height: 100vh;
+            max-width: 100%;
+            overflow-x: hidden;
+        }
+
+        .wizard-header {
+            margin-bottom: 24px;
+        }
+
+        .wizard-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 8px;
+        }
+
+        .wizard-progress {
+            font-size: 13px;
+            color: #64748b;
+            margin-bottom: 12px;
+        }
+
+        .progress-bar-bg {
+            background: #e2e8f0;
+            height: 6px;
+            border-radius: 3px;
+            width: 100%;
+            overflow: hidden;
+        }
+
+        .progress-bar-fill {
+            background: var(--primary);
+            height: 100%;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .wizard-step {
+            display: none;
+            animation: fadeIn 0.3s;
+        }
+
+        .wizard-step.active {
+            display: block;
+        }
+
+        .wizard-question {
+            background: #fff;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 16px;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+        }
+
+        .q-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 12px;
+            line-height: 1.4;
+        }
+
+        .q-desc {
+            font-size: 12.5px;
+            color: #64748b;
+            margin-bottom: 12px;
+            line-height: 1.4;
+        }
+
+        .q-options {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .q-option-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: #f8fafc;
+        }
+
+        .q-option-label:hover {
+            border-color: #94a3b8;
+            background: #f1f5f9;
+        }
+
+        .q-option-label:has(input:checked) {
+            border-color: var(--primary);
+            background: var(--primary-light);
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        .wizard-footer {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 32px;
+            gap: 12px;
+            padding-top: 16px;
+            border-top: 1px solid var(--border);
+        }
+
+        .btn {
+            padding: 10px 16px;
+            border-radius: 6px;
+            font-size: 13.5px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+            flex: 1;
+            font-family: inherit;
+        }
+
+        .btn-outline {
+            background: #fff;
+            border: 1px solid #cbd5e1;
+            color: #475569;
+        }
+
+        .btn-outline:hover {
+            background: #f8fafc;
+            border-color: #94a3b8;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            border: 1px solid var(--primary);
+            color: #fff;
+        }
+
+        .btn-primary:hover {
+            background: #1d4ed8;
+            border-color: #1d4ed8;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(5px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* 폼 화면 숨기기용 헬퍼 */
+        .hidden-form {
+            display: none !important;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="form-container" id="form-content">
+        <div class="row top-info">
+            <div class="col">
+                <label class="form-label">개입일</label>
+                <input type="date" id="f_1" class="form-control">
+            </div>
+            <div class="col">
+                <label class="form-label">기록자 성명</label>
+                <input type="text" id="f_2" class="form-control" placeholder="성명 입력">
+            </div>
+        </div>
+
+        <div class="section-title">1. 기본정보</div>
+        <div class="card">
+            <div class="row">
+                <div class="col"><label class="form-label">성명</label><input type="text" id="f_3" class="form-control">
+                </div>
+                <div class="col"><label class="form-label">성별</label>
+                    <div class="checkbox-group">
+                        <label><input type="checkbox" id="f_4"> 남</label>
+                        <label><input type="checkbox" id="f_5"> 여</label>
+                    </div>
+                </div>
+                <div class="col"><label class="form-label">나이</label><input type="number" id="f_6" class="form-control">
+                </div>
+            </div>
+            <div class="row">
+                <div class="col"><label class="form-label">생년월일</label><input type="text" id="f_9" class="form-control"
+                        placeholder="YYYY-MM-DD"></div>
+                <div class="col"><label class="form-label">연락처</label><input type="text" id="f_8" class="form-control">
+                </div>
+            </div>
+            <div class="form-group"><label class="form-label">주소</label><input type="text" id="f_7"
+                    class="form-control"></div>
+
+            <div class="form-group">
+                <label class="form-label">보호자 정보</label>
+                <div class="checkbox-group" style="margin-bottom:8px;">
+                    <label>성명: <input type="text" id="f_10" placeholder="보호자 성명"></label>
+                    <label><input type="checkbox" id="f_11"> 부</label>
+                    <label><input type="checkbox" id="f_12"> 모</label>
+                    <label><input type="checkbox" id="f_13"> 자녀</label>
+                    <label><input type="checkbox" id="f_14"> 기타 <input type="text" id="f_15"></label>
+                    <label><input type="checkbox" id="f_16"> 없음</label>
+                </div>
+                <div class="row">
+                    <div class="col"><label class="form-label">보호자 연락처</label><input type="text" id="f_17"
+                            class="form-control"></div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col">
+                    <label class="form-label">행정복지센터 관리 여부</label>
+                    <div class="checkbox-group">
+                        <label><input type="checkbox" id="f_18"> 예</label>
+                        <label><input type="checkbox" id="f_19"> 아니오</label>
+                        <label><input type="checkbox" id="f_20"> 미파악</label>
+                    </div>
+                </div>
+                <div class="col">
+                    <label class="form-label">센터등록 여부</label>
+                    <div class="checkbox-group">
+                        <label><input type="checkbox" id="f_21"> 예</label>
+                        <label><input type="checkbox" id="f_22"> 아니오</label>
+                        <label><input type="checkbox" id="f_23"> 미파악</label>
+                    </div>
+                </div>
+                <div class="col">
+                    <label class="form-label">민원 발생 여부</label>
+                    <div class="checkbox-group">
+                        <label><input type="checkbox" id="f_24"> 예</label>
+                        <label><input type="checkbox" id="f_25"> 아니오</label>
+                        <label><input type="checkbox" id="f_26"> 미파악</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">건강보험 유형</label>
+                <div class="checkbox-group">
+                    <label><input type="checkbox" id="f_27"> 건강보험</label>
+                    <label><input type="checkbox" id="f_28"> 의료급여 1종</label>
+                    <label><input type="checkbox" id="f_29"> 의료급여 2종</label>
+                    <label><input type="checkbox" id="f_30"> 미가입</label>
+                    <label><input type="checkbox" id="f_31"> 기타 <input type="text" id="f_32"></label>
+                </div>
+            </div>
+        </div>
+
+        <div class="section-title">2. 정신건강력 및 증상</div>
+        <div class="card">
+            <div class="form-group">
+                <label class="form-label">진단이력</label>
+                <div class="checkbox-group">
+                    <label><input type="checkbox" id="f_33"> 있음 (코드: <input type="text" id="f_34">)</label>
+                    <label><input type="checkbox" id="f_35"> 없음</label>
+                    <label><input type="checkbox" id="f_36"> 미파악</label>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="form-label">정신과 치료력</label>
+                <div class="checkbox-group">
+                    <label><input type="checkbox" id="f_37"> 외래 <input type="text" id="f_38"></label>
+                    <label><input type="checkbox" id="f_39"> 입원 <input type="text" id="f_40"></label>
+                    <label><input type="checkbox" id="f_41"> 없음</label>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="form-label">주요 증상</label>
+                <div class="checkbox-group grid-col">
+                    <label><input type="checkbox" id="f_42"> 자살시도</label>
+                    <label><input type="checkbox" id="f_43"> 자해</label>
+                    <label><input type="checkbox" id="f_44"> 타해</label>
+                    <label><input type="checkbox" id="f_45"> 우울</label>
+                    <label><input type="checkbox" id="f_46"> 불안</label>
+                    <label><input type="checkbox" id="f_47"> 환청</label>
+                    <label><input type="checkbox" id="f_48"> 망상</label>
+                    <label><input type="checkbox" id="f_49"> 알코올 사용</label>
+                    <label><input type="checkbox" id="f_50"> 기타 <input type="text" id="f_51"></label>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="form-label">증상 내용 (상세 기술)</label>
+                <textarea id="f_163" class="form-control" placeholder="구체적 관찰 내용 기록"></textarea>
+            </div>
+        </div>
+
+        <div class="section-title">3. 대상자 특징</div>
+        <div class="card">
+            <div class="row">
+                <div class="col">
+                    <label class="form-label">외형</label>
+                    <div class="checkbox-group">
+                        <label><input type="checkbox" id="f_52"> 불결</label>
+                        <label><input type="checkbox" id="f_53"> 정상</label>
+                        <label><input type="checkbox" id="f_54"> 기타 <input type="text" id="f_55"></label>
+                    </div>
+                </div>
+                <div class="col">
+                    <label class="form-label">언어</label>
+                    <div class="checkbox-group">
+                        <label><input type="checkbox" id="f_56"> 횡설수설</label>
+                        <label><input type="checkbox" id="f_57"> 단답형</label>
+                        <label><input type="checkbox" id="f_58"> 침묵</label>
+                        <label><input type="checkbox" id="f_59"> 정상</label>
+                    </div>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="form-label">행동</label>
+                <div class="checkbox-group">
+                    <label><input type="checkbox" id="f_60"> 흥분</label>
+                    <label><input type="checkbox" id="f_61"> 위협</label>
+                    <label><input type="checkbox" id="f_62"> 도주 시도</label>
+                    <label><input type="checkbox" id="f_63"> 공격성 없음</label>
+                    <label><input type="checkbox" id="f_64"> 기타 <input type="text" id="f_65"></label>
+                </div>
+            </div>
+        </div>
+
+        <div class="section-title">4. 보호자 반응</div>
+        <div class="card">
+            <div class="form-group">
+                <label class="form-label">보호자 협조도</label>
+                <div class="checkbox-group">
+                    <label><input type="checkbox" id="f_66"> 협조적</label>
+                    <label><input type="checkbox" id="f_67"> 비협조적</label>
+                    <label><input type="checkbox" id="f_68"> 부재</label>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="form-label">특이사항</label>
+                <textarea id="f_164" class="form-control" rows="2"></textarea>
+            </div>
+        </div>
+
+        <div class="section-title">5. 개입 내용</div>
+        <div class="card">
+            <div class="row">
+                <div class="col"><label class="form-label">일시</label><input type="text" id="f_69" class="form-control"
+                        placeholder="YYYY.MM.DD HH:mm"></div>
+                <div class="col"><label class="form-label">장소</label><input type="text" id="f_70" class="form-control">
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="form-label">개입 요청 대상</label>
+                <div class="checkbox-group">
+                    <label><input type="checkbox" id="f_71"> 행정기관</label>
+                    <label><input type="checkbox" id="f_72"> 의료기관</label>
+                    <label><input type="checkbox" id="f_73"> 지역복지기관</label>
+                    <label><input type="checkbox" id="f_74"> 기타 <input type="text" id="f_75"></label>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="form-label">동행자 (출동)</label>
+                <div class="checkbox-group">
+                    <label><input type="checkbox" id="f_76"> 보건소</label>
+                    <label><input type="checkbox" id="f_77"> 경찰</label>
+                    <label><input type="checkbox" id="f_78"> 소방</label>
+                    <label><input type="checkbox" id="f_79"> 행정복지센터</label>
+                    <label><input type="checkbox" id="f_80"> 기타 <input type="text" id="f_81"></label>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col">
+                    <label class="form-label">대상자 반응</label>
+                    <div class="checkbox-group">
+                        <label><input type="checkbox" id="f_82"> 수용</label>
+                        <label><input type="checkbox" id="f_83"> 거부</label>
+                        <label><input type="checkbox" id="f_84"> 혼란</label>
+                        <label><input type="checkbox" id="f_85"> 기타 <input type="text" id="f_86"></label>
+                    </div>
+                </div>
+                <div class="col">
+                    <label class="form-label">개입 방법</label>
+                    <div class="checkbox-group">
+                        <label><input type="checkbox" id="f_87"> 대면상담</label>
+                        <label><input type="checkbox" id="f_88"> 상담거부</label>
+                        <label><input type="checkbox" id="f_89"> 병원 이송</label>
+                        <label><input type="checkbox" id="f_90"> 기타 <input type="text" id="f_91"></label>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section-title">6. 위기상황 판단</div>
+        <div class="card">
+            <div class="subsection-label">자살·자해 위험 <span
+                    style="font-weight:400; font-size:12px; color:#64748b; margin-left:6px;">(유증상 시 하단 '7.자살세부항목' 구체적
+                    기록)</span></div>
+            <div class="row">
+                <div class="col">
+                    <label class="form-label">현재 위험</label>
+                    <div class="checkbox-group">
+                        <label><input type="radio" name="f_92_93" id="f_92"> 있음</label>
+                        <label><input type="radio" name="f_92_93" id="f_93"> 없음</label>
+                    </div>
+                </div>
+                <div class="col">
+                    <label class="form-label">과거 위험</label>
+                    <div class="checkbox-group">
+                        <label><input type="radio" name="f_94_95" id="f_94"> 있음</label>
+                        <label><input type="radio" name="f_94_95" id="f_95"> 없음</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="divider"></div>
+            <div class="subsection-label">타해 위험</div>
+            <div class="row">
+                <div class="col">
+                    <label class="form-label">현재 위험</label>
+                    <div class="checkbox-group">
+                        <label><input type="radio" name="f_96_97" id="f_96"> 있음</label>
+                        <label><input type="radio" name="f_96_97" id="f_97"> 없음</label>
+                    </div>
+                </div>
+                <div class="col">
+                    <label class="form-label">과거 위험</label>
+                    <div class="checkbox-group">
+                        <label><input type="radio" name="f_98_99" id="f_98"> 있음</label>
+                        <label><input type="radio" name="f_98_99" id="f_99"> 없음</label>
+                    </div>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="form-label">타해 위험 내용 기록</label>
+                <textarea id="f_165" class="form-control" rows="2"></textarea>
+            </div>
+
+            <div class="divider"></div>
+            <div class="form-group">
+                <label class="form-label">위기 정도</label>
+                <div class="checkbox-group">
+                    <label><input type="radio" name="f_100_102" id="f_100"> 경미</label>
+                    <label><input type="radio" name="f_100_102" id="f_101"> 중증도</label>
+                    <label><input type="radio" name="f_100_102" id="f_102"> 심각</label>
+                </div>
+            </div>
+
+            <div class="divider"></div>
+            <div class="subsection-label" style="display:flex; justify-content:space-between; align-items:center;">
+                <span>CRI 위기평가척도 판정</span>
+                <button type="button" class="btn btn-primary"
+                    style="padding: 6px 12px; font-size: 12px; flex:none; width:auto;" onclick="openWizard()">CRI 평가 마법사
+                    시작</button>
+            </div>
+
+            <div class="highlight-box" style="margin-bottom:12px;">
+                <div class="form-group" style="margin-bottom:12px;">
+                    <label class="form-label" style="display:block; margin-bottom:8px;">자·타해 위험 1번 문항 (신체적 손상 의도적
+                        행위)</label>
+                    <div class="checkbox-group">
+                        <label><input type="radio" name="cri_v1" id="f_cri_v1_y" value="y" disabled> 있음</label>
+                        <label><input type="radio" name="cri_v1" id="f_cri_v1_n" value="n" disabled> 없음</label>
+                    </div>
+                </div>
+                <div class="row" style="margin-bottom:0;">
+                    <div class="col">
+                        <label class="form-label">자·타해 8번 문항<br>(1점~)</label>
+                        <input type="number" id="f_cri_v8" class="form-control"
+                            style="text-align:center; background:#f1f5f9;" readonly placeholder="자동입력">
+                    </div>
+                    <div class="col">
+                        <label class="form-label">자·타해위험군<br>총점</label>
+                        <input type="number" id="f_103" class="form-control"
+                            style="text-align:center; font-weight:600; background:#f1f5f9;" readonly placeholder="자동입력">
+                    </div>
+                </div>
+            </div>
+
+            <div class="row" style="background:#f8fafc; padding:16px; border-radius:8px; border:1px solid #e2e8f0;">
+                <div class="col" style="text-align:center; display:flex; flex-direction:column; align-items:center;">
+                    <label class="form-label" style="justify-content:center; width:100%;">정신상태<br>총점</label>
+                    <input type="number" id="f_104" class="form-control"
+                        style="text-align:center; font-weight:600; background:#f1f5f9;" readonly placeholder="자동입력">
+                </div>
+                <div class="col" style="text-align:center; display:flex; flex-direction:column; align-items:center;">
+                    <label class="form-label" style="justify-content:center; width:100%;">기능수준<br>총점</label>
+                    <input type="number" id="f_105" class="form-control"
+                        style="text-align:center; font-weight:600; background:#f1f5f9;" readonly placeholder="자동입력">
+                </div>
+                <div class="col" style="text-align:center; display:flex; flex-direction:column; align-items:center;">
+                    <label class="form-label" style="justify-content:center; width:100%;">지지체계<br>총점</label>
+                    <input type="number" id="f_106" class="form-control"
+                        style="text-align:center; font-weight:600; background:#f1f5f9;" readonly placeholder="자동입력">
+                </div>
+                <div class="col-2"
+                    style="text-align:center; display:flex; flex-direction:column; align-items:center; margin-top:8px; width: 100%;">
+                    <label class="form-label" style="justify-content:center; width:100%;">최종 판정결과</label><input
+                        type="text" id="f_107" class="form-control" readonly
+                        style="text-align:center; font-weight:700; color:var(--primary); background-color: var(--primary-light);">
+                </div>
+            </div>
+        </div>
+
+        <div class="section-title">7. 자살세부 항목 (유증상자 작성)</div>
+        <div class="card">
+            <div class="highlight-box">
+                <div class="subsection-label" style="margin-bottom:12px;">현재 시도</div>
+                <div class="checkbox-group" style="background:white; margin-bottom:10px;">
+                    <label><input type="radio" name="f_108_110" id="f_108"> 유</label>
+                    <label><input type="radio" name="f_108_110" id="f_109"> 무</label>
+                    <label><input type="radio" name="f_108_110" id="f_110"> 미파악</label>
+                </div>
+                <label class="form-label">현재 시도방법</label>
+                <div class="checkbox-group grid-col" style="background:white;">
+                    <label><input type="checkbox" id="f_111"> 음독</label>
+                    <label><input type="checkbox" id="f_112"> 질식</label>
+                    <label><input type="checkbox" id="f_113"> 추락</label>
+                    <label><input type="checkbox" id="f_114"> 운수사고</label>
+                    <label><input type="checkbox" id="f_115"> 흉기</label>
+                    <label><input type="checkbox" id="f_116"> 화상</label>
+                    <label><input type="checkbox" id="f_117"> 기타</label>
+                    <label><input type="checkbox" id="f_118"> 미상</label>
+                    <label><input type="checkbox" id="f_119"> 없음</label>
+                </div>
+            </div>
+
+            <div class="highlight-box">
+                <div class="subsection-label" style="margin-bottom:12px;">과거 시도력</div>
+                <div class="checkbox-group" style="background:white; margin-bottom:10px;">
+                    <label><input type="radio" name="f_120_122" id="f_120"> 유</label>
+                    <label><input type="radio" name="f_120_122" id="f_121"> 무</label>
+                    <label><input type="radio" name="f_120_122" id="f_122"> 미파악</label>
+                </div>
+                <label class="form-label">과거 시도횟수</label>
+                <div class="checkbox-group" style="background:white; margin-bottom:10px;">
+                    <label><input type="radio" name="f_123_129" id="f_123"> 없음</label>
+                    <label><input type="radio" name="f_123_129" id="f_124"> 1회</label>
+                    <label><input type="radio" name="f_123_129" id="f_125"> 2~3회</label>
+                    <label><input type="radio" name="f_123_129" id="f_126"> 4~5회</label>
+                    <label><input type="radio" name="f_123_129" id="f_127"> 6~10회</label>
+                    <label><input type="radio" name="f_123_129" id="f_128"> 11회 이상</label>
+                    <label><input type="radio" name="f_123_129" id="f_129"> 미파악</label>
+                </div>
+                <label class="form-label">과거 시도방법</label>
+                <div class="checkbox-group grid-col" style="background:white;">
+                    <label><input type="checkbox" id="f_130"> 음독</label>
+                    <label><input type="checkbox" id="f_131"> 질식</label>
+                    <label><input type="checkbox" id="f_132"> 추락</label>
+                    <label><input type="checkbox" id="f_133"> 운수사고</label>
+                    <label><input type="checkbox" id="f_134"> 흉기</label>
+                    <label><input type="checkbox" id="f_135"> 화상</label>
+                    <label><input type="checkbox" id="f_136"> 기타</label>
+                    <label><input type="checkbox" id="f_137"> 미상</label>
+                    <label><input type="checkbox" id="f_138"> 없음</label>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col">
+                    <label class="form-label">주변인 자살</label>
+                    <div class="checkbox-group">
+                        <label><input type="radio" name="f_139_141" id="f_139"> 유</label>
+                        <label><input type="radio" name="f_139_141" id="f_140"> 무</label>
+                        <label><input type="radio" name="f_139_141" id="f_141"> 미파악</label>
+                    </div>
+                </div>
+                <div class="col">
+                    <label class="form-label">자살계획 여부</label>
+                    <div class="checkbox-group">
+                        <label><input type="radio" name="f_142_144" id="f_142"> 유</label>
+                        <label><input type="radio" name="f_142_144" id="f_143"> 무</label>
+                        <label><input type="radio" name="f_142_144" id="f_144"> 미파악</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">자살계획 수단 (계획 있을 경우)</label>
+                <div class="checkbox-group grid-col">
+                    <label><input type="checkbox" id="f_145"> 음독</label>
+                    <label><input type="checkbox" id="f_146"> 질식</label>
+                    <label><input type="checkbox" id="f_147"> 추락</label>
+                    <label><input type="checkbox" id="f_148"> 운수사고</label>
+                    <label><input type="checkbox" id="f_149"> 흉기</label>
+                    <label><input type="checkbox" id="f_150"> 화상</label>
+                    <label><input type="checkbox" id="f_151"> 기타</label>
+                    <label><input type="checkbox" id="f_152"> 미상</label>
+                    <label><input type="checkbox" id="f_153"> 없음</label>
+                </div>
+            </div>
+        </div>
+
+        <div class="section-title">8. 개입결과</div>
+        <div class="card">
+            <div class="form-group">
+                <label class="form-label">주요조치 분류</label>
+                <div class="checkbox-group">
+                    <label><input type="checkbox" id="f_154"> 입원치료(응급,행정,자의 등)</label>
+                    <label><input type="checkbox" id="f_155"> 등록관리</label>
+                    <label><input type="checkbox" id="f_156"> 지속상담</label>
+                    <label><input type="checkbox" id="f_157"> 개입종결</label><br
+                        style="width:100%; height:8px; display:block;" />
+                    <label><input type="checkbox" id="f_158"> 서비스 연계 <input type="text" id="f_159"
+                            placeholder="연계기관 명"></label>
+                    <label><input type="checkbox" id="f_160"> 기타조치 <input type="text" id="f_161"></label>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="form-label">결과 및 담당자 소견</label>
+                <textarea id="f_166" class="form-control" rows="4"></textarea>
+            </div>
+        </div>
+
+        <!-- 9. 작성 날짜(문서하단) -->
+        <div class="form-group"
+            style="text-align:center; background:none; border:none; margin-top:30px; margin-bottom:0;">
+            <label class="form-label" style="display:inline-block; margin-right:10px;">보고서 최종 작성일자</label>
+            <input type="text" id="f_162" class="form-control"
+                style="width:200px; display:inline-block; text-align:center; font-weight:600;"
+                placeholder="YYYY 년 MM 월 DD 일">
+        </div>
+    </div>
+
+    <!-- CRI 평가 마법사 컨테이너 -->
+    <div id="wizard-container">
+        <div class="wizard-header">
+            <div class="wizard-title" id="wiz-title">CRI 평가 (1/4)</div>
+            <div class="wizard-progress">자·타해 위험 영역 평가 중...</div>
+            <div class="progress-bar-bg">
+                <div class="progress-bar-fill" id="wiz-progress" style="width: 25%;"></div>
+            </div>
+        </div>
+
+        <form id="wiz-form">
+            <!-- Step 1: 자타해 위험 (8문항) -->
+            <div class="wizard-step active" id="wiz-step-1">
+                <div class="wizard-question">
+                    <div class="q-title">Q1. 현재 자타해 폭력위험 (기물파손, 욕설, 고함 등 폭력 위협) <b>[핵심 변수 1]</b></div>
+                    <div class="q-desc">1점: 신체적 손상 의도, 기물파손, 위협적 자세 등<br>0점: 사전 계획, 진술, 예고 내용 수준</div>
+                    <div class="q-options">
+                        <label class="q-option-label"><input type="radio" name="w_v1" value="1"> 있다 (1점)</label>
+                        <label class="q-option-label"><input type="radio" name="w_v1" value="0"> 없다 (0점)</label>
+                    </div>
+                </div>
+                <div class="wizard-question">
+                    <div class="q-title">Q2. 최근 1년내 자살시도</div>
+                    <div class="q-options">
+                        <label class="q-option-label"><input type="radio" name="w_v2" value="1"> 있다 (1점)</label>
+                        <label class="q-option-label"><input type="radio" name="w_v2" value="0"> 없다 (0점)</label>
+                    </div>
+                </div>
+                <div class="wizard-question">
+                    <div class="q-title">Q3. 자타해 폭력 강도 혹은 치명도 (전치 2주 이상 등)</div>
+                    <div class="q-desc">1점: 치명적/중증 상해<br>0점: 경증 상해, 2주 미만</div>
+                    <div class="q-options">
+                        <label class="q-option-label"><input type="radio" name="w_v3" value="1"> 높다 (1점)</label>
+                        <label class="q-option-label"><input type="radio" name="w_v3" value="0"> 낮다 (0점)</label>
+                    </div>
+                </div>
+                <div class="wizard-question">
+                    <div class="q-title">Q4. 고의성 혹은 계획성 수준</div>
+                    <div class="q-desc">1점: 의지 확고, 치밀한 사전준비 등<br>0점: 의지는 있으나 행동 구체화 안됨</div>
+                    <div class="q-options">
+                        <label class="q-option-label"><input type="radio" name="w_v4" value="1"> 높다 (1점)</label>
+                        <label class="q-option-label"><input type="radio" name="w_v4" value="0"> 낮다 (0점)</label>
+                    </div>
+                </div>
+                <div class="wizard-question">
+                    <div class="q-title">Q5. 최근 1년내 자타해 위험으로 인한 경찰개입 여부</div>
+                    <div class="q-options">
+                        <label class="q-option-label"><input type="radio" name="w_v5" value="1"> 있다 (1점)</label>
+                        <label class="q-option-label"><input type="radio" name="w_v5" value="0"> 없다 (0점)</label>
+                    </div>
+                </div>
+                <div class="wizard-question">
+                    <div class="q-title">Q6. 최근 일주일내 폭력</div>
+                    <div class="q-options">
+                        <label class="q-option-label"><input type="radio" name="w_v6" value="1"> 있다 (1점)</label>
+                        <label class="q-option-label"><input type="radio" name="w_v6" value="0"> 없다 (0점)</label>
+                    </div>
+                </div>
+                <div class="wizard-question">
+                    <div class="q-title">Q7. 과거 범죄 이력 (폭행, 성폭력, 방화, 타살 등)</div>
+                    <div class="q-options">
+                        <label class="q-option-label"><input type="radio" name="w_v7" value="1"> 있다 (1점)</label>
+                        <label class="q-option-label"><input type="radio" name="w_v7" value="0"> 없다 (0점)</label>
+                    </div>
+                </div>
+                <div class="wizard-question">
+                    <div class="q-title">Q8. 환청, 약물, 알코올 등에 의한 공격성 여부 <b>[핵심 변수 2 연관]</b></div>
+                    <div class="q-options">
+                        <label class="q-option-label"><input type="radio" name="w_v8" value="1"> 있다 (1점)</label>
+                        <label class="q-option-label"><input type="radio" name="w_v8" value="0"> 없다 (0점)</label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 2: 정신상태 (6문항) -->
+            <div class="wizard-step" id="wiz-step-2">
+                <div class="wizard-question">
+                    <div class="q-title">Q1. 현재 정신증 증상을 보입니까?</div>
+                    <div class="q-options">
+                        <label class="q-option-label"><input type="radio" name="w_m1" value="1"> 그렇다 (1점)</label>
+                        <label class="q-option-label"><input type="radio" name="w_m1" value="0"> 아니다 (0점)</label>
+                    </div>
+                </div>
+                <div class="wizard-question">
+                    <div class="q-title">Q2. 현재 기분장애 증상을 보입니까?</div>
+                    <div class="q-options">
+                        <label class="q-option-label"><input type="radio" name="w_m2" value="1"> 그렇다 (1점)</label>
+                        <label class="q-option-label"><input type="radio" name="w_m2" value="0"> 아니다 (0점)</label>
+                    </div>
+                </div>
+                <div class="wizard-question">
+                    <div class="q-title">Q3. 현재 조증(경조증) 증상을 보입니까?</div>
+                    <div class="q-options">
+                        <label class="q-option-label"><input type="radio" name="w_m3" value="1"> 그렇다 (1점)</label>
+                        <label class="q-option-label"><input type="radio" name="w_m3" value="0"> 아니다 (0점)</label>
+                    </div>
+                </div>
+                <div class="wizard-question">
+                    <div class="q-title">Q4. 정신과 진단을 받거나 과거 입원한 적이 있습니까?</div>
+                    <div class="q-options">
+                        <label class="q-option-label"><input type="radio" name="w_m4" value="1"> 있다 (1점)</label>
+                        <label class="q-option-label"><input type="radio" name="w_m4" value="0"> 없다 (0점)</label>
+                    </div>
+                </div>
+                <div class="wizard-question">
+                    <div class="q-title">Q5. 물질관련 문제(알코올/마약/환각제 등)가 있습니까?</div>
+                    <div class="q-options">
+                        <label class="q-option-label"><input type="radio" name="w_m5" value="1"> 있다 (1점)</label>
+                        <label class="q-option-label"><input type="radio" name="w_m5" value="0"> 없다 (0점)</label>
+                    </div>
+                </div>
+                <div class="wizard-question">
+                    <div class="q-title">Q6. 정신건강문제에 대한 자각/통찰력에 문제가 있습니까?</div>
+                    <div class="q-options">
+                        <label class="q-option-label"><input type="radio" name="w_m6" value="1"> 있다 (1점)</label>
+                        <label class="q-option-label"><input type="radio" name="w_m6" value="0"> 없다 (0점)</label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 3: 기능수준 (7문항) -->
+            <div class="wizard-step" id="wiz-step-3">
+                <div class="wizard-question">
+                    <div class="q-title">Q1. 의사소통(언어기능/상호소통)의 손상</div>
+                    <div class="q-options">
+                        <label class="q-option-label"><input type="radio" name="w_f1" value="1"> 있다 (1점)</label>
+                        <label class="q-option-label"><input type="radio" name="w_f1" value="0"> 없다 (0점)</label>
+                    </div>
+                </div>
+                <div class="wizard-question">
+                    <div class="q-title">Q2. 주의나 자각 손상 (부주의, 주의산만, 깜박함 등)</div>
+                    <div class="q-options">
+                        <label class="q-option-label"><input type="radio" name="w_f2" value="1"> 있다 (1점)</label>
+                        <label class="q-option-label"><input type="radio" name="w_f2" value="0"> 없다 (0점)</label>
+                    </div>
+                </div>
+                <div class="wizard-question">
+                    <div class="q-title">Q3. 기억능력 손상 (심한 건망증 포함)</div>
+                    <div class="q-options">
+                        <label class="q-option-label"><input type="radio" name="w_f3" value="1"> 있다 (1점)</label>
+                        <label class="q-option-label"><input type="radio" name="w_f3" value="0"> 없다 (0점)</label>
+                    </div>
+                </div>
+                <div class="wizard-question">
+                    <div class="q-title">Q4. 일상적인 의사결정 손상 (무엇을 먹을지, 입을지 등)</div>
+                    <div class="q-options">
+                        <label class="q-option-label"><input type="radio" name="w_f4" value="1"> 있다 (1점)</label>
+                        <label class="q-option-label"><input type="radio" name="w_f4" value="0"> 없다 (0점)</label>
+                    </div>
+                </div>
+                <div class="wizard-question">
+                    <div class="q-title">Q5. 인지적 기능의 급격한 변화 여부</div>
+                    <div class="q-options">
+                        <label class="q-option-label"><input type="radio" name="w_f5" value="1"> 있다 (1점)</label>
+                        <label class="q-option-label"><input type="radio" name="w_f5" value="0"> 없다 (0점)</label>
+                    </div>
+                </div>
+                <div class="wizard-question">
+                    <div class="q-title">Q6. 일상 자조능력 상실 (약물관리 포함 의식주관련)</div>
+                    <div class="q-options">
+                        <label class="q-option-label"><input type="radio" name="w_f6" value="1"> 있다 (1점)</label>
+                        <label class="q-option-label"><input type="radio" name="w_f6" value="0"> 없다 (0점)</label>
+                    </div>
+                </div>
+                <div class="wizard-question">
+                    <div class="q-title">Q7. 가정/대인관계/업무 적응력 손상</div>
+                    <div class="q-options">
+                        <label class="q-option-label"><input type="radio" name="w_f7" value="1"> 있다 (1점)</label>
+                        <label class="q-option-label"><input type="radio" name="w_f7" value="0"> 없다 (0점)</label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 4: 지지체계 (2문항) -->
+            <div class="wizard-step" id="wiz-step-4">
+                <div class="wizard-question">
+                    <div class="q-title">Q1. 실제 도움과 지지를 제공하는 가족, 친구, 기타의 존재가 있습니까?</div>
+                    <div class="q-desc">※ 역채점 적용 문항</div>
+                    <div class="q-options">
+                        <label class="q-option-label"><input type="radio" name="w_s1" value="1"> 없다 (1점)</label>
+                        <label class="q-option-label"><input type="radio" name="w_s1" value="0"> 있다 (0점)</label>
+                    </div>
+                </div>
+                <div class="wizard-question">
+                    <div class="q-title">Q2. 현재 도움을 주지는 않으나 제공 가능한 가족, 친구, 기타의 존재가 있습니까?</div>
+                    <div class="q-desc">※ 역채점 적용 문항</div>
+                    <div class="q-options">
+                        <label class="q-option-label"><input type="radio" name="w_s2" value="1"> 없다 (1점)</label>
+                        <label class="q-option-label"><input type="radio" name="w_s2" value="0"> 있다 (0점)</label>
+                    </div>
+                </div>
+            </div>
+        </form>
+
+        <div class="wizard-footer">
+            <button type="button" class="btn btn-outline" id="wiz-btn-prev" onclick="prevStep()">이전 / 취소</button>
+            <button type="button" class="btn btn-primary" id="wiz-btn-next" onclick="nextStep()">다음</button>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+    <script>
+        const API_URL = `${(typeof window !== 'undefined' ? window.location.origin : 'http://localhost')}/api/auth`;
+
+        // ==========================================
+        // CRI Wizard 로직
+        // ==========================================
+        let currentWizStep = 1;
+        const totalWizSteps = 4;
+
+        function openWizard() {
+            document.getElementById('form-content').classList.add('hidden-form');
+            document.getElementById('wizard-container').style.display = 'block';
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            currentWizStep = 1;
+
+            // 기존 폼 입력 무시하고 무조건 초기화(새로 평가)
+            document.querySelectorAll('input[name^="w_"]').forEach(el => el.checked = false);
+            updateWizardUI();
+        }
+
+        function closeWizard() {
+            document.getElementById('wizard-container').style.display = 'none';
+            document.getElementById('form-content').classList.remove('hidden-form');
+            // 본 폼으로 돌아올 시 CRI 분석 섹션으로 스크롤
+            const criSection = document.getElementById('f_cri_v8');
+            if (criSection) criSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+
+        function getRadioValue(name) {
+            const els = document.getElementsByName(name);
+            for (let i = 0; i < els.length; i++) {
+                if (els[i].checked) return parseInt(els[i].value) || 0;
+            }
+            return null;
+        }
+
+        function nextStep() {
+            // 발리데이션 체크 헬퍼
+            const checkAll = (prefix, max) => {
+                for (let i = 1; i <= max; i++) {
+                    if (getRadioValue(`${prefix}${i}`) === null) return false;
+                }
+                return true;
+            };
+
+            if (currentWizStep === 1) {
+                if (!checkAll('w_v', 8)) {
+                    Toastify({ text: "자·타해 항목의 모든 8개 질문에 답해주세요.", style: { background: "#ef4444" }, duration: 2500 }).showToast();
+                    return;
+                }
+            } else if (currentWizStep === 2) {
+                if (!checkAll('w_m', 6)) {
+                    Toastify({ text: "정신상태 항목의 모든 6개 질문에 답해주세요.", style: { background: "#ef4444" }, duration: 2500 }).showToast();
+                    return;
+                }
+            } else if (currentWizStep === 3) {
+                if (!checkAll('w_f', 7)) {
+                    Toastify({ text: "기능수준 항목의 모든 7개 질문에 답해주세요.", style: { background: "#ef4444" }, duration: 2500 }).showToast();
+                    return;
+                }
+            } else if (currentWizStep === 4) {
+                if (!checkAll('w_s', 2)) {
+                    Toastify({ text: "지지체계 항목의 2개 질문에 답해주세요.", style: { background: "#ef4444" }, duration: 2500 }).showToast();
+                    return;
+                }
+                finishWizard();
+                return;
+            }
+
+            currentWizStep++;
+            updateWizardUI();
+        }
+
+        function prevStep() {
+            if (currentWizStep > 1) {
+                currentWizStep--;
+                updateWizardUI();
+            } else {
+                if (confirm('평가를 취소하고 메인 화면으로 돌아가시겠습니까?')) {
+                    closeWizard();
+                }
+            }
+        }
+
+        function updateWizardUI() {
+            // Hide all steps, show current
+            for (let i = 1; i <= totalWizSteps; i++) {
+                const el = document.getElementById('wiz-step-' + i);
+                if (el) el.classList.remove('active');
+            }
+            const currentEl = document.getElementById('wiz-step-' + currentWizStep);
+            if (currentEl) currentEl.classList.add('active');
+
+            // Update Progress Bar
+            const percent = (currentWizStep / totalWizSteps) * 100;
+            const prog = document.getElementById('wiz-progress');
+            if (prog) prog.style.width = percent + '%';
+
+            // Update Title and step text
+            const titles = ['자·타해 위험 평가 중...', '정신상태 평가 중...', '기능수준 평가 중...', '지지체계 평가 중...'];
+            const titleEl = document.getElementById('wiz-title');
+            if (titleEl) titleEl.innerText = `CRI 위기평가 (${currentWizStep}/${totalWizSteps})`;
+            const progText = document.querySelector('.wizard-progress');
+            if (progText) progText.innerText = titles[currentWizStep - 1];
+
+            // Update buttons
+            const btnPrev = document.getElementById('wiz-btn-prev');
+            if (btnPrev) {
+                if (currentWizStep === 1) btnPrev.innerText = '이전 / 취소';
+                else btnPrev.innerText = '이전';
+            }
+
+            const btnNext = document.getElementById('wiz-btn-next');
+            if (btnNext) {
+                if (currentWizStep === totalWizSteps) {
+                    btnNext.innerText = '평가 완료 및 적용';
+                } else {
+                    btnNext.innerText = `다음 (${currentWizStep}/${totalWizSteps})`;
+                }
+            }
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function finishWizard() {
+            const sumPrefix = (prefix, max) => {
+                let s = 0;
+                for (let i = 1; i <= max; i++) s += getRadioValue(`${prefix}${i}`) || 0;
+                return s;
+            };
+
+            // 수집된 점수 합산
+            const v1_score = getRadioValue('w_v1');
+            const v8_score = getRadioValue('w_v8');
+            const total_v = sumPrefix('w_v', 8);
+
+            const mental_score = sumPrefix('w_m', 6);
+            const func_score = sumPrefix('w_f', 7);
+            const support_score = sumPrefix('w_s', 2);
+
+            // 1. 핵심변수 1 강제 매핑
+            const v1_y = document.getElementById('f_cri_v1_y');
+            const v1_n = document.getElementById('f_cri_v1_n');
+            if (v1_y && v1_n) {
+                if (v1_score > 0) {
+                    v1_y.checked = true;
+                    v1_n.checked = false;
+                } else {
+                    v1_y.checked = false;
+                    v1_n.checked = true;
+                }
+            }
+
+            // 2. 자타해 8번
+            const f_v8 = document.getElementById('f_cri_v8');
+            if (f_v8) f_v8.value = v8_score;
+
+            // 3. 자타해위험 총점 (1~8번 문항 합)
+            const f_103 = document.getElementById('f_103');
+            if (f_103) f_103.value = total_v;
+
+            // 4. 나머지 카테고리
+            const f_104 = document.getElementById('f_104');
+            if (f_104) f_104.value = mental_score;
+            const f_105 = document.getElementById('f_105');
+            if (f_105) f_105.value = func_score;
+            const f_106 = document.getElementById('f_106');
+            if (f_106) f_106.value = support_score;
+
+            closeWizard();
+            calculateCRI(); // 변경된 요소들로 액션트리거
+            Toastify({ text: "CRI 평가가 정상적으로 폼에 적용되었습니다.", style: { background: "#10b981" }, duration: 3000 }).showToast();
+        }
+
+        // ==========================================
+        // 기존 통신 및 폼 로직
+        // ==========================================
+        // 1~166 Payload Generate
+        function getPayload() {
+            const p = {};
+            // 기존 필드들 크롤링 (1~166번)
+            for (let i = 1; i <= 166; i++) {
+                const el = document.getElementById('f_' + i);
+                if (el) {
+                    if (el.type === 'checkbox' || el.type === 'radio') p['f_' + i] = el.checked;
+                    else p['f_' + i] = el.value;
+                }
+            }
+            // 신규 CRI 특수 필드 반영
+            const v1_y = document.getElementById('f_cri_v1_y');
+            const v1_n = document.getElementById('f_cri_v1_n');
+            const v8 = document.getElementById('f_cri_v8');
+            if (v1_y) p['f_cri_v1_y'] = v1_y.checked;
+            if (v1_n) p['f_cri_v1_n'] = v1_n.checked;
+            if (v8) p['f_cri_v8'] = v8.value;
+
+            return p;
+        }
+
+        function triggerPreview() {
+            if (window.updateTimeout) clearTimeout(window.updateTimeout);
+            window.updateTimeout = setTimeout(() => {
+                window.parent.postMessage({ type: 'updatePreview', payload: getPayload() }, '*');
+            }, 150);
+        }
+
+        document.querySelectorAll('input, select, textarea').forEach(el => {
+            el.addEventListener('input', triggerPreview);
+            el.addEventListener('change', triggerPreview);
+        });
+
+        // CRI 자동 계산 로직 적용 (A~E 등급 분기표)
+        function calculateCRI() {
+            // 변수 수집
+            const v1_yes = document.getElementById('f_cri_v1_y') ? document.getElementById('f_cri_v1_y').checked : false; // 변수1 있음
+            const v1_no = document.getElementById('f_cri_v1_n') ? document.getElementById('f_cri_v1_n').checked : false;  // 변수1 없음
+
+            const v8_score = document.getElementById('f_cri_v8') ? (parseInt(document.getElementById('f_cri_v8').value) || 0) : 0; // 자타해 8번
+            const var3_score = parseInt(document.getElementById('f_103').value) || 0; // 변수3: 자타해 총점
+            const mental_score = parseInt(document.getElementById('f_104').value) || 0; // 정신상태 총점
+            const func_score = parseInt(document.getElementById('f_105').value) || 0;   // 기능수준 총점
+
+            // 변수2: 정신과적 문제 동반 여부 (자타해8번 점수 + 정신상태 카테고리 점수 합산 >= 1)
+            const var2_is_yes = (v8_score + mental_score) >= 1;
+
+            const resultEl = document.getElementById('f_107');
+            let gradeText = '';
+
+            // 부분 입력 검사 및 로직 확인
+            // 핵심 평가변수인 v1과 여타 기초 변수들이 명확할 때만 등급 매김
+            if (v1_yes || v1_no || v8_score > 0 || var3_score > 0 || mental_score > 0 || func_score > 0) {
+                if (v1_yes && var2_is_yes) {
+                    gradeText = 'A등급 (극도의 위기)';
+                } else if (v1_yes && !var2_is_yes) {
+                    gradeText = 'B등급 (위기)';
+                } else if (v1_no && var3_score >= 1 && var2_is_yes) {
+                    gradeText = 'C등급 (고위험)';
+                } else if (v1_no && ((var3_score >= 1 && !var2_is_yes) || (var3_score === 0 && func_score >= 1))) {
+                    gradeText = 'D등급 (주의)';
+                } else if (v1_no && var3_score === 0 && func_score === 0) {
+                    gradeText = 'E등급 (위기상황 아님)';
+                } else {
+                    gradeText = ''; // 조건표를 만족하지 못하는 부분입력은 아직 빈 화면.
+                }
+                resultEl.value = gradeText;
+            } else {
+                resultEl.value = '';
+            }
+            triggerPreview();
+        }
+
+        ['f_103', 'f_104', 'f_105', 'f_106', 'f_cri_v1_y', 'f_cri_v1_n', 'f_cri_v8'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) {
+                el.addEventListener('input', calculateCRI);
+                el.addEventListener('change', calculateCRI); // 라디오버튼 감지용
+            }
+        });
+
+        // Today Date Init Utility
+        document.addEventListener('DOMContentLoaded', () => {
+            const today = new Date();
+            const yyyy = today.getFullYear();
+            const mm = String(today.getMonth() + 1).padStart(2, '0');
+            const dd = String(today.getDate()).padStart(2, '0');
+
+            if (!document.getElementById('f_1').value) document.getElementById('f_1').value = `${yyyy}-${mm}-${dd}`;
+            if (!document.getElementById('f_162').value) document.getElementById('f_162').value = `${yyyy} 년 ${mm} 월 ${dd} 일`;
+            triggerPreview();
+        });
+
+        window.addEventListener('message', function (event) {
+            if (event.data.action === 'save') {
+                saveData(event.data.commonData);
+            } else if (event.data.action === 'prepareApproval') {
+                prepareApproval(event.data.commonData);
+            } else if (event.data.action === 'updateCommon') {
+                triggerPreview();
+            } else if (event.data.action === 'unlockInputs') {
+                document.querySelectorAll('input, select, textarea').forEach(el => el.disabled = false);
+            } else if (event.data.action === 'loadDoc') {
+                const doc = event.data.data;
+                const content = doc.content || {};
+                for (let i = 1; i <= 166; i++) {
+                    const el = document.getElementById('f_' + i);
+                    if (el) {
+                        if (el.type === 'checkbox' || el.type === 'radio') el.checked = !!content['f_' + i];
+                        else el.value = content['f_' + i] || '';
+                    }
+                }
+
+                // 신규 특수입력란 복원
+                const v1_y = document.getElementById('f_cri_v1_y');
+                const v1_n = document.getElementById('f_cri_v1_n');
+                const v8 = document.getElementById('f_cri_v8');
+                if (v1_y) v1_y.checked = !!content['f_cri_v1_y'];
+                if (v1_n) v1_n.checked = !!content['f_cri_v1_n'];
+                if (v8) v8.value = content['f_cri_v8'] || '';
+
+                document.querySelectorAll('input, select, textarea').forEach(el => el.disabled = true);
+                triggerPreview();
+            }
+        });
+
+        function saveData(commonData) {
+            const content = getPayload();
+            const target_name = content.f_3 || ''; // 성명 (f_3)
+
+            if (!target_name) {
+                Toastify({ text: "대상자 성명을 입력해주세요.", style: { background: "#ef4444" }, duration: 3000 }).showToast();
+                window.parent.postMessage({ type: 'saveError' }, '*');
+                return;
+            }
+
+            fetch(API_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    action: 'save_issued_doc',
+                    type: '응급개입 기록지(수정본)',
+                    target_name: target_name,
+                    title: `응급개입기록지(${target_name})`,
+                    content: { ...commonData, ...content },
+                    issuer: commonData.issuer
+                })
+            })
+                .then(res => res.json())
+                .then(json => {
+                    if (json.result === 'success') {
+                        window.parent.postMessage({ type: 'saveSuccess', id: json.id }, '*');
+                    } else {
+                        Toastify({ text: "오류 발생: " + json.message, style: { background: "#ef4444" }, duration: 4000 }).showToast();
+                        window.parent.postMessage({ type: 'saveError' }, '*');
+                    }
+                })
+                .catch(err => {
+                    Toastify({ text: "서버 오류", style: { background: "#ef4444" }, duration: 4000 }).showToast();
+                    window.parent.postMessage({ type: 'saveError' }, '*');
+                });
+        }
+
+        function prepareApproval(commonData) {
+            const content = getPayload();
+            const target_name = content.f_3 || '';
+            if (!target_name) {
+                Toastify({ text: "대상자 성명을 입력해주세요.", style: { background: "#ef4444" }, duration: 3000 }).showToast();
+                window.parent.postMessage({ type: 'approvalError', message: '대상자 성명을 입력해주세요.' }, '*');
+                return;
+            }
+            const fullData = { ...commonData, ...content };
+
+            // First, save as DRAFT in issued_docs
+            fetch(API_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    action: 'save_issued_doc',
+                    type: '응급개입 기록지(수정본)',
+                    target_name: target_name,
+                    title: `응급개입기록지(${target_name})`,
+                    content: fullData,
+                    issuer: commonData.issuer,
+                    status: '결재 대기' // Indicates pending electronic approval
+                })
+            })
+                .then(res => res.json())
+                .then(json => {
+                    if (json.result === 'success') {
+                        window.parent.postMessage({
+                            type: 'readyForApproval',
+                            targetName: target_name,
+                            reportData: fullData,
+                            linkedDocId: json.id // Pass the new DB ID
+                        }, '*');
+                    } else {
+                        Toastify({ text: "사전 임시저장 오류: " + json.message, style: { background: "#ef4444" }, duration: 4000 }).showToast();
+                        window.parent.postMessage({ type: 'approvalError', message: json.message }, '*');
+                    }
+                })
+                .catch(err => {
+                    Toastify({ text: "서버 오류 (사전 임시저장 실패)", style: { background: "#ef4444" }, duration: 4000 }).showToast();
+                    window.parent.postMessage({ type: 'approvalError', message: '사전 임시저장 실패' }, '*');
+                });
+        }
+    </script>
+</body>
+
+</html>

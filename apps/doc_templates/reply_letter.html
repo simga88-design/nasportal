@@ -1,0 +1,333 @@
+﻿<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>정신건강복지센터 서비스 결과 회신서</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: #fff;
+            height: 100vh;
+            box-sizing: border-box;
+            overflow: hidden;
+        }
+
+        #printable-area {
+            background: white;
+            width: 210mm;
+            min-height: 297mm;
+            padding: 20mm 15mm;
+            box-sizing: border-box;
+            font-family: 'Malgun Gothic', 'Dotum', sans-serif;
+            position: relative;
+            transform-origin: top left;
+        }
+
+        #printable-area .watermark {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(-45deg);
+            font-size: 40px;
+            color: rgba(0, 0, 0, 0.04);
+            font-weight: 800;
+            white-space: nowrap;
+            pointer-events: none;
+            letter-spacing: 10px;
+        }
+
+        .doc-verification {
+            position: absolute;
+            bottom: 10mm;
+            right: 10mm;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 5px;
+            z-index: 100;
+        }
+
+        .doc-id-text {
+            font-size: 9px;
+            color: #94a3b8;
+            font-family: monospace;
+        }
+
+        .doc-title {
+            text-align: center;
+            font-size: 26pt;
+            font-weight: 800;
+            margin-bottom: 35px;
+            letter-spacing: -1px;
+        }
+
+        .doc-table {
+            width: 100%;
+            border-collapse: collapse;
+            border: 1px solid #000;
+            margin-bottom: 20px;
+            table-layout: fixed;
+        }
+
+        .doc-table th,
+        .doc-table td {
+            border: 1px solid #000;
+            padding: 4px 5px;
+            font-size: 10.5pt;
+            vertical-align: middle;
+            line-height: 1.3;
+            word-break: keep-all;
+            color: #000;
+        }
+
+        .doc-table th {
+            background-color: #e8e8e8;
+            text-align: center;
+            font-weight: 700;
+            color: #000;
+        }
+
+        .h-small {
+            height: 38px;
+        }
+
+        .result-box {
+            height: 350px;
+            vertical-align: top;
+            padding: 20px;
+            text-align: left;
+        }
+
+        .result-item {
+            margin-bottom: 25px;
+            display: flex;
+        }
+
+        .result-label {
+            font-weight: bold;
+            width: 90px;
+            flex-shrink: 0;
+        }
+
+        .result-content {
+            flex: 1;
+            white-space: pre-wrap;
+        }
+
+        .footer-wrap {
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .footer-date {
+            font-size: 14pt;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        .footer-info {
+            font-size: 11pt;
+            margin-bottom: 20px;
+            line-height: 1.4;
+        }
+
+        .footer-chief {
+            font-size: 24pt;
+            font-weight: 800;
+            letter-spacing: 2px;
+        }
+
+        @media print {
+            @page {
+                size: A4 portrait;
+                margin: 0;
+            }
+
+            body {
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+                margin: 0;
+                padding: 0;
+            }
+
+            #printable-area {
+                transform: scale(1) !important;
+                padding: 15mm;
+            }
+
+            .doc-verification {
+                display: none !important;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div id="printable-area">
+        <div class="watermark">제천시정신건강복지센터</div>
+        <div class="doc-title">정신건강복지센터 서비스 결과 회신서</div>
+
+        <table class="doc-table">
+            <colgroup>
+                <col style="width: 15%;">
+                <col style="width: 15%;">
+                <col style="width: 25%;">
+                <col style="width: 15%;">
+                <col style="width: 35%;">
+            </colgroup>
+            <tr class="h-small">
+                <th>회신일자</th>
+                <td colspan="2" id="view_replyDate" style="text-align:center;"></td>
+                <th>회신부서</th>
+                <td style="text-align:center;">제천시정신건강복지센터</td>
+            </tr>
+            <tr class="h-small">
+                <th rowspan="2">대상자</th>
+                <th>성명</th>
+                <td id="view_clientName" style="text-align:center;"></td>
+                <th>주소</th>
+                <td id="view_address" style="text-align:left; padding-left:10px;"></td>
+            </tr>
+            <tr class="h-small">
+                <th style="font-size: 9pt;">생년월일/성별</th>
+                <td id="view_birthGender" style="text-align:center;"></td>
+                <th>연락처</th>
+                <td id="view_contact" style="text-align:center;"></td>
+            </tr>
+            <tr class="h-small" style="height: 50px;">
+                <th>의뢰목적<br>(사유)</th>
+                <td colspan="4" style="text-align:left; padding-left:10px;">
+                    [<span id="view_requestType"></span>] <span id="view_requestReason"></span>
+                </td>
+            </tr>
+            <tr class="h-small">
+                <th>의뢰일자</th>
+                <td colspan="4" id="view_receptionDate" style="text-align:left; padding-left:10px;"></td>
+            </tr>
+            <tr>
+                <th>결과</th>
+                <td colspan="4" class="result-box">
+                    <div class="result-item">
+                        <div class="result-label">▶ 의뢰과정:</div>
+                        <div class="result-content" id="view_processContent"></div>
+                    </div>
+                    <div class="result-item">
+                        <div class="result-label">▶ 상담내용:</div>
+                        <div class="result-content" id="view_counselingContent"></div>
+                    </div>
+                    <div class="result-item">
+                        <div class="result-label">▶ 사후 관리:</div>
+                        <div class="result-content" id="view_futurePlan"></div>
+                    </div>
+                </td>
+            </tr>
+            <tr class="h-small">
+                <th>진행상황</th>
+                <td colspan="4" id="view_progressStatus" style="text-align:left; padding-left:10px;"></td>
+            </tr>
+            <tr class="h-small">
+                <th>수신처</th>
+                <td colspan="2" id="view_agencyDetail" style="text-align:left; padding-left:10px;"></td>
+                <th>담당자</th>
+                <td style="text-align:center;" id="view_staffName"></td>
+            </tr>
+        </table>
+
+        <div style="text-align: center; margin-top: 30px; font-size: 11pt;">
+            <p>의뢰한 대상자의 조치 처리 결과를 회신하오니 업무에 참고하시기 바랍니다.</p>
+        </div>
+
+        <div class="footer-wrap">
+            <p class="footer-date" id="view_todayDate"></p>
+            <div class="footer-info">
+                <p>담당자 : 제천시정신건강복지센터 <span id="view_issuer"></span></p>
+                <p>문의전화 : 043)646-3074</p>
+            </div>
+            <div class="footer-chief">제천시정신건강복지센터장</div>
+        </div>
+
+        <div class="doc-verification">
+            <div class="doc-id-text" id="v_doc_id"></div>
+        </div>
+    </div>
+
+    <script>
+        window.addEventListener('message', function (e) {
+            const data = e.data;
+            if (!data) return;
+
+            if (data.action === 'render') {
+                const formatDt = (str) => {
+                    if (!str) return '';
+                    const d = new Date(str);
+                    if (isNaN(d.getTime())) return '';
+                    const offset = d.getTimezoneOffset() * 60000;
+                    const cDate = new Date(d.getTime() + offset);
+                    return `${cDate.getFullYear()}년 ${cDate.getMonth() + 1}월 ${cDate.getDate()}일`;
+                };
+
+                const payload = data.data;
+
+                // Simple fields
+                const fields = [
+                    'replyDate', 'clientName', 'address', 'contact',
+                    'requestType', 'requestReason', 'receptionDate',
+                    'processContent', 'counselingContent', 'futurePlan',
+                    'progressStatus', 'agencyDetail', 'agencyContact', 'staffName'
+                ];
+
+                fields.forEach(f => {
+                    const el = document.getElementById(`view_${f}`);
+                    if (el) {
+                        if (f.includes('Date')) {
+                            el.innerText = formatDt(payload[f]);
+                        } else {
+                            el.innerText = payload[f] || '';
+                        }
+                    }
+                });
+
+                // If agencyContact is empty but we have it, maybe append it, but we already set the element ID to view_staffName. 
+                // Let's ensure both can display if needed, but staffName is primary here.
+                const staffEl = document.getElementById('view_staffName');
+                if (staffEl) {
+                    staffEl.innerText = payload['staffName'] || payload['agencyContact'] || '';
+                }
+
+                // Address and content linebreaks
+                const multiLine = ['processContent', 'counselingContent', 'futurePlan'];
+                multiLine.forEach(f => {
+                    const el = document.getElementById(`view_${f}`);
+                    if (el && payload[f]) {
+                        el.innerHTML = payload[f].replace(/\n/g, '<br>');
+                    }
+                });
+
+                // Birth and Gender combination
+                let bg = '';
+                if (payload.birth) bg += payload.birth;
+                if (payload.gender) bg += ` / ${payload.gender}`;
+                document.getElementById('view_birthGender').innerText = bg;
+
+                // Action Results (Checkboxes)
+                const actions = payload.actionResult || [];
+                const arEl = document.getElementById('view_actionResult');
+                if (arEl) arEl.innerText = actions.join(', ');
+
+                // Issue Date Text and Issuer
+                const today = formatDt(payload.issueDate) || formatDt(new Date());
+                document.getElementById('view_todayDate').innerText = today;
+                document.getElementById('view_issuer').innerText = payload.issuer || '';
+
+                document.getElementById('v_doc_id').innerText = payload.doc_id || '';
+            } else if (data.action === 'print') {
+                window.print();
+            }
+        });
+    </script>
+</body>
+
+</html>

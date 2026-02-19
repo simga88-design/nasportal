@@ -1,0 +1,1222 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>?類ㅻ뻿椰꾨떯而�筌욑옙???�뮆�돩??野껉퀗�궢 ?�슣�뻿??(System Ver.)</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <link rel="stylesheet" as="style" crossorigin
+        href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.8/dist/web/static/pretendard.css" />
+    <link rel="stylesheet" href="../css/modal.css">
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-hover: #1d4ed8;
+            --surface: #ffffff;
+            --background: #f1f5f9;
+            --border: #e2e8f0;
+            --text: #334155;
+            --text-muted: #64748b;
+        }
+
+        body {
+            font-family: 'Pretendard', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: var(--background);
+            color: var(--text);
+            height: 100vh;
+            box-sizing: border-box;
+            overflow: hidden;
+        }
+
+        .wrapper {
+            display: flex;
+            gap: 20px;
+            height: 100%;
+            max-width: 1920px;
+            margin: 0 auto;
+        }
+
+        /* ----- Left Panel ----- */
+        .left-panel {
+            flex: 0 0 450px;
+            background: var(--surface);
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            border: 1px solid var(--border);
+            z-index: 10;
+        }
+
+        .panel-header {
+            padding: 18px 20px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .panel-header h2 {
+            font-size: 16px;
+            font-weight: 700;
+            margin: 0;
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .file-controls {
+            display: flex;
+            gap: 8px;
+        }
+
+        .server-select {
+            padding: 6px;
+            border-radius: 6px;
+            border: 1px solid #cbd5e1;
+            font-size: 13px;
+            color: var(--text);
+            background: var(--surface);
+        }
+
+        .btn-file {
+            padding: 6px 12px;
+            background: #e2e8f0;
+            color: var(--text);
+            border: none;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .btn-file:hover {
+            background: #cbd5e1;
+        }
+
+        .panel-body {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 6px;
+            color: var(--text-muted);
+        }
+
+        .idx-label::after {
+            content: ' (?占�?關�뒠)';
+            font-size: 11px;
+            color: #f76707;
+            font-weight: normal;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            font-size: 14px;
+            font-family: inherit;
+            box-sizing: border-box;
+            transition: border-color 0.2s;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        .form-group input[readonly] {
+            background-color: #f8fafc;
+            color: #64748b;
+        }
+
+        .doc-num-input {
+            background-color: #eff6ff !important;
+            border-color: #93c5fd !important;
+            color: #2563eb !important;
+            font-weight: bold;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 60px;
+        }
+
+        .section-header {
+            display: block;
+            font-weight: 700;
+            font-size: 14px;
+            color: var(--primary);
+            margin: 20px 0 10px 0;
+            padding-bottom: 4px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .section-header:first-of-type {
+            margin-top: 0;
+        }
+
+        .divider {
+            height: 1px;
+            background: var(--border);
+            margin: 20px 0;
+        }
+
+        /* Checkboxes */
+        .checkbox-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .checkbox-group label {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 13px;
+            font-weight: normal;
+            margin: 0;
+            cursor: pointer;
+            color: var(--text);
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            width: auto;
+        }
+
+        /* ----- Center Panel ----- */
+        .center-panel {
+            flex: 1;
+            background: #4A5568;
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+            position: relative;
+        }
+
+        .output-header {
+            padding: 12px 20px;
+            background: #2D3748;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        .output-body {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            padding: 20px;
+        }
+
+        .preview-scale-wrapper {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Printable Area */
+        #printable-area {
+            background: white;
+            width: 210mm;
+            min-height: 297mm;
+            padding: 20mm 15mm;
+            box-sizing: border-box;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+            font-family: 'Malgun Gothic', 'Dotum', sans-serif;
+            position: relative;
+            transform-origin: center center;
+        }
+
+        .doc-title {
+            text-align: center;
+            font-size: 26pt;
+            font-weight: 800;
+            margin-bottom: 35px;
+            letter-spacing: -1px;
+        }
+
+        .doc-table {
+            width: 100%;
+            border-collapse: collapse;
+            border: 1px solid #000;
+            margin-bottom: 20px;
+            table-layout: fixed;
+        }
+
+        .doc-table th,
+        .doc-table td {
+            border: 1px solid #000;
+            padding: 4px 5px;
+            font-size: 10.5pt;
+            vertical-align: middle;
+            line-height: 1.3;
+            word-break: keep-all;
+        }
+
+        .doc-table th {
+            background-color: #e8e8e8;
+            text-align: center;
+            font-weight: 700;
+        }
+
+        .h-small {
+            height: 38px;
+        }
+
+        .result-box {
+            height: 350px;
+            vertical-align: top;
+            padding: 20px;
+            text-align: left;
+        }
+
+        .result-item {
+            margin-bottom: 25px;
+            display: flex;
+        }
+
+        .result-label {
+            font-weight: bold;
+            width: 90px;
+            flex-shrink: 0;
+        }
+
+        .result-content {
+            flex: 1;
+            white-space: pre-wrap;
+        }
+
+        .footer-wrap {
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .footer-date {
+            font-size: 14pt;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        .footer-info {
+            font-size: 11pt;
+            margin-bottom: 20px;
+            line-height: 1.4;
+        }
+
+        .footer-chief {
+            font-size: 24pt;
+            font-weight: 800;
+            letter-spacing: 2px;
+        }
+
+        /* Buttons */
+        .btn {
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 13px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            transition: 0.2s;
+        }
+
+        .btn-sheet {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-sheet:hover {
+            background: var(--primary-hover);
+        }
+
+        .btn-pdf {
+            background: #e2e8f0;
+            color: var(--text);
+        }
+
+        .btn-pdf:hover {
+            background: #cbd5e1;
+        }
+
+        .btn-print {
+            background: #fff;
+            color: var(--text);
+            border: 1px solid #cbd5e1;
+        }
+
+        .btn-print:hover {
+            background: #f8fafc;
+        }
+
+        .btn-warn {
+            background: #f59e0b;
+            color: white;
+        }
+
+        .btn-warn:hover {
+            background: #d97706;
+        }
+
+        @media print {
+
+            body,
+            .wrapper,
+            .center-panel,
+            .output-body {
+                background: white !important;
+                height: auto;
+                overflow: visible;
+                display: block;
+            }
+
+            body * {
+                visibility: hidden;
+            }
+
+            #printable-area,
+            #printable-area * {
+                visibility: visible;
+            }
+
+            #printable-area {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+                margin: 0;
+                padding: 0;
+                box-shadow: none;
+                transform: scale(1) !important;
+            }
+
+            @page {
+                size: A4 portrait;
+                margin: 10mm;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div id="loadingOverlay"
+        style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.3); z-index:9999; justify-content:center; align-items:center; flex-direction:column; backdrop-filter: blur(2px);">
+        <div
+            style="border: 5px solid #f3f3f3; border-top: 5px solid #1e3a8a; border-radius: 50%; width: 50px; height: 50px; animation: spin 1s linear infinite;">
+        </div>
+        <div id="loadingMsg"
+            style="margin-top:20px; font-weight:bold; color:white; text-shadow: 1px 1px 3px rgba(0,0,0,0.5); font-size:18px;">
+            筌ｌ꼶�봺 餓λ쵐�뿯?�뜄�뼄...</div>
+    </div>
+    <style>
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+    <div class="wrapper">
+        <div class="left-panel">
+            <div class="panel-header">
+                <h2><i class="fas fa-file-contract"></i> ?�꼶�� ?�슣�뻿 ?類ｋ궖 ?�굝�젾</h2>
+                <div class="file-controls">
+                    <button id="btnUnlock" class="btn-file" style="display:none; background:#f59e0b; color:white;"
+                        onclick="enableEditMode()">?逾� ?�꼷�젟</button>
+                    <select id="pendingList" class="server-select" onchange="selectPendingItem()">
+                        <option value="">[筌뤴뫖以� �겫�뜄�쑎?�끆由�]</option>
+                    </select>
+                    <button class="btn-file" onclick="loadPendingList()" title="?�뜄以덃�⑥쥙臾�"><i
+                            class="fas fa-sync-alt"></i></button>
+                    <button class="btn-file" onclick="clearData()" style="color:#ef4444;" title="�룯�뜃由�??><i
+                            class="fas fa-trash"></i></button>
+                </div>
+            </div>
+
+            <div class="panel-body">
+                <input type="hidden" id="rowIndex">
+                <input type="hidden" id="loadCategory">
+
+                <span class="section-header">1. 疫꿸퀡�궚 ?類ｋ궖</span>
+                <div class="form-group">
+                    <label class="idx-label">?�슣�뻿��⑤벉揆甕곕뜇�깈</label>
+                    <div style="display: flex; gap: 5px;">
+                        <input type="text" id="docNumber" class="doc-num-input" placeholder="甕곕뜇�깈 獄쏆뮄�닋 甕곌쑵�뱣???袁ⓥ뀮?紐꾩뒄" readonly>
+                        <button class="btn-file"
+                            style="background:#fcc419; font-weight:bold; white-space:nowrap; padding: 6px 12px; width: auto; min-width: 80px;"
+                            onclick="issueDocNumber()">?��볦쓰?紐껋뻣疫�?/button>
+                    </div>
+                </div>
+
+                <div class="form-group"><label>?臾믩땾?�눘�쁽</label><input type="date" id="receptionDate"></div>
+                <div class="form-group"><label>?�슣�뻿?�눘�쁽</label><input type="date" id="replyDate"></div>
+                <div class="form-group"><label>?����뼣??/label><input type="text" id="staffName" value="?�덊뇣??></div>
+
+                <div class="divider"></div>
+
+                <span class="section-header">2. ?占�?怨몄쁽 ?類ｋ궖</span>
+                <div class="form-group"><label>?源낆구</label><input type="text" id="clientName" placeholder="?�씧留�??></div>
+                <div class="form-group"><label>?�빖���?遺우뵬(6?癒��봺)</label><input type="text" id="birth" placeholder="900101">
+                </div>
+                <div class="form-group"><label class="idx-label">?源낇��</label>
+                    <select id="gender">
+                        <option>?�뫁苑�</option>
+                        <option>?�딄쉐</option>
+                    </select>
+                </div>
+                <div class="form-group"><label>雅뚯눘�꺖</label><input type="text" id="address"></div>
+                <div class="form-group"><label>?怨뺤뵭筌�?/label><input type="text" id="contact"></div>
+
+                <div class="divider"></div>
+
+                <span class="section-header">3. 疫꿸퀗? ?類ｋ궖</span>
+                <div class="form-group"><label class="idx-label">疫꿸퀗?�뤃�됲뀋</label>
+                    <select id="agencyType">
+                        <option value="?�맩�젟疫꿸퀗?">?�맩�젟疫꿸퀗?</option>
+                        <option value="?�꼶利뷸묾怨�?">?�꼶利뷸묾怨�?</option>
+                        <option value="?類ㅻ뻿癰귣떯援붹묾怨�?">?類ㅻ뻿癰귣떯援붹묾怨�?</option>
+                        <option value="筌욑옙??沅�?�슡由경꽴占�">筌욑옙??沅�?�슡由경꽴占�</option>
+                    </select>
+                </div>
+                <div class="form-group"><label>?紐�? 疫꿸퀗?筌�?(?�꼷�뻿筌�?</label><input type="text" id="agencyDetail"
+                        placeholder="?? OO癰귣쵐�뜚"></div>
+                <div class="form-group">
+                    <label>?�꼶�먩묾怨�? ?����뼣??/label>
+                    <input type="text" id="agencyContact" placeholder="?癒�猷� ?�굝�젾??>
+                </div>
+                <div class="divider"></div>
+
+                <span class="section-header">4. ?�꼶�� 獄�?野껉퀗�궢</span>
+                <div class="form-group"><label class="idx-label">?�꼶�먩뤃�됲뀋 (筌뤴뫗�읅)</label>
+                    <select id="requestType">
+                        <option value="?�됤봺野껓옙??>?�됤봺野껓옙??/option>
+                        <option value="?袁⑥쨮域밸챶�삪">?袁⑥쨮域밸챶�삪</option>
+                        <option value="?袁㏓┛(?臾롰닋)揶쏆뮇�뿯">?袁㏓┛(?臾롰닋)揶쏆뮇�뿯</option>
+                        <option value="癰귣쵐�벥?癒�肉경��?>癰귣쵐�벥?癒�肉경��?/option>
+                        <option value="?怨룸뼖 獄�??��?�꽴占썹뵳?>?怨룸뼖 獄�??��?�꽴占썹뵳?/option>
+                        <option value="疫꿸퀬?">疫꿸퀬?</option>
+                    </select>
+                </div>
+                <div class="form-group"><label>?�딆�� (�눧紐꾧퐣??</label><input type="text" id="requestReason"
+                        placeholder="�뤃�딄퍥???�딆��"></div>
+
+                <hr style="margin: 10px 0; border: 0; border-top: 1px dashed #ccc;">
+                <p style="font-size:12px; color:#1c7ed6; font-weight:bold;">??[野껉퀗�궢] 獄쏅벡�뮞 ?怨멸쉭 ?�똻�뒠</p>
+
+                <div class="form-group"><label>???�꼶�먩�⑥눘�젟</label><textarea
+                        id="processContent">2026.00.00. ?�꼶�� ?臾믩땾??</textarea></div>
+                <div class="form-group"><label>???怨룸뼖?�똻�뒠</label><textarea id="counselingContent">�룯�뜃由�?怨룸뼖 獄�??�맦? 筌욊쑵六�??</textarea>
+                </div>
+
+                <div class="form-group">
+                    <label class="idx-label">??�빊酉��뜎 �꽴占썹뵳?(鈺곌퀣�뒄野껉퀗�궢)</label>
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="chk_1" name="actionResult" value="1.筌욑옙?�씮湲�??><label for="chk_1">1.
+                            筌욑옙?�씮湲�??/label>
+                        <input type="checkbox" id="chk_2" name="actionResult" value="2.燁살꼶利븅뜮袁�???><label for="chk_2">2.
+                            燁살꼶利븅뜮袁�???/label>
+                        <input type="checkbox" id="chk_3" name="actionResult" value="3.?�뮆�돩??椰꾧퀡?"><label for="chk_3">3. ?�뮆�돩??
+                            椰꾧퀡?</label>
+                        <input type="checkbox" id="chk_4" name="actionResult" value="4.疫꿸퀗??怨뚰��"><label for="chk_4">4.
+                            疫꿸퀗??怨뚰��</label>
+                        <input type="checkbox" id="chk_5" name="actionResult" value="5.?�맩�젟筌욑옙??><label for="chk_5">5.
+                            ?�맩�젟筌욑옙??/label>
+                        <input type="checkbox" id="chk_6" name="actionResult" value="6.疫꿸퀬?"><label for="chk_6">6.
+                            疫꿸퀬?</label>
+                    </div>
+                </div>
+
+                <div class="form-group"><label>�빊酉��뜎 �꽴占썹뵳??怨멸쉭?�똻�뒠</label><textarea
+                        id="futurePlan">癰�??�눛苑� ?源낆쨯 ???��?�꽴占썹뵳??�뮆�돩???�뮄�궗 ?�뜆�젟??</textarea></div>
+
+                <div class="form-group"><label class="idx-label">?�뮄�궗?�뮆�돩??獄쎻뫖苡�</label>
+                    <select id="serviceMethod">
+                        <option>1.獄쎻뫖揆</option>
+                        <option>2.?袁れ넅</option>
+                        <option>3.?�똻�꺖</option>
+                        <option>4.疫꿸퀬?</option>
+                    </select>
+                </div>
+                <div class="form-group"><label>筌욊쑵六�?怨뱀넺</label><input type="text" id="progressStatus" value="�넫�굛猿� / ?源낆쨯 / ?怨뚰��">
+                </div>
+            </div>
+        </div>
+
+        <div class="center-panel">
+            <div class="output-header">
+                <button id="btnSave" class="btn btn-sheet" onclick="completeProcess()"><i
+                        class="fas fa-cloud-upload-alt"></i> ?�슣�뻿 ?袁⑥┷ (?�뮆苡� ?占�??</button>
+                <button class="btn btn-pdf" onclick="executePdf()"><i class="fas fa-file-pdf"></i> PDF ?占�??/button>
+                <button class="btn btn-print" onclick="executePrint()"><i class="fas fa-print"></i> ?紐꾨뇵?�꼵由�</button>
+            </div>
+            <div class="output-body">
+                <div class="preview-scale-wrapper" id="preview-wrapper">
+                    <div id="printable-area">
+                        <div class="doc-title">?類ㅻ뻿椰꾨떯而�筌욑옙???�뮆�돩??野껉퀗�궢 ?�슣�뻿??/div>
+
+                        <table class="doc-table">
+                            <colgroup>
+                                <col style="width: 15%;">
+                                <col style="width: 15%;">
+                                <col style="width: 25%;">
+                                <col style="width: 15%;">
+                                <col style="width: 35%;">
+                            </colgroup>
+                            <tr class="h-small">
+                                <th>?�슣�뻿?�눘�쁽</th>
+                                <td colspan="2" id="view_replyDate" style="text-align:center;"></td>
+                                <th>?�슣�뻿�겫占�??/th>
+                                <td style="text-align:center;">?�뮇荑�?�뮇�젟?醫됯탷揶쏅베�궗筌욑옙?�눛苑�</td>
+                            </tr>
+                            <tr class="h-small">
+                                <th rowspan="2">?占�?怨몄쁽</th>
+                                <th>?源낆구</th>
+                                <td id="view_clientName" style="text-align:center;"></td>
+                                <th>雅뚯눘�꺖</th>
+                                <td id="view_address" style="text-align:left; padding-left:10px;"></td>
+                            </tr>
+                            <tr class="h-small">
+                                <th style="font-size: 9pt;">?�빖���?遺우뵬/?源낇��</th>
+                                <td id="view_birthGender" style="text-align:center;"></td>
+                                <th>?怨뺤뵭筌�?/th>
+                                <td id="view_contact" style="text-align:center;"></td>
+                            </tr>
+                            <tr class="h-small" style="height: 50px;">
+                                <th>?�꼶�먲쭗�뫗�읅<br>(?�딆��)</th>
+                                <td colspan="4" style="text-align:left; padding-left:10px;">
+                                    [<span id="view_requestType"></span>] <span id="view_requestReason"></span>
+                                </td>
+                            </tr>
+                            <tr class="h-small">
+                                <th>?�꼶��?�눘�쁽</th>
+                                <td colspan="4" id="view_receptionDate" style="text-align:left; padding-left:10px;">
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>野껉퀗�궢</th>
+                                <td colspan="4" class="result-box">
+                                    <div class="result-item">
+                                        <div class="result-label">???�꼶�먩�⑥눘�젟:</div>
+                                        <div class="result-content" id="view_processContent"></div>
+                                    </div>
+                                    <div class="result-item">
+                                        <div class="result-label">???怨룸뼖?�똻�뒠:</div>
+                                        <div class="result-content" id="view_counselingContent"></div>
+                                    </div>
+                                    <div class="result-item">
+                                        <div class="result-label">??�빊酉��뜎 �꽴占썹뵳?</div>
+                                        <div class="result-content" id="view_futurePlan"></div>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr class="h-small">
+                                <th>筌욊쑵六�?怨뱀넺</th>
+                                <td colspan="4" id="view_progressStatus" style="text-align:left; padding-left:10px;">
+                                </td>
+                            </tr>
+                            <tr class="h-small">
+                                <th>?�꼷�뻿筌�?/th>
+                                <td colspan="2" id="view_agencyDetail" style="text-align:left; padding-left:10px;"></td>
+                                <th>?����뼣??/th>
+                                <td style="text-align:center;" id="view_agencyContact"></td>
+                            </tr>
+                        </table>
+
+                        <div style="text-align: center; margin-top: 30px; font-size: 11pt;">
+                            <p>?�꼶��???占�?怨몄쁽???占�??筌ｌ꼶�봺 野껉퀗�궢�몴??�슣�뻿?�꼷�궎???�굝龜??筌〓㈇���?�꼷�뻻疫�?獄쏅뗀�뿻?�뜄�뼄.</p>
+                        </div>
+
+                        <div class="footer-wrap">
+                            <p class="footer-date" id="view_todayDate"></p>
+                            <div class="footer-info">
+                                <p>?����뼣??: ?�뮇荑�?�뮇�젟?醫됯탷揶쏅베�궗筌욑옙?�눛苑� <span id="view_staffName"></span></p>
+                                <p>�눧紐꾩벥?袁れ넅 : 043)646-3074</p>
+                            </div>
+                            <div class="footer-chief">?�뮇荑�?�뮇�젟?醫됯탷揶쏅베�궗筌욑옙?�눛苑�??/div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="../js/config.js"></script>
+    <script src="../js/modal.js"></script>
+    <script>
+        // Modal Fallback: If parent.Modal is not accessible, use local Modal
+        const SystemModal = (typeof parent !== 'undefined' && parent.Modal) ? parent.Modal : (typeof Modal !== 'undefined' ? Modal : {
+            alert: (msg) => { alert(msg); return Promise.resolve(true); },
+            confirm: (msg) => { return Promise.resolve(confirm(msg)); }
+        });
+
+        // ?�뇙堉�???�벏鍮� API 雅뚯눘�꺖 ?�뇙堉�??
+        const UNIFIED_URL = BASE_URL; // from config.js
+
+        const SCRIPT_URL = UNIFIED_URL;
+        const DOC_API_URL = UNIFIED_URL;
+
+        let pendingDataMap = {};
+
+        // 沃섎챶�봺癰귣떯由�??ID 筌뤴뫖以�
+        // ?�뇙堉�??[?�꼷�젟 ?? 'agencyContact' ?�꼶援뱄쭕???筌욌쵐堉�?節뚯몵?紐꾩뒄 ?�뇙堉�??
+        const inputIds = [
+            'docNumber', 'receptionDate', 'replyDate', 'staffName',
+            'clientName', 'birth', 'gender', 'address', 'contact',
+            'agencyType', 'agencyDetail', 'agencyContact', // ???�덈┛ �빊遺�?!
+            'requestType', 'requestReason',
+            'processContent', 'counselingContent',
+            'futurePlan', 'serviceMethod', 'progressStatus'
+        ];
+
+        // --- �룯�뜃由�??---
+        document.addEventListener("DOMContentLoaded", () => {
+            const today = new Date().toISOString().slice(0, 10);
+
+            // URL ?�슢�뵬沃섎챸苑� ?類ㅼ뵥
+            const urlParams = new URLSearchParams(window.location.search);
+            const mode = urlParams.get('mode');
+            const rowIndex = urlParams.get('rowIndex');
+            const category = urlParams.get('category'); // 燁삳똾��믤�⑥쥓�봺 揶쏅�⑸즲 獄쏆룇�벉
+
+            if (mode === 'view' && rowIndex && category) {
+                loadCompletedCase(category, rowIndex);
+            } else {
+                document.getElementById('replyDate').value = today;
+                // ???�덈┛??rowIndex?占� category�몴??????�꼵爰쇌빳�꼷鍮� '筌롫씭異�??�몴??類μ넇??筌≪뼚�뮸?�뜄�뼄.
+                loadPendingList(rowIndex, category);
+            }
+
+            // ?�굝�젾 揶쏅Ŋ??�꼷肉� 沃섎챶�봺癰귣떯由� ?�굝�쑓?�똾�뱜
+            inputIds.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.addEventListener('input', updatePreview);
+            });
+        });
+
+
+        // ?�뇙堉�??[嚥≪뮆逾� ?�뮇堉� ?�뫁�땾 �빊遺�?] ?�뇙堉�??
+        function showLoading(show, msg = "筌ｌ꼶�봺 餓λ쵐�뿯?�뜄�뼄...") {
+            const overlay = document.getElementById('loadingOverlay');
+            const msgEl = document.getElementById('loadingMsg');
+            if (show) {
+                msgEl.innerText = msg;
+                overlay.style.display = 'flex'; // ?遺얇늺 ?醫됲닊
+            } else {
+                overlay.style.display = 'none'; // ?醫됲닊 ?�똻�젫
+            }
+        }
+        // ?轅롫섞??[�빊遺�? ?? ?轅롫섞??
+
+        // ============================================================
+        // [疫꿸퀡�뮟 1] ?袁⑥┷???�슣�뻿???怨멸쉭 ?�똻�뒠 �겫�뜄�쑎?�끆由� (View Mode)
+        // ============================================================
+        function loadCompletedCase(category, rowIndex) {
+            // UI �룯�뜃由�??
+            document.querySelector('.panel-header h2').innerText = "?�슣�뻿??鈺곌퀬�돳 (?袁⑥┷??";
+
+            // ???�꼷�젟 甕곌쑵�뱣 ?紐꾪뀱 �룯�뜃由�??
+            document.getElementById('btnUnlock').style.display = 'none';
+
+            // ?�뇙堉�??[�빊遺�?] 嚥≪뮆逾� ?�뮇�삂 ?�뇙堉�??
+            showLoading(true, "?�슣�뻿???類ｋ궖�몴?�겫�뜄�쑎?�끇�뮉 餓λ쵐�뿯?�뜄�뼄...");
+
+            fetch(SCRIPT_URL, {
+                method: 'POST',
+                redirect: 'follow',
+                headers: { "Content-Type": "text/plain;charset=utf-8" },
+                body: JSON.stringify({
+                    action: "get_case_detail",
+                    category: category,
+                    rowIndex: rowIndex
+                })
+            })
+                .then(res => res.json())
+                .then(json => {
+                    const data = json.data.data;
+                    if (!data) { SystemModal.alert("?怨쀬뵠?怨�? �겫�뜄�쑎?�끉? 筌륁궢六�?�벉�빍??"); return; }
+
+                    // --- ?怨쀬뵠??筌�袁⑹뒭疫�?(疫꿸퀣��� �굜遺얜굡?占� ?�늿�뵬) ---
+                    document.getElementById('rowIndex').value = rowIndex; // ??餓λ쵐�뒄: ?占�???袁⑺뒄
+                    document.getElementById('loadCategory').value = category; // ??餓λ쵐�뒄: 燁삳똾��믤�⑥쥓�봺
+
+                    document.getElementById('docNumber').value = data.docNum || "";
+                    document.getElementById('receptionDate').value = data.date || "";
+                    document.getElementById('replyDate').value = data.replyDate || "";
+                    if (data.staffName) document.getElementById('staffName').value = data.staffName;
+
+                    document.getElementById('clientName').value = data.name || "";
+                    document.getElementById('birth').value = data.birth || "";
+
+                    // Agency �꽴占�??
+                    if (data.agency) document.getElementById('agencyDetail').value = data.agency;
+                    if (data.agencyContact) document.getElementById('agencyContact').value = data.agencyContact; // ?����뼣??
+                    if (data.agencyType) document.getElementById('agencyType').value = data.agencyType;
+
+                    // 疫꿸퀬? ?袁⑤굡
+                    if (document.getElementById('address')) document.getElementById('address').value = data.address || "";
+                    if (document.getElementById('contact')) document.getElementById('contact').value = data.contact || "";
+                    if (document.getElementById('requestType')) document.getElementById('requestType').value = data.reqType || "疫꿸퀬?";
+                    if (document.getElementById('requestReason')) document.getElementById('requestReason').value = data.reqReason || "";
+
+                    if (data.gender) {
+                        let g = data.gender.trim();
+                        document.getElementById('gender').value = (g === "?? || g === "?�뫁苑�") ? "?�뫁苑�" : "?�딄쉐";
+                    }
+
+                    // 野껉퀗�궢 ?怨멸쉭
+                    document.getElementById('processContent').value = data.processContent || "";
+                    document.getElementById('counselingContent').value = data.counselingContent || "";
+                    document.getElementById('futurePlan').value = data.actionResult || "";
+                    if (document.getElementById('serviceMethod')) document.getElementById('serviceMethod').value = data.serviceMethod || "1.獄쎻뫖揆";
+                    if (document.getElementById('progressStatus')) document.getElementById('progressStatus').value = data.progressStatus || "";
+
+                    // 筌ｋ똾寃뺠쳸類ㅻ뮞 筌ｌ꼶�봺
+                    if (data.actionResult) {
+                        const checkboxes = document.querySelectorAll('input[name="actionResult"]');
+                        checkboxes.forEach(cb => {
+                            cb.checked = data.actionResult.includes(cb.value);
+                        });
+                    }
+
+                    // --- UI ?醫됲닊 獄�??�꼷�젟甕곌쑵�뱣 ?�뮇苑�??---
+                    disableAllInputs(); // ?�눖�뼊 ???醫됲닊
+
+                    // ??[?�벊�뼎] ?�꼷�젟?�꼵由� 甕곌쑵�뱣??癰귣똻肉т빳�씭�빍??
+                    document.getElementById('btnUnlock').style.display = 'inline-block';
+
+                    // ?�뮆�댘?�끉�뒲 ?�뮇�뻻
+                    const selectEl = document.getElementById('pendingList');
+                    selectEl.innerHTML = `<option selected>[?袁⑥┷] ${data.name}</option>`;
+                    selectEl.disabled = true;
+
+                    updatePreview();
+                })
+                .catch(err => {
+                    console.error(err);
+                    SystemModal.alert("?怨멸쉭 鈺곌퀬�돳 餓�??�끇履� 獄쏆뮇源�");
+                })
+                .finally(() => {
+                    showLoading(false);
+                });
+        }
+
+        function disableAllInputs() {
+            // ?紐꾨뇵, PDF, ?�꺁由� 甕곌쑵�뱣, 域밸챶�봺���????�꼷�젟?�꼵由� 甕곌쑵�뱣]?�굞? ?醫됰젃筌욑옙 筌띾Ŋ釉�???�뫖�빍??
+            document.querySelectorAll('input, select, textarea, button').forEach(el => {
+                if (
+                    !el.classList.contains('btn-print') &&
+                    !el.classList.contains('btn-pdf') &&
+                    el.id !== 'btnUnlock' // ????餓κ쑴�뵠 �빊遺�??�꼷肉�?�벉�빍?? (?�꼷�젟甕곌쑵�뱣 ?�뮇�뇚)
+                ) {
+                    el.disabled = true;
+                }
+            });
+
+            // ?占�??甕곌쑵�뱣?占� ?�눖�뼊 ?�몿由경��?�뜮袁れ넞?源딆넅 (?�꼷�젟 筌뤴뫀諭� ?袁ⓥ뀮筌�??�똻釉�??
+            const saveBtn = document.getElementById('btnSave');
+            if (saveBtn) {
+                saveBtn.style.display = 'none';
+                saveBtn.disabled = true; // ?類ㅻ뼄?�꼵苡� ?醫됲닊
+            }
+        }
+
+        // ============================================================
+        // [疫꿸퀡�뮟 2] ?臾믨쉐 筌뤴뫀諭�??筌뤴뫖以� �겫�뜄�쑎?�끆由� (?癒�猷� ?醫뤾문 疫꿸퀡�뮟 揶쏅벤�넅)
+        function loadPendingList(targetRowIndex = null, targetCategory = null) {
+            const categories = ['?袁⑤짗', '?源놁뵥', '?癒�沅�', '?�똻�뜚?�딅뼄?�벉�궖'];
+
+
+            const selectEl = document.getElementById('pendingList');
+
+            // ?�뇙堉�??[�빊遺�?] 嚥≪뮆逾� ?�뮇�삂 ?�뇙堉�??
+            showLoading(true, "?占썸묾?筌뤴뫖以�??揶쏄퉮�뻿 餓λ쵐�뿯?�뜄�뼄...");
+
+            selectEl.innerHTML = '<option>?怨쀬뵠?怨�? �겫�뜄�쑎?�끇�뮉 餓λ쵐�뿯?�뜄�뼄...</option>';
+            selectEl.disabled = true;
+
+            Promise.all(categories.map(cat =>
+                fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    redirect: 'follow',
+                    headers: { "Content-Type": "text/plain;charset=utf-8" },
+                    body: JSON.stringify({ action: "get_pending", category: cat })
+                })
+                    .then(res => res.json())
+                    .then(json => {
+                        const list = json.list || (json.data && json.data.list) || [];
+                        list.forEach(item => item._category = cat);
+                        return list;
+                    })
+                    .catch(err => [])
+            ))
+                .then(results => {
+                    const combinedList = results.flat();
+                    combinedList.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+                    selectEl.innerHTML = '<option value="">?占�?怨몄쁽�몴??醫뤾문?�똻竊�?紐꾩뒄</option>';
+                    pendingDataMap = {};
+
+                    if (combinedList.length > 0) {
+                        combinedList.forEach(item => {
+                            // ?�뇙堉�??[?�꼷�젟] 獄쏄퉲�뼓(`) �빊遺�????�뇙堉�??
+                            const uniqueKey = `${item._category}_${item.rowIndex}`;
+                            const opt = document.createElement('option');
+                            opt.value = uniqueKey;
+                            opt.text = `[${item._category}] ${item.name} (${item.date})`;
+                            // ?轅롫섞??[?�꼷�젟 ?? ?轅롫섞??
+                            selectEl.appendChild(opt);
+                            pendingDataMap[uniqueKey] = item;
+                        });
+                    } else {
+                        selectEl.innerHTML += '<option disabled>?占썸묾怨쀬㉦??椰꾨똻�뵠 ?�냱�뮸?�뜄�뼄</option>';
+                    }
+                    selectEl.disabled = false;
+
+                    if (targetRowIndex) {
+                        let foundKey = null;
+                        if (targetCategory) {
+                            // ?�뇙堉�??[?�꼷�젟] 獄쏄퉲�뼓(`) �빊遺�????�뇙堉�??
+                            const tryKey = `${targetCategory}_${targetRowIndex}`;
+                            if (pendingDataMap[tryKey]) foundKey = tryKey;
+                        }
+                        if (!foundKey) {
+                            foundKey = Object.keys(pendingDataMap).find(k => k.endsWith(`_${targetRowIndex}`));
+                            // ?轅롫섞??[?�꼷�젟 ?? ?轅롫섞??
+                        }
+                        if (foundKey) {
+                            selectEl.value = foundKey;
+                            selectPendingItem();
+                        }
+                    }
+                })
+                .catch(err => {
+                    console.error(err);
+                    selectEl.innerHTML = '<option>筌뤴뫖以� 嚥≪뮆逾� ?�끋�솭</option>';
+                })
+                .finally(() => {
+                    showLoading(false);
+                });
+        }
+
+        function selectPendingItem() {
+            const selectEl = document.getElementById('pendingList');
+            const uniqueKey = selectEl.value;
+
+            // ?怨쀬뵠?怨�? ?�끍援�???醫뤾문 ????
+            if (!uniqueKey || !pendingDataMap || !pendingDataMap[uniqueKey]) return;
+
+            const data = pendingDataMap[uniqueKey];
+
+            // 1. 疫꿸퀡�궚 ?類ｋ궖 筌띲끋釉�
+            document.getElementById('rowIndex').value = data.rowIndex;
+            document.getElementById('loadCategory').value = data._category;
+
+            // 2. ?占�?怨몄쁽 ?類ｋ궖 (?���已�, ?�빖���?遺우뵬, ?源낇��)
+            document.getElementById('clientName').value = data.name || "";
+            if (data.birth) document.getElementById('birth').value = data.birth;
+
+            if (data.gender) {
+                let g = data.gender.trim();
+                document.getElementById('gender').value = (g === "?? || g === "?�뫁苑�") ? "?�뫁苑�" : "?�딄쉐";
+            }
+
+            // ?�겦�겲??[?�덈┛?�뮆???�빊遺�???�겫占썽겫? ?�겦�겲??
+            // 3. ?袁⑥뵭?�꼷肉�???類ｋ궖??(雅뚯눘�꺖, ?怨뺤뵭筌�?
+            if (data.address) document.getElementById('address').value = data.address; // 雅뚯눘�꺖
+            if (data.contact) document.getElementById('contact').value = data.contact; // ?怨뺤뵭筌�?
+
+            // 4. 疫꿸퀗? 獄�??�꼶�� ?�딆�� ?類ｋ궖
+            if (data.agency) document.getElementById('agencyDetail').value = data.agency;
+            if (data.agencyType) document.getElementById('agencyType').value = data.agencyType;
+            if (data.date) document.getElementById('receptionDate').value = data.date;
+
+            // ?�뇙堉�??[�빊遺�???�굜遺얜굡] ?�뇙堉�??
+            // ?�뮆苡�?癒�苑� 獄쏆룇釉�???����뼣???���已�(agencyContact)???�굝�젾燁삳챷肉� ?節딅┛
+            if (data.agencyContact) {
+                document.getElementById('agencyContact').value = data.agencyContact;
+            } else {
+                document.getElementById('agencyContact').value = ""; // ?�냱�몵筌�?�뜮�뜆萸�
+            }
+            // ?轅롫섞??[�빊遺�? ?? ?轅롫섞??
+            // 5. ?�꼶�� ?�딆�� (筌뤴뫗�읅, �뤃�딄퍥???�딆��)
+            if (data.reqType) document.getElementById('requestType').value = data.reqType; // ?�꼶�먩뤃�됲뀋
+            if (data.reqReason) document.getElementById('requestReason').value = data.reqReason; // ??�뤃�딄퍥???�딆�� (?�덈┛!)
+
+            // ?�똻�뜚?�딅뼄?�벉�궖??野껋럩�뒭 ?袁⑤굡筌뤿굞�뵠 ?�끇? ???�뜆�몵??筌ｋ똾寃� (癰귣쵎梨� ??
+            if (data._category === '?�똻�뜚?�딅뼄?�벉�궖' && data.disease) {
+                // ?�똻�뜚?�벉�궖??'筌욊쑬�뼊筌�????�꼶��?�딆��??�뜮袁㏉��?占�???節딇�� ?�쓹�뼄筌�??怨뚭퍙
+                // ?? document.getElementById('requestReason').value = data.disease; 
+            }
+
+            // ��⑤벉揆甕곕뜇�깈???�뜄以� ?怨쀫튊 ?�꼶?嚥�?�룯�뜃由�??
+            document.getElementById('docNumber').value = "";
+
+            // 沃섎챶�봺癰귣떯由� 筌앸맩�뻻 ?�굝�쑓?�똾�뱜
+            updatePreview();
+        }
+
+        // ============================================================
+        // [疫꿸퀡�뮟 3] ��⑤벏�꽰 疫꿸퀡�뮟 (甕곕뜇�깈獄쏆뮄�닋, ?占�?? PDF ??
+        // ============================================================
+        async function issueDocNumber() {
+            const name = document.getElementById('clientName').value;
+            const agency = document.getElementById('agencyDetail').value;
+            const staff = document.getElementById('staffName').value;
+            const todayStr = document.getElementById('replyDate').value;
+
+            if (!name) return SystemModal.alert("?占�?怨몄쁽�몴?�솒�눘? ?醫뤾문?�똻竊�?紐꾩뒄.");
+            if (!await SystemModal.confirm(`[${agency}] ?�쉸�몵嚥�?��⑤벉揆甕곕뜇�깈�몴?獄쏆뮄�닋?�꼷�뻻野껋쥙�뮸?�뜃�돱?`)) return;
+
+            // ?�뇙堉�??[?�꼷�젟] 嚥≪뮆逾� ?�뮇�삂! ?�뇙堉�??
+            showLoading(true, "��⑤벉揆甕곕뜇�깈 獄쏆뮄�닋 餓�?..");
+
+            const btn = event.target;
+            const originalText = btn.innerText;
+            btn.innerText = "筌ｌ꼶�봺餓�?."; btn.disabled = true;
+
+            fetch(DOC_API_URL, {
+                method: 'POST',
+                body: JSON.stringify({
+                    action: "issue",
+                    docType: "?�뮇�젟���?,
+                    title: `${name} ???�꼶�� ?�슣�뻿??,
+                    sender: staff,
+                    target: agency,
+                    sentDate: todayStr
+                })
+            })
+                .then(res => res.json())
+                .then(async json => {
+                    if (json.success || json.result === 'success') {
+                        let newDocNum = (json.data && json.data.docNum) || json.docNum;
+                        if (!newDocNum && json.data && json.data.message) {
+                            const match = json.data.message.match(/?�뮇�젟���?\d+/);
+                            if (match) newDocNum = match[0];
+                        }
+                        if (newDocNum) {
+                            document.getElementById('docNumber').value = newDocNum;
+                            await SystemModal.alert(`?�윦 ?袁⑥┷!\n��⑤벉揆甕곕뜇�깈: ${newDocNum}\n?占�?關肉� 獄쏆뮇�꽊?�눘�쁽繹먮슣? ?源낆쨯?�꼷肉�?�벉�빍??`);
+                            updatePreview();
+                        } else {
+                            SystemModal.alert("�눧紐꾧퐣甕곕뜇�깈�몴?獄쏆룇釉�?�끉? 筌륁궢六�?�벉�빍??");
+                        }
+                    } else {
+                        SystemModal.alert("?�끇履�: " + json.message);
+                    }
+                })
+                .catch(err => SystemModal.alert("?�벊�뻿 ?�끇履�: " + err.message))
+                .finally(() => {
+                    btn.innerText = originalText;
+                    btn.disabled = false;
+                    showLoading(false);
+                });
+        }
+        function updatePreview() {
+            inputIds.forEach(id => {
+                const elView = document.getElementById('view_' + id);
+                const elInput = document.getElementById(id);
+                if (elView && elInput) elView.innerText = elInput.value;
+            });
+
+            const rDate = document.getElementById('replyDate').value;
+            if (rDate) {
+                const d = new Date(rDate);
+                // ?�뇙堉�??[?�꼷�젟] 獄쏄퉲�뼓(`) �빊遺�????�뇙堉�??
+                const dateStr = `${d.getFullYear()}??${d.getMonth() + 1}??${d.getDate()}??;
+                // ?轅롫섞??[?�꼷�젟 ?? ?轅롫섞??
+                const viewReply = document.getElementById('view_replyDate');
+                const viewToday = document.getElementById('view_todayDate');
+                if (viewReply) viewReply.innerText = dateStr;
+                if (viewToday) viewToday.innerText = dateStr;
+            }
+
+            const birth = document.getElementById('birth').value;
+            const gender = document.getElementById('gender').value;
+            const viewBirth = document.getElementById('view_birthGender');
+            // ?�뇙堉�??[?�꼷�젟] 獄쏄퉲�뼓(`) �빊遺�????�뇙堉�??
+            if (viewBirth) viewBirth.innerText = `${birth} / ${gender}`;
+            // ?轅롫섞??[?�꼷�젟 ?? ?轅롫섞??
+        }
+
+        function executePdf() {
+            const name = document.getElementById('clientName').value || '?�슣�뻿??;
+            const element = document.getElementById('printable-area');
+            // ?�뇙堉�??[?�꼷�젟] 獄쏄퉲�뼓(`) �빊遺�????�뇙堉�??
+            const opt = { margin: 0, filename: `?�슣�뻿??${name}.pdf`, image: { type: 'jpeg', quality: 1 }, html2canvas: { scale: 2, useCORS: true }, jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' } };
+            // ?轅롫섞??
+            html2pdf().from(element).set(opt).save();
+        }
+        function executePrint() { window.print(); }
+        async function clearData() { if (await SystemModal.confirm("�룯�뜃由�???�꼷�뻻野껋쥙�뮸?�뜃�돱?")) location.reload(); }
+
+        async function enableEditMode() {
+            if (!await SystemModal.confirm("?���? ?袁⑥┷??椰꾨똻�뿯?�뜄�뼄.\n?�똻�뒠???�꼷�젟?�꼷�뻻野껋쥙�뮸?�뜃�돱?")) return;
+
+            // 1. 筌뤴뫀諭� ?�굝�젾筌�??醫됲닊 ?�똻�젫 (��⑤벉揆甕곕뜇�깈 ?�뮇�뇚)
+            document.querySelectorAll('input, select, textarea').forEach(el => {
+                if (el.id !== 'docNumber') el.disabled = false;
+            });
+
+            // 2. ?占�??甕곌쑵�뱣 ?�꼷沅←뵳�덈┛ & ?�끋???癰귨옙野�?
+            const saveBtn = document.getElementById('btnSave');
+
+            // ??[餓λ쵐�뒄] ?袁㏉돱 disableAllInputs?癒�苑� ?醫됱뺍??椰�??�덈┛???占�?�똻夷�???�뫖�빍??
+            saveBtn.disabled = false;
+
+            saveBtn.style.display = 'inline-flex'; // ?�끉�뻻 癰귣똻�뵠疫�?
+            saveBtn.innerHTML = '<i class="fas fa-exclamation-triangle"></i> ?�꼷�젟 獄쏆꼷�겫';
+            saveBtn.classList.remove('btn-sheet');
+            saveBtn.classList.add('btn-warn');
+
+            // 3. ?�꼷�젟 甕곌쑵�뱣?占� ?�몿?
+            document.getElementById('btnUnlock').style.display = 'none';
+
+            // 4. ?�끇�쐭 ?�씮�뮞??癰귨옙野�?
+            document.querySelector('.panel-header h2').innerText = "?類ｋ궖 ?�꼷�젟 筌뤴뫀諭�";
+
+            SystemModal.alert("?�꼷�젟 筌뤴뫀諭뜻에??袁れ넎?�꼷肉�?�벉�빍??\n?�똻�뒠??��⑥쥙�뒄���?雅뚯눛�넺??甕곌쑵�뱣???�슢�쑎雅뚯눘苑�??");
+        }
+
+        async function completeProcess() {
+            const docNum = document.getElementById('docNumber').value;
+            const rowIndex = document.getElementById('rowIndex').value;
+            const category = document.getElementById('loadCategory').value;
+            const saveBtn = document.getElementById('btnSave');
+
+            if (!rowIndex || !category) return SystemModal.alert("?占�?怨몄쁽�몴??醫뤾문?�꼷? ?�봿釉�?�벉�빍??");
+            if (!docNum) return SystemModal.alert("��⑤벉揆甕곕뜇�깈揶쏉옙 獄쏆뮄�닋?�꼷? ?�봿釉�?�벉�빍??");
+
+            // ??[?�벊�뼎] ?�꼷�젟 筌뤴뫀諭�?紐�? ?類ㅼ뵥 (甕곌쑵�뱣 ?����삋?�끇以� ?癒��뼊)
+            const isEditMode = saveBtn.classList.contains('btn-warn');
+
+            let confirmMsg = "?���?嚥�??�슣�뻿 筌ｌ꼶�봺�몴??袁⑥┷?�꼷�뻻野껋쥙�뮸?�뜃�돱?";
+            if (isEditMode) {
+                confirmMsg = "?醫묓닔 [雅뚯눘�벥] ?���? ?袁⑥┷??椰꾨똻�뿯?�뜄�뼄.\n?類ｌ춾 ?�꼷�젟 ?�똻�뒠???占�?關肉� ??堉�?怨쀫뻻野껋쥙�뮸?�뜃�돱?";
+            }
+
+            if (!await SystemModal.confirm(confirmMsg)) return;
+
+            // --- ?�똾釉� ?怨쀬뵠???�꼷彛� 嚥≪뮇彛� ?�늿�뵬 ---
+            const checkboxes = document.querySelectorAll('input[name="actionResult"]:checked');
+            const actionList = Array.from(checkboxes).map(cb => cb.value).join(', ');
+
+            const processContent = document.getElementById('processContent').value;
+            const counselingContent = document.getElementById('counselingContent').value;
+            const futurePlan = document.getElementById('futurePlan').value;
+            const progressStatus = document.getElementById('progressStatus').value;
+            const finalResultText = actionList ? `${actionList} / ${futurePlan}` : futurePlan;
+
+            // 甕곌쑵�뱣 �뜮袁れ넞?源딆넅
+            saveBtn.disabled = true;
+            saveBtn.innerText = "筌ｌ꼶�봺 餓�?..";
+
+            fetch(SCRIPT_URL, {
+                method: 'POST',
+                redirect: 'follow',
+                headers: { "Content-Type": "text/plain;charset=utf-8" },
+                body: JSON.stringify({
+                    action: "update_status",
+                    category: category,
+                    rowIndex: rowIndex,
+                    docNum: docNum,
+                    replyDate: document.getElementById('replyDate').value,
+                    serviceMethod: document.getElementById('serviceMethod').value,
+                    serviceDate: document.getElementById('replyDate').value, // 癰귣똾�꽰 ?�슣�뻿???�뮆�돩?�끉�뵬
+                    staffName: document.getElementById('staffName').value,
+
+                    // ?怨멸쉭 ?怨쀬뵠??
+                    actionResult: finalResultText,
+                    processContent: processContent,
+                    counselingContent: counselingContent,
+                    progressStatus: progressStatus
+                })
+            })
+                .then(res => res.json())
+                .then(async json => {
+                    if (json.success || json.result === 'success') {
+                        await SystemModal.alert(isEditMode ? "???�꼷�젟 ?袁⑥┷?�꼷肉�?�벉�빍??" : "?�윦 ?�슣�뻿 ?袁⑥┷!");
+
+                        if (isEditMode) {
+                            location.reload(); // ?�꼷�젟 ?袁⑸퓦 ?�뜄以덃�⑥쥙臾�?�똻苑� 繹먮뗀嫄�?�꼵苡�
+                        } else {
+                            loadPendingList(); // ?醫됲뇣 ?占�?關�뵠筌�?筌뤴뫖以� 揶쏄퉮�뻿
+                            // ?�굝�젾筌�?�뜮袁⑹뒭疫�???..
+                            document.getElementById('clientName').value = "";
+                            document.getElementById('docNumber').value = "";
+                            document.querySelectorAll('input[name="actionResult"]').forEach(cb => cb.checked = false);
+                            updatePreview();
+
+                            // 甕곌쑵�뱣 ?癒��궗
+                            saveBtn.disabled = false;
+                            saveBtn.innerText = "?�슣�뻿 ?袁⑥┷ (?�뮆苡� ?占�??";
+                        }
+                    } else {
+                        SystemModal.alert("?�끇履�: " + json.message);
+                        saveBtn.disabled = false;
+                    }
+                })
+                .catch(err => {
+                    SystemModal.alert("?�벊�뻿 ?�끇履� 獄쏆뮇源�");
+                    saveBtn.disabled = false;
+                });
+        }
+
+        function adjustPreviewScale() {
+            const wrapper = document.getElementById('preview-wrapper');
+            const printable = document.getElementById('printable-area');
+            if (!wrapper || !printable) return;
+
+            // Standard A4 dimensions 794x1123
+            const availableWidth = wrapper.clientWidth - 40;
+            const availableHeight = wrapper.clientHeight - 40;
+
+            const scaleX = availableWidth / 794;
+            const scaleY = availableHeight / 1123;
+            // Best fit
+            const scale = Math.min(1, Math.min(scaleX, scaleY));
+            printable.style.transform = `scale(${scale})`;
+        }
+
+        window.addEventListener('resize', adjustPreviewScale);
+        setTimeout(adjustPreviewScale, 100);
+    </script>
+</body>
+
+</html>
+```

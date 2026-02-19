@@ -1,0 +1,53 @@
+[
+  {
+    "title": "사례관리",
+    "start": "2026-02-18",
+    "end": "2026-02-18",
+    "isAllday": true,
+    "category": "allday",
+    "location": "test",
+    "body": "심규호(13:00~17:00)",
+    "calendarId": "1",
+    "class": "public",
+    "state": "Busy",
+    "raw": {
+      "creator": "시스템관리자"
+    },
+    "groupId": null,
+    "id": "1771254603765"
+  },
+  {
+    "title": "test2",
+    "start": "2026-02-17",
+    "end": "2026-02-17",
+    "isAllday": true,
+    "category": "allday",
+    "location": "",
+    "body": "test2",
+    "calendarId": "2",
+    "class": "public",
+    "state": "Busy",
+    "raw": {
+      "creator": "시스템관리자"
+    },
+    "groupId": null,
+    "id": "1771254615256"
+  },
+  {
+    "title": "test",
+    "start": "2026-02-17T04:00:00.000Z",
+    "end": "2026-02-17T05:00:00.000Z",
+    "isAllday": false,
+    "category": "time",
+    "location": "",
+    "body": "test",
+    "calendarId": "2",
+    "class": "public",
+    "state": "Busy",
+    "raw": {
+      "creator": "시스템관리자"
+    },
+    "groupId": null,
+    "id": "1771254704588"
+  }
+]

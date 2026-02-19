@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <title>연계·의뢰서</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+            font-family: 'Malgun Gothic', '맑은 고딕', sans-serif;
+        }
+
+        .a4-container {
+            width: 210mm;
+            min-height: 297mm;
+            padding: 20mm;
+            margin: 0 auto;
+            /* Changed margin to 0 auto for preview pane centering */
+            background-color: white;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            box-sizing: border-box;
+            position: relative;
+        }
+
+        .watermark {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(-45deg);
+            font-size: 40px;
+            color: rgba(0, 0, 0, 0.04);
+            font-weight: 800;
+            white-space: nowrap;
+            pointer-events: none;
+            letter-spacing: 10px;
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 26pt;
+            letter-spacing: 15px;
+            margin-bottom: 30px;
+            text-decoration: underline;
+            text-underline-offset: 8px;
+            margin-top: 0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th,
+        td {
+            border: 1px solid black;
+            padding: 3px 4px;
+            /* Reduced from 4px 6px for more space */
+            font-size: 10.5pt;
+            /* Reduced slightly from 11pt */
+            line-height: 1.5;
+            word-break: break-all;
+            /* Prevent overflow on super long strings */
+            height: 30px;
+            /* 모든 칸 높이를 최소 30px로 확보 */
+        }
+
+        th {
+            background-color: #f0f0f0;
+            text-align: center;
+            white-space: nowrap;
+        }
+
+        .checkbox-group label {
+            margin-right: 10px;
+            white-space: nowrap;
+            display: inline-block;
+        }
+
+        .chk {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border: 1px solid #000;
+            margin-right: 3px;
+            vertical-align: middle;
+            text-align: center;
+            line-height: 12px;
+            font-size: 10px;
+            margin-top: -2px;
+        }
+
+        .center-logo {
+            text-align: center;
+            font-size: 20pt;
+            font-weight: bold;
+            margin-top: 50px;
+            letter-spacing: 2px;
+        }
+
+        .data-text {
+            display: inline-block;
+            min-height: 1.5em;
+            width: 100%;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+
+        /* 인쇄용 CSS */
+        @media print {
+            @page {
+                margin: 0;
+            }
+
+            body {
+                background-color: white;
+            }
+
+            .a4-container {
+                margin: 0;
+                padding: 15mm;
+                /* Reduced print margin to give table more breathing room */
+                box-shadow: none;
+                width: 100%;
+                height: 100%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="a4-container">
+        <div class="watermark">제천시정신건강복지센터</div>
+        <h1>연계·의뢰서</h1>
+
+        <table style="table-layout: fixed;">
+            <colgroup>
+                <col style="width: 10%;"> <!-- 발신처/수신처/의뢰대상/의뢰일/의뢰인 -->
+                <col style="width: 12%;"> <!-- 이름/보호자/주소 -->
+                <col style="width: 15%;"> <!-- 이름 데이터 -->
+                <col style="width: 10%;"> <!-- 성별/관계/연락처 -->
+                <col style="width: 18%;"> <!-- 남녀체크/데이터 -->
+                <col style="width: 10%;"> <!-- 나이/발신번호/연락처 -->
+                <col style="width: 18%;"> <!-- 나이데이터/우측끝데이터 -->
+            </colgroup>
+            <tr>
+                <th>발신처</th>
+                <td colspan="4"><span class="data-text" id="out_sender"></span></td>
+                <th>발신번호</th>
+                <td style="text-align: center; white-space: nowrap;">제정연-<span id="out_docNum"></span></td>
+            </tr>
+            <tr>
+                <th>수신처</th>
+                <td colspan="6"><span class="data-text" id="out_receiver"></span></td>
+            </tr>
+            <tr>
+                <th rowspan="4">의뢰대상</th>
+                <th style="height: 30px;">이 름</th> <!-- 5px height added -->
+                <td style="text-align: center;"><span class="data-text" id="out_name"></span></td>
+                <th>성 별</th>
+                <td style="text-align: center;">
+                    <span class="checkbox-group"><label><span class="chk" id="chk_gender_m"></span> 남</label></span>
+                    <span class="checkbox-group"><label><span class="chk" id="chk_gender_f"></span> 여</label></span>
+                </td>
+                <th>나 이</th>
+                <td style="text-align: center;"><span class="data-text" id="out_age"></span></td>
+            </tr>
+            <tr>
+                <th>주 소</th>
+                <td colspan="3"><span class="data-text" id="out_address" style="letter-spacing: -3px;"></span></td>
+                <th>연락처</th>
+                <td style="text-align: center;"><span class="data-text" id="out_contact"></span></td>
+            </tr>
+            <tr>
+                <th>보호자</th>
+                <td><span class="data-text" id="out_guardian"></span></td>
+                <th>관 계</th>
+                <td colspan="3"><span class="data-text" id="out_guardian_rel"></span></td>
+            </tr>
+            <tr>
+                <th>의료보장</th>
+                <td colspan="5">
+                    <span class="checkbox-group"><label><span class="chk" id="chk_ins_health"></span>
+                            건강보험</label></span>
+                    <span class="checkbox-group"><label><span class="chk" id="chk_ins_1"></span> 의료급여1종</label></span>
+                    <span class="checkbox-group"><label><span class="chk" id="chk_ins_2"></span> 의료급여2종</label></span>
+                    <span class="checkbox-group"><label><span class="chk" id="chk_ins_etc"></span> 기타</label></span>
+                </td>
+            </tr>
+            <tr>
+                <th>의뢰사유</th>
+                <td colspan="6">
+                    <span class="checkbox-group"><label><span class="chk" id="chk_ref_diag"></span> 정신과 진단 및
+                            치료</label></span>
+                    <span class="checkbox-group"><label><span class="chk" id="chk_ref_etc"></span> 기 타</label></span>
+                    <span class="checkbox-group"><label><span class="chk" id="chk_ref_case"></span> 사례관 리</label></span>
+                    <span class="checkbox-group"><label><span class="chk" id="chk_ref_prog"></span> 프로그램</label></span>
+                </td>
+            </tr>
+            <tr>
+                <th>대상자<br>상태</th>
+                <td colspan="6">
+                    <div style="margin-bottom: 5px; font-weight: bold;">■ 현재 증상 및 치료 상황, 주호소:</div>
+                    <div class="data-text" id="out_symptoms" style="min-height: 80px;"></div>
+                </td>
+            </tr>
+            <tr>
+                <th>의뢰사유</th>
+                <td colspan="6">
+                    <div class="data-text" id="out_ref_reason" style="min-height: 60px;"></div>
+                </td>
+            </tr>
+            <tr>
+                <th>의뢰일</th>
+                <td colspan="6" style="text-align: center;">
+                    <span id="out_date_y" style="display:inline-block; width:40px;"></span>년 &nbsp;
+                    <span id="out_date_m" style="display:inline-block; width:30px;"></span>월 &nbsp;
+                    <span id="out_date_d" style="display:inline-block; width:30px;"></span>일
+                </td>
+            </tr>
+            <tr>
+                <th rowspan="3">의뢰인</th>
+                <th>이 름</th>
+                <td colspan="5">
+                    <div style="display: flex; align-items: center;">
+                        <span class="data-text" id="out_staffName" style="width: 150px; text-align: center;"></span>
+                        <span id="out_stamp"
+                            style="position:relative; display:inline-block; width:40px; text-align:center;">(인)</span>
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <th>주 소</th>
+                <td colspan="3"><span class="data-text" id="out_sender_address">제천시 의림대로242 제천시정신건강복지센터</span></td>
+                <th>연락처</th>
+                <td style="text-align: center;"><span class="data-text" id="out_sender_contact">043-646-3074</span></td>
+            </tr>
+            <tr>
+                <th>이메일</th>
+                <td colspan="3"><span class="data-text" id="out_sender_email">jcmind1004@naver.com</span></td>
+                <th>팩 스</th>
+                <td style="text-align: center;"><span class="data-text" id="out_sender_fax">043-646-3076</span></td>
+            </tr>
+        </table>
+
+        <div class="center-logo">
+            제천시정신건강복지센터
+        </div>
+    </div>
+
+    <script>
+        window.addEventListener('message', function (e) {
+            const data = e.data;
+            if (!data) return;
+            if (data.action === 'render') {
+                const map = {
+                    'docNum': 'out_docNum', 'sender': 'out_sender', 'receiver': 'out_receiver',
+                    'name': 'out_name', 'age': 'out_age', 'address': 'out_address',
+                    'contact': 'out_contact', 'guardian': 'out_guardian', 'guardian_rel': 'out_guardian_rel',
+                    'symptoms': 'out_symptoms', 'staffName': 'out_staffName', 'ref_reason': 'out_ref_reason',
+                    'sender_address': 'out_sender_address', 'sender_contact': 'out_sender_contact',
+                    'sender_email': 'out_sender_email', 'sender_fax': 'out_sender_fax'
+                };
+                for (let key in map) {
+                    const el = document.getElementById(map[key]);
+                    if (el && data.data[key] !== undefined) {
+                        el.textContent = data.data[key];
+                    }
+                }
+
+                // 체크 표시는 V 로 하거나 특수기호로 처리. Original template uses nothing or ✔
+                const mark = '✔';
+
+                const gender = data.data.gender || '';
+                document.getElementById('chk_gender_m').innerText = (gender === '남') ? mark : '';
+                document.getElementById('chk_gender_f').innerText = (gender === '여') ? mark : '';
+
+                const ins = data.data.insurance || '';
+                document.getElementById('chk_ins_health').innerText = (ins === '건강보험') ? mark : '';
+                document.getElementById('chk_ins_1').innerText = (ins === '의료급여1종') ? mark : '';
+                document.getElementById('chk_ins_2').innerText = (ins === '의료급여2종') ? mark : '';
+                document.getElementById('chk_ins_etc').innerText = (ins === '기타') ? mark : '';
+
+                // refType can be multiple? In the form we will make it multiselect or single select.
+                const refTypes = data.data.refTypes || []; // array of selected checkboxes
+                document.getElementById('chk_ref_diag').innerText = refTypes.includes('정신과 진단 및 치료') ? mark : '';
+                document.getElementById('chk_ref_etc').innerText = refTypes.includes('기 타') ? mark : '';
+                document.getElementById('chk_ref_case').innerText = refTypes.includes('사례관 리') ? mark : '';
+                document.getElementById('chk_ref_prog').innerText = refTypes.includes('프로그램') ? mark : '';
+
+                const d = new Date(data.data.issueDate || new Date());
+                if (!isNaN(d)) {
+                    document.getElementById('out_date_y').textContent = d.getFullYear();
+                    document.getElementById('out_date_m').textContent = d.getMonth() + 1;
+                    document.getElementById('out_date_d').textContent = d.getDate();
+                } else if (data.data.issueDate && typeof data.data.issueDate === 'string') {
+                    const parts = data.data.issueDate.split('-');
+                    if (parts.length === 3) {
+                        document.getElementById('out_date_y').textContent = parts[0];
+                        document.getElementById('out_date_m').textContent = parseInt(parts[1], 10);
+                        document.getElementById('out_date_d').textContent = parseInt(parts[2], 10);
+                    }
+                }
+
+                if (data.data.issuer) {
+                    document.getElementById('out_staffName').textContent = data.data.issuer;
+                }
+
+                const stampContainer = document.getElementById('out_stamp');
+                if (data.data.issuer_stamp) {
+                    stampContainer.innerHTML = `<img src="${data.data.issuer_stamp}" style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); max-width:50px; max-height:50px; opacity:0.9;" onerror="this.style.display='none'; this.parentElement.innerHTML='(인)';"/><span>(인)</span>`;
+                } else {
+                    stampContainer.innerHTML = '(인)';
+                }
+
+            } else if (data.action === 'print') {
+                window.print();
+            }
+        });
+    </script>
+</body>
+
+</html>

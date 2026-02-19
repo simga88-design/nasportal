@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <title>연계·의뢰서</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+            font-family: 'Malgun Gothic', '맑은 고딕', sans-serif;
+        }
+
+        .a4-container {
+            width: 210mm;
+            min-height: 297mm;
+            padding: 20mm;
+            margin: 20px auto;
+            background-color: white;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            box-sizing: border-box;
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 26pt;
+            letter-spacing: 15px;
+            margin-bottom: 30px;
+            text-decoration: underline;
+            text-underline-offset: 8px;
+        }
+
+        .header-table {
+            margin-left: auto;
+            border-collapse: collapse;
+            margin-bottom: 10px;
+            text-align: left;
+        }
+
+        .header-table td {
+            padding: 5px;
+            font-size: 11pt;
+        }
+
+        .header-table input {
+            border: none;
+            border-bottom: 1px solid #ccc;
+            background: transparent;
+            font-family: inherit;
+            font-size: 11pt;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th,
+        td {
+            border: 1px solid black;
+            padding: 4px 6px;
+            font-size: 11pt;
+        }
+
+        th {
+            background-color: #f0f0f0;
+            text-align: center;
+            width: 1%;
+            white-space: nowrap;
+        }
+
+        td input[type="text"] {
+            font-size: 11pt;
+            border: none;
+            background: transparent;
+            font-family: inherit;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        textarea {
+            width: 100%;
+            font-size: 11pt;
+            border: none;
+            resize: none;
+            font-family: inherit;
+            overflow: hidden;
+            background: transparent;
+            box-sizing: border-box;
+        }
+
+        .checkbox-group label {
+            cursor: pointer;
+            margin-right: 15px;
+            white-space: nowrap;
+            display: inline-block;
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            transform: scale(1.1);
+            margin-right: 4px;
+            vertical-align: middle;
+        }
+
+        /* Nested table styles to remove double borders */
+        .nested-table-container {
+            padding: 0 !important;
+            border: none !important;
+        }
+
+        .inner-table {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: fixed;
+        }
+
+        .inner-table th,
+        .inner-table td {
+            border: 1px solid black;
+            font-size: 11pt;
+        }
+
+        .inner-table tr:first-child th,
+        .inner-table tr:first-child td {
+            border-top: none;
+        }
+
+        .inner-table tr:last-child th,
+        .inner-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .inner-table tr th:first-child,
+        .inner-table tr td:first-child {
+            border-left: none;
+        }
+
+        .inner-table tr th:last-child,
+        .inner-table tr td:last-child {
+            border-right: none;
+        }
+
+        .center-logo {
+            text-align: center;
+            font-size: 20pt;
+            font-weight: bold;
+            margin-top: 50px;
+            letter-spacing: 2px;
+        }
+
+        /* 인쇄용 CSS */
+        @media print {
+            body {
+                background-color: white;
+            }
+
+            .a4-container {
+                margin: 0;
+                padding: 20mm;
+                box-shadow: none;
+                width: 100%;
+                height: 100%;
+            }
+
+            input,
+            textarea {
+                border-bottom: none !important;
+            }
+        }
+    </style>
+    <script>
+        function resizeTextarea(el) {
+            el.style.height = 'auto';
+            el.style.height = (el.scrollHeight) + 'px';
+        }
+    </script>
+</head>
+
+<body>
+
+    <div class="a4-container">
+        <h1>연계·의뢰서</h1>
+
+        <table>
+            <tr>
+                <th>발신처</th>
+                <td colspan="4"><input type="text"></td>
+                <th>발신번호</th>
+                <td style="width: 15%; text-align: center;">제정연-<input type="text"
+                        style="width: 30px; text-align: center;"></td>
+            </tr>
+            <tr>
+                <th>수신처</th>
+                <td colspan="6"><input type="text"></td>
+            </tr>
+            <tr>
+                <th rowspan="4">의뢰대상</th>
+                <th>이 름</th>
+                <td style="width: 20%;"><input type="text"></td>
+                <th>성 별</th>
+                <td style="width: 25%;">
+                    <span class="checkbox-group"><label><input type="checkbox"> 남</label></span>
+                    <span class="checkbox-group"><label><input type="checkbox"> 여</label></span>
+                </td>
+                <th>나 이</th>
+                <td style="width: 15%;"><input type="text" style="text-align: center;"></td>
+            </tr>
+            <tr>
+                <th>주 소</th>
+                <td colspan="3"><input type="text"></td>
+                <th>연락처</th>
+                <td style="width: 15%;"><input type="text"></td>
+            </tr>
+            <tr>
+                <th>보호자</th>
+                <td><input type="text"></td>
+                <th>관 계</th>
+                <td colspan="3"><input type="text"></td>
+            </tr>
+            <tr>
+                <th>의료보장</th>
+                <td colspan="5">
+                    <span class="checkbox-group"><label><input type="checkbox"> 건강보험</label></span>
+                    <span class="checkbox-group"><label><input type="checkbox"> 의료급여1종</label></span>
+                    <span class="checkbox-group"><label><input type="checkbox"> 의료급여2종</label></span>
+                    <span class="checkbox-group"><label><input type="checkbox"> 기타</label></span>
+                </td>
+            </tr>
+            <tr>
+                <th>의뢰사유</th>
+                <td colspan="6">
+                    <span class="checkbox-group"><label><input type="checkbox"> 정신과 진단 및 치료</label></span>
+                    <span class="checkbox-group"><label><input type="checkbox"> 기 타</label></span>
+                    <span class="checkbox-group"><label><input type="checkbox"> 사례관 리</label></span>
+                    <span class="checkbox-group"><label><input type="checkbox"> 프로그램</label></span>
+                </td>
+            </tr>
+            <tr>
+                <th>대상자<br>상태</th>
+                <td colspan="6">
+                    <div style="margin-bottom: 5px; font-weight: bold;">■ 현재 증상 및 치료 상황, 주호소:</div>
+                    <textarea rows="4" oninput="resizeTextarea(this)"
+                        placeholder="*정신과적 증상 관련 또는&#10;*지지체계 및 경제적 문제 등 주호소 작성"></textarea>
+                </td>
+            </tr>
+            <tr>
+                <th>의뢰사유</th>
+                <td colspan="6">
+                    <textarea rows="3" oninput="resizeTextarea(this)"></textarea>
+                </td>
+            </tr>
+            <tr>
+                <th>의뢰일</th>
+                <td colspan="6" style="text-align: center;">
+                    <input type="text" style="width: 50px; text-align: center;">년
+                    <input type="text" style="width: 30px; text-align: center;">월
+                    <input type="text" style="width: 30px; text-align: center;">일
+                </td>
+            </tr>
+            <tr>
+                <th rowspan="3">의뢰인</th>
+                <th>이 름</th>
+                <td colspan="5">
+                    <div style="display: flex; align-items: center;">
+                        <input type="text" style="width: 150px; margin-right: 10px;"> (인)
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <th>주 소</th>
+                <td colspan="3"><input type="text" value="제천시 의림대로242 제천시정신건강복지센터"></td>
+                <th>연락처</th>
+                <td><input type="text" value="043-646-3074" style="text-align: center;"></td>
+            </tr>
+            <tr>
+                <th>이메일</th>
+                <td colspan="3"><input type="text" value="jcmind1004@naver.com"></td>
+                <th>팩 스</th>
+                <td><input type="text" value="043-646-3076" style="text-align: center;"></td>
+            </tr>
+        </table>
+
+        <div class="center-logo">
+            제천시정신건강복지센터
+        </div>
+    </div>
+
+    <script>
+        document.querySelectorAll('textarea').forEach(textarea => {
+            resizeTextarea(textarea);
+        });
+    </script>
+</body>
+
+</html>

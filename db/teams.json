@@ -1,0 +1,20 @@
+[
+    {
+        "code": "T001",
+        "name": "행정팀",
+        "leader": "",
+        "description": "행정 및 기획 총괄"
+    },
+    {
+        "code": "T002",
+        "name": "자살예방팀",
+        "leader": "",
+        "description": "자살예방 사업"
+    },
+    {
+        "code": "T003",
+        "name": "정신건강복지팀",
+        "leader": "",
+        "description": "정신건강 사례관리 및 복지"
+    }
+]

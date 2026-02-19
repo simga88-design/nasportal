@@ -1,0 +1,856 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>�눧紐꾧퐣 獄쏆뮄�닋 (?�벏鍮�)</title>
+    <link rel="stylesheet" as="style" crossorigin
+        href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.8/dist/web/static/pretendard.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <style>
+        /* --- Global App Styles --- */
+        body {
+            font-family: 'Pretendard', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #e2e8f0;
+            color: #334155;
+            height: 100vh;
+            box-sizing: border-box;
+            overflow: hidden;
+        }
+
+        .wrapper {
+            display: flex;
+            gap: 20px;
+            height: 100%;
+            max-width: 1920px;
+            margin: 0 auto;
+        }
+
+        .left-panel {
+            flex: 0 0 500px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .right-panel {
+            flex: 1;
+            background: #525659;
+            border-radius: 12px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            padding: 40px;
+            overflow-y: auto;
+        }
+
+        .panel-header {
+            padding: 15px 20px;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: space-between;
+            background: white;
+            flex-shrink: 0;
+        }
+
+        .panel-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: #1e293b;
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .tabs {
+            display: flex;
+            background: #f8fafc;
+            border-bottom: 1px solid #e2e8f0;
+            flex-shrink: 0;
+        }
+
+        .tab {
+            flex: 1;
+            text-align: center;
+            padding: 12px 0;
+            cursor: pointer;
+            font-weight: 600;
+            color: #64748b;
+            border-bottom: 3px solid transparent;
+            transition: 0.2s;
+            font-size: 14px;
+        }
+
+        .tab:hover {
+            color: #3b82f6;
+            background: #f1f5f9;
+        }
+
+        .tab.active {
+            color: #2563eb;
+            border-bottom-color: #2563eb;
+            background: white;
+        }
+
+        .sub-tabs {
+            margin: 15px;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            overflow: hidden;
+            background: white;
+        }
+
+        .sub-tabs .tab {
+            padding: 10px 0;
+            font-size: 13px;
+            border-bottom: 0;
+            border-right: 1px solid #e2e8f0;
+        }
+
+        .sub-tabs .tab:last-child {
+            border-right: 0;
+        }
+
+        .sub-tabs .tab.active {
+            background: #eff6ff;
+            color: #2563eb;
+        }
+
+        .panel-content {
+            flex: 1;
+            padding: 0 20px 20px 20px;
+            overflow-y: auto;
+            background: white;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* Dynamic Form Styles */
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-label {
+            display: block;
+            font-weight: 600;
+            font-size: 13px;
+            margin-bottom: 6px;
+            color: #475569;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 8px 10px;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            font-size: 14px;
+            font-family: 'Pretendard';
+            box-sizing: border-box;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+        }
+
+        .row {
+            display: flex;
+            gap: 10px;
+        }
+
+        .col {
+            flex: 1;
+        }
+
+        .checkbox-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+            margin-top: 5px;
+        }
+
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 13px;
+            cursor: pointer;
+        }
+
+        .score-input {
+            width: 50px !important;
+            text-align: center;
+            display: inline-block;
+            padding: 4px !important;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .btn {
+            padding: 10px 16px;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            border: none;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: 0.2s;
+            justify-content: center;
+        }
+
+        .btn-primary {
+            background: #2563eb;
+            color: white;
+            flex: 1;
+        }
+
+        .btn-secondary {
+            background: #e2e8f0;
+            color: #475569;
+        }
+
+        /* History */
+        .history-item {
+            padding: 15px 20px;
+            border-bottom: 1px solid #f1f5f9;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: 0.2s;
+        }
+
+        .history-item:hover {
+            background: #f8fafc;
+        }
+
+        .history-info h4 {
+            margin: 0 0 4px 0;
+            font-size: 14px;
+            color: #334155;
+        }
+
+        .history-info p {
+            margin: 0;
+            font-size: 12px;
+            color: #64748b;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 99px;
+            font-size: 11px;
+            font-weight: 700;
+        }
+
+        .badge-blue {
+            background: #dbeafe;
+            color: #2563eb;
+        }
+
+        .badge-green {
+            background: #dcfce7;
+            color: #15803d;
+        }
+
+        .read-only-banner {
+            background: #fff7ed;
+            border: 1px solid #ffedd5;
+            color: #c2410c;
+            padding: 10px 15px;
+            border-radius: 8px;
+            margin: 0 20px 10px 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        /* --- Preview Container & Print Styles --- */
+        .preview-container {
+            transform-origin: top center;
+            transition: transform 0.2s;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            margin-bottom: 40px;
+            width: 21cm;
+            height: 29.7cm;
+            background: white;
+            /* Inner Templates will fill this */
+        }
+
+        /* Shared Components */
+        .paper {
+            width: 100%;
+            height: 100%;
+            box-sizing: border-box;
+            position: relative;
+            color: #000;
+        }
+
+        .qr-code {
+            width: 60px;
+            height: 60px;
+        }
+
+        .doc-id-text {
+            font-size: 9px;
+            color: #94a3b8;
+            font-family: monospace;
+        }
+
+        .doc-verification {
+            position: absolute;
+            bottom: 20mm;
+            right: 20mm;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 5px;
+            z-index: 100;
+        }
+
+        /* =========================================
+           1. Voucher Styles (Exact Replica) 
+           ========================================= */
+        #print-voucher {
+            padding: 1.8cm;
+            font-family: 'Noto Sans KR', sans-serif;
+            font-size: 11pt;
+            line-height: 1.8;
+        }
+
+        #print-voucher .watermark {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(-45deg);
+            font-size: 40px;
+            /* Original: 40px */
+            color: rgba(0, 0, 0, 0.04);
+            /* Original: 0.04 */
+            font-weight: 800;
+            white-space: nowrap;
+            pointer-events: none;
+            letter-spacing: 10px;
+        }
+
+        #print-voucher .title {
+            text-align: center;
+            font-size: 24px;
+            /* Original: 24px */
+            font-weight: 700;
+            margin-bottom: 25px;
+            letter-spacing: 8px;
+            color: #111;
+            margin-top: 0;
+        }
+
+        #print-voucher .doc-table {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: fixed;
+        }
+
+        #print-voucher .doc-table td {
+            border: 1px solid #adb5bd;
+            padding: 11px;
+            vertical-align: middle;
+        }
+
+        #print-voucher .doc-table .basic-info td {
+            height: auto;
+        }
+
+        #print-voucher .label {
+            background: #f1f3f5;
+            font-weight: 700;
+            text-align: center;
+            width: 120px;
+            color: #495057;
+        }
+
+        #print-voucher .content-cell {
+            vertical-align: top !important;
+            height: 300px !important;
+            white-space: pre-wrap;
+        }
+
+        #print-voucher .footer {
+            margin-top: auto;
+        }
+
+        #print-voucher .footer p {
+            margin: 5px 0;
+        }
+
+        #print-voucher .signature {
+            margin-top: 20px;
+            font-size: 12pt;
+            text-align: right;
+        }
+
+        #print-voucher .chief {
+            font-size: 26px;
+            font-weight: 700;
+            margin-top: 30px;
+            letter-spacing: 4px;
+            text-align: center;
+        }
+
+        #print-voucher .seal-text {
+            text-align: center;
+            margin: 0;
+        }
+
+
+        /* =========================================
+           2. Confirmation Styles (Exact Replica) 
+           ========================================= */
+        #print-confirmation {
+            padding: 1.8cm;
+            /* Original: 1.8cm */
+            font-family: '筌띾쵐? ��⑥쥓逾�', 'Malgun Gothic', sans-serif;
+            font-size: 11pt;
+            line-height: 1.6;
+            /* Original: 1.6 */
+        }
+
+        #print-confirmation .watermark {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(-45deg);
+            font-size: 40px;
+            color: rgba(0, 0, 0, 0.04);
+            font-weight: 800;
+            white-space: nowrap;
+            pointer-events: none;
+            letter-spacing: 10px;
+        }
+
+        #print-confirmation .title {
+            text-align: center;
+            font-size: 24px;
+            /* Original: 24px */
+            font-weight: 700;
+            margin-bottom: 25px;
+            letter-spacing: 8px;
+            color: #111;
+            margin-top: 0;
+        }
+
+        #print-confirmation .doc-table-group {
+            border-top: 1px solid #000;
+            border-bottom: 1px solid #000;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+        }
+
+        #print-confirmation .doc-table-row {
+            width: 100%;
+            border-collapse: collapse;
+            border-spacing: 0;
+        }
+
+        #print-confirmation .doc-table-row td {
+            border: 1px solid #000;
+            padding: 10px;
+            vertical-align: top;
+            line-height: 1.6;
+            color: #000;
+        }
+
+        #print-confirmation .doc-table-group .doc-table-row+.doc-table-row td {
+            border-top: 0;
+            /* Remove double borders */
+        }
+
+        #print-confirmation .label {
+            background: #D9D9D9;
+            font-weight: 700;
+            text-align: center;
+            vertical-align: middle;
+        }
+
+        #print-confirmation .content-table-row {
+            flex-grow: 1;
+            height: 100%;
+        }
+
+        #print-confirmation .content-cell {
+            height: 100%;
+            vertical-align: top !important;
+            white-space: pre-wrap;
+        }
+
+        /* Forced Centering Fixes for Confirmation */
+        #print-confirmation .doc-table-row td.label[rowspan],
+        #print-confirmation td.label[style*="text-align: center"] {
+            text-align: center !important;
+            vertical-align: middle !important;
+        }
+
+        #print-confirmation .address-cell {
+            min-height: 50px;
+            vertical-align: top !important;
+        }
+
+        /* Grid Cols Re-implementation */
+        #print-confirmation .simple-grid-col-1 {
+            width: 110px;
+        }
+
+        #print-confirmation .simple-grid-col-2 {
+            width: auto;
+        }
+
+        #print-confirmation .complex-grid-col-1 {
+            width: 110px;
+        }
+
+        #print-confirmation .complex-grid-col-2 {
+            width: 100px;
+        }
+
+        #print-confirmation .complex-grid-col-3 {
+            width: auto;
+        }
+
+        #print-confirmation .complex-grid-col-4 {
+            width: 80px;
+        }
+
+        #print-confirmation .complex-grid-col-5 {
+            width: 160px;
+        }
+
+        #print-confirmation .org-grid-col-1 {
+            width: 110px;
+        }
+
+        #print-confirmation .org-grid-col-2 {
+            width: auto;
+        }
+
+        #print-confirmation .org-grid-col-3 {
+            width: 55px;
+        }
+
+        #print-confirmation .org-grid-col-4 {
+            width: 135px;
+        }
+
+        #print-confirmation .org-cell {
+            font-size: 14px;
+            line-height: 1.8;
+            padding: 15px;
+            vertical-align: middle;
+            text-align: center;
+        }
+
+        #print-confirmation .date-signature {
+            margin-top: 30px;
+            font-size: 13pt;
+            text-align: center;
+            font-weight: 500;
+        }
+
+        #print-confirmation .chief {
+            font-size: 30px;
+            font-weight: 700;
+            margin-top: 40px;
+            text-align: center;
+            margin-bottom: 0;
+        }
+
+        #print-confirmation .confirmation-text {
+            text-align: center;
+            font-size: 13pt;
+            margin-top: 10px;
+            margin-bottom: 0;
+        }
+
+        #print-confirmation .logo-footer {
+            text-align: center;
+            padding-top: 10px;
+        }
+
+        @media print {
+            @page {
+                size: A4;
+                margin: 0;
+            }
+
+            body * {
+                visibility: hidden;
+            }
+
+            .preview-container,
+            .preview-container * {
+                visibility: visible;
+            }
+
+            .preview-container {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+                height: 100%;
+                margin: 0;
+                padding: 0;
+                transform: none !important;
+                box-shadow: none !important;
+            }
+
+            body {
+                -webkit-print-color-adjust: exact;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="wrapper">
+        <!-- LEFT PANEL -->
+        <div class="left-panel">
+            <div class="panel-header">
+                <div class="panel-title"><i class="fas fa-print"></i> �눧紐꾧퐣 獄쏆뮄�닋 ?�뮇�뮞??(v2.0)</div>
+            </div>
+            <div class="tabs main-tabs">
+                <div class="tab active" onclick="switchMainTab('write')"><i class="fas fa-pen"></i> ?臾믨쉐?�꼵由�</div>
+                <div class="tab" onclick="switchMainTab('history')"><i class="fas fa-history"></i> 獄쏆뮄�닋?占�??/div>
+            </div>
+
+            <div id="mode-write">
+                <div id="readOnlyBanner" class="read-only-banner" style="display:none; margin-top:15px;">
+                    <div style="flex:1;"><i class="fas fa-lock"></i> 獄쏆뮄�닋 ?����젾 鈺곌퀬�돳 餓�?(?�꼷�젟 �겫�뜃?)</div>
+                    <button class="btn btn-secondary" onclick="resetForm()"
+                        style="width:auto; padding:4px 8px; font-size:12px;">??�눧紐꾧퐣</button>
+                </div>
+
+                <div class="tabs sub-tabs">
+                    <div class="tab active" data-sub="voucher" onclick="switchSubTab('voucher')">筌띾뜆�벉?�딆쁽 ?�꼶��??/div>
+                    <div class="tab" data-sub="confirmation" onclick="switchSubTab('confirmation')">?怨룸뼖?類ㅼ뵥??/div>
+                </div>
+
+                <div class="panel-content">
+                    <!-- Generic Form Container -->
+                    <div id="dynamic-form-container"></div>
+
+                    <!-- Common Metadata -->
+                    <div style="margin-top:20px; padding-top:20px; border-top:1px solid #e2e8f0;">
+                        <div class="row">
+                            <div class="col"><label class="form-label">獄쏆뮄�닋??/label><input type="date" id="issueDate"
+                                    class="form-control"></div>
+                            <div class="col"><label class="form-label">?����뼣??/label><input type="text" id="issuer"
+                                    class="form-control" readonly></div>
+                        </div>
+                    </div>
+
+                    <div class="btn-group">
+                        <button id="btnSave" class="btn btn-primary" onclick="saveAndPrint()">
+                            <i class="fas fa-print"></i> 獄쏆뮄�닋 獄�??紐꾨뇵
+                        </button>
+                        <button id="btnPrintOnly" class="btn btn-primary" onclick="printDoc()" style="display:none;">
+                            <i class="fas fa-print"></i> ?紐꾨뇵?�꼵由�
+                        </button>
+                        <div id="saveSpinner" style="display:none; padding:10px; color:#2563eb;">
+                            <i class="fas fa-spinner fa-spin"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="mode-history" class="hidden" style="height:100%; display:flex; flex-direction:column;">
+                <div id="historyList" class="panel-content history-list"></div>
+            </div>
+        </div>
+
+        <!-- RIGHT PANEL -->
+        <div class="right-panel">
+            <div class="panel-header"
+                style="width:100%; background:transparent; border:0; color:white; margin-bottom:10px; padding:0;">
+                <div class="panel-title" style="color:white;"><i class="fas fa-eye"></i> 沃섎챶�봺癰귣떯由�</div>
+            </div>
+            <div id="dynamic-preview-container" class="preview-container"></div>
+        </div>
+    </div>
+
+    <script src="../js/config.js"></script>
+    <script type="module">
+        import { DocEngine } from './doc_issue/engine.js';
+        const API_URL = `${(typeof window !== 'undefined' ? window.location.origin : 'http://localhost')}/api/auth`;
+
+        const engine = new DocEngine('dynamic-form-container', 'dynamic-preview-container');
+        window.engine = engine; // Expose for non-module calls if needed
+
+        window.onload = function () {
+            const userStr = sessionStorage.getItem('jc_user');
+            engine.init(userStr ? JSON.parse(userStr) : null);
+
+            // Initial Load
+            engine.loadDocument('voucher');
+
+            window.addEventListener('resize', adjustPreviewScale);
+            adjustPreviewScale();
+        };
+
+        window.switchMainTab = function (mode) {
+            document.querySelectorAll('.main-tabs .tab').forEach(t => t.classList.remove('active'));
+            if (mode === 'write') {
+                document.querySelectorAll('.main-tabs .tab')[0].classList.add('active');
+                document.getElementById('mode-write').style.display = 'block';
+                document.getElementById('mode-history').style.display = 'none';
+            } else {
+                document.querySelectorAll('.main-tabs .tab')[1].classList.add('active');
+                document.getElementById('mode-write').style.display = 'none';
+                document.getElementById('mode-history').style.display = 'flex';
+                loadHistory();
+            }
+        }
+
+        window.switchSubTab = function (type) {
+            if (window.isReadOnly && type !== engine.currentDoc.id) {
+                if (!confirm('??�눧紐꾧퐣�몴??臾믨쉐?�꼷�뻻野껋쥙�뮸?�뜃�돱?')) return;
+                resetForm();
+            }
+            document.querySelectorAll('.sub-tabs .tab').forEach(t => t.classList.remove('active'));
+            document.querySelector(`.sub-tabs .tab[data-sub="${type}"]`).classList.add('active');
+
+            engine.loadDocument(type).then(() => {
+                adjustPreviewScale();
+                // Re-apply common data bindings to engine as loadDocument resets data
+                // Only needs to carry over issuer/date if we want persistance, but engine handles common data separately?
+                // Actually, engine.loadDocument resets 'data' but commonData is separate in engine class.
+                // We need to re-bind inputs? No, common inputs are static in HTML.
+                // Update preview to reflect common data immediately
+                engine.updatePreview();
+            });
+        }
+
+        window.saveAndPrint = function () {
+            const content = engine.collectData();
+            const type = engine.currentDoc.id;
+            // Target name inference
+            const target_name = content.v_name || content.c_name || '?���已�?�냱�벉';
+
+            document.getElementById('btnSave').style.display = 'none';
+            document.getElementById('saveSpinner').style.display = 'flex';
+
+            fetch(API_URL, {
+                method: 'POST',
+                body: JSON.stringify({ action: 'save_issued_doc', type, target_name, content, issuer: content.issuer })
+            })
+                .then(res => res.json())
+                .then(json => {
+                    document.getElementById('btnSave').style.display = 'flex';
+                    document.getElementById('saveSpinner').style.display = 'none';
+                    if (json.result === 'success') {
+                        const docId = json.id;
+                        engine.updatePreview(docId);
+                        loadHistory();
+                        setTimeout(() => window.print(), 500);
+                    } else { alert('?�끇履�: ' + json.message); }
+                })
+                .catch(err => alert(err));
+        }
+
+        window.printDoc = function () { window.print(); }
+
+        window.resetForm = function () {
+            window.isReadOnly = false;
+            document.getElementById('readOnlyBanner').style.display = 'none';
+            document.getElementById('btnSave').style.display = 'flex';
+            document.getElementById('btnPrintOnly').style.display = 'none';
+
+            // Reload current doc fresh
+            engine.loadDocument(engine.currentDoc.id);
+        }
+
+        // History Functions (Legacy adapted)
+        function loadHistory() {
+            const container = document.getElementById('historyList');
+            container.innerHTML = '<div style="padding:20px; text-align:center;"><i class="fas fa-spinner fa-spin"></i> 嚥≪뮆逾� 餓�?..</div>';
+            fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'get_issued_docs' }) })
+                .then(res => res.json())
+                .then(json => {
+                    container.innerHTML = '';
+                    if (!json.list || json.list.length === 0) {
+                        container.innerHTML = '<div class="history-item">獄쏆뮄�닋 ?�똻肉�???�냱�뮸?�뜄�뼄.</div>';
+                        return;
+                    }
+                    json.list.forEach(item => {
+                        const badge = item.type === 'voucher' ? '<span class="badge badge-blue">?�꼶��??/span>' : '<span class="badge badge-green">?類ㅼ뵥??/span>';
+                        const div = document.createElement('div');
+                        div.className = 'history-item';
+                        div.innerHTML = `
+                   <div class="history-info"><h4>${item.target_name} ${badge}</h4><p>${item.issuer}</p></div>
+                   <div class="history-meta"><p>${item.created_at}</p></div>`;
+                        div.onclick = () => loadDetail(item.id);
+                        container.appendChild(div);
+                    });
+                });
+        }
+
+        function loadDetail(id) {
+            fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'get_issued_doc_detail', id }) })
+                .then(res => res.json())
+                .then(json => {
+                    if (json.result === 'success') {
+                        window.isReadOnly = true;
+                        document.getElementById('readOnlyBanner').style.display = 'flex';
+                        document.getElementById('btnSave').style.display = 'none';
+                        document.getElementById('btnPrintOnly').style.display = 'flex';
+
+                        switchMainTab('write');
+                        // Switch tab visual
+                        document.querySelectorAll('.sub-tabs .tab').forEach(t => t.classList.remove('active'));
+                        document.querySelector(`.sub-tabs .tab[data-sub="${json.doc.type}"]`).classList.add('active');
+
+                        engine.loadDocument(json.doc.type).then(() => {
+                            engine.fillForm(JSON.parse(json.doc.content_json));
+                            engine.updatePreview(json.doc.id);
+                        });
+                    }
+                });
+        }
+
+        function adjustPreviewScale() {
+            const container = document.querySelector('.right-panel');
+            const paper = document.querySelector('.preview-container');
+            if (!container || !paper) return;
+            const availableWidth = container.clientWidth - 80;
+            const scale = Math.min(1, availableWidth / 794);
+            paper.style.transform = `scale(${scale})`;
+        }
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <title>사례 종결 보고서 템플릿</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: white;
+            font-family: 'Malgun Gothic', '맑은 고딕', sans-serif;
+        }
+
+        .watermark {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(-45deg);
+            font-size: 50px;
+            color: rgba(0, 0, 0, 0.04);
+            font-weight: 800;
+            white-space: nowrap;
+            pointer-events: none;
+            letter-spacing: 10px;
+            z-index: 0;
+        }
+
+        .a4-container {
+            width: 210mm;
+            min-height: 297mm;
+            padding: 20mm 10mm;
+            margin: 0 auto;
+            background-color: white;
+            box-sizing: border-box;
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 24pt;
+            letter-spacing: 5px;
+            margin-bottom: 20px;
+        }
+
+        .approval-table {
+            float: right;
+            margin-bottom: 20px;
+            border-collapse: collapse;
+            text-align: center;
+        }
+
+        .approval-table th,
+        .approval-table td {
+            border: 1px solid black;
+            width: 80px;
+            font-size: 11pt;
+        }
+
+        .approval-table th {
+            background-color: #f0f0f0;
+            padding: 5px;
+        }
+
+        .approval-table td {
+            height: 60px;
+        }
+
+        .clear {
+            clear: both;
+        }
+
+        .header-info {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-size: 12pt;
+        }
+
+        .header-info span.val-text {
+            font-size: 12pt;
+            display: inline-block;
+            text-align: center;
+            min-height: 20px;
+        }
+
+        .main-table {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: fixed;
+        }
+
+        .main-table th,
+        .main-table td {
+            border: 1px solid black;
+            padding: 8px;
+            font-size: 11pt;
+        }
+
+        .main-table th {
+            background-color: #f0f0f0;
+            width: 12%;
+            white-space: nowrap;
+            text-align: center;
+        }
+
+        .main-table td {
+            width: 80%;
+        }
+
+        .main-table td span.val-text {
+            display: inline-block;
+            text-align: center;
+            min-height: 20px;
+        }
+
+        .main-table .val-textarea {
+            width: 100%;
+            font-size: 11pt;
+            white-space: pre-wrap;
+            min-height: 80px;
+        }
+
+        .checkbox-group {
+            display: inline-block;
+            margin-right: 15px;
+        }
+
+        .row-span {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .row-span>div {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .center-logo {
+            text-align: center;
+            font-size: 16pt;
+            font-weight: bold;
+            margin-top: 50px;
+            letter-spacing: 2px;
+        }
+
+        .signature-box {
+            display: inline-block;
+            width: 200px;
+            text-align: right;
+            margin-top: 30px;
+        }
+
+        /* 인쇄용 CSS */
+        @media print {
+            @page {
+                margin: 0;
+            }
+
+            body {
+                background-color: white;
+            }
+
+            .a4-container {
+                margin: 0;
+                padding: 20mm 10mm;
+                box-shadow: none;
+                width: 100%;
+                height: 100%;
+            }
+
+            .val-text {
+                border-bottom: none !important;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="watermark">제천시정신건강복지센터</div>
+
+    <div class="a4-container">
+        <h1>사례 종결 보고서</h1>
+
+        <table class="approval-table" id="dynamic-approval-table">
+            <tr>
+                <th>담당자</th>
+                <th>주임</th>
+                <th>팀장</th>
+                <th>센터장</th>
+            </tr>
+            <tr>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+        </table>
+        <div class="clear"></div>
+
+        <div class="header-info">
+            <div style="font-weight: bold;">작성일자: <span class="val-text" id="t_date"
+                    style="margin-left: 5px; font-weight: bold;"></span></div>
+            <div style="font-weight: bold;">담당자: <span class="val-text" id="t_manager"
+                    style="margin-left: 5px; font-weight: bold;"></span></div>
+        </div>
+
+        <table class="main-table">
+            <colgroup>
+                <col style="width: 15%;">
+                <col style="width: 15%;">
+                <col style="width: 20%;">
+                <col style="width: 12%;">
+                <col style="width: 38%;">
+            </colgroup>
+            <tr>
+                <th>등록 유형</th>
+                <td colspan="4" style="text-align: center; padding-top: 10px; padding-bottom: 10px;">
+                    <span class="checkbox-group" style="margin: 0 30px;"><span id="t_type_1">☐</span> 만성</span>
+                    <span class="checkbox-group" style="margin: 0 30px;"><span id="t_type_2">☐</span> 자살</span>
+                    <span class="checkbox-group" style="margin: 0 30px;"><span id="t_type_3">☐</span> 아동</span>
+                </td>
+            </tr>
+            <tr>
+                <th style="padding-top: 10px; padding-bottom: 10px;">대상자 성명</th>
+                <td colspan="2" style="border-right: none; padding-top: 10px; padding-bottom: 10px;">
+                    <span class="val-text" id="t_name"></span>
+                </td>
+                <th style="border-left: 1px solid black; padding-top: 10px; padding-bottom: 10px;">성별/연령</th>
+                <td style="padding-top: 10px; padding-bottom: 10px;">
+                    <span class="val-text" id="t_gender"></span> / <span class="val-text" id="t_age"></span>세
+                </td>
+            </tr>
+            <tr>
+                <th>개입기간</th>
+                <td colspan="4">
+                    서비스 기간 총 <span class="val-text" id="t_period_total" style="width: 50px;"></span>개월<br>
+                    <span style="font-size: 10pt; color: #555;">( 시작: <span id="t_period_start"
+                            style="font-weight:bold;"></span> ~ 완료: <span id="t_period_end"
+                            style="font-weight:bold;"></span> )</span>
+                </td>
+            </tr>
+            <tr>
+                <th>담당자<br>의견</th>
+                <td colspan="4">
+                    <div class="val-textarea" id="t_opinion"></div>
+                </td>
+            </tr>
+            <tr>
+                <th rowspan="5">종결유형<br>(택일)</th>
+                <th style="background-color: white;"><span id="t_et_cat_die">☐</span> 사망</th>
+                <td colspan="3">
+                    <span class="checkbox-group"><span id="t_et_disease">☐</span> 질병</span>
+                    <span class="checkbox-group"><span id="t_et_accident">☐</span> 사고</span>
+                    <span class="checkbox-group"><span id="t_et_suicide">☐</span> 자살</span>
+                    <span class="checkbox-group"><span id="t_et_die_other">☐</span> 기타 (<span class="val-text"
+                            id="t_die_other_val"></span>)</span>
+                </td>
+            </tr>
+            <tr>
+                <th style="background-color: white;"><span id="t_et_cat_move">☐</span> 전출</th>
+                <td colspan="3">
+                    <span class="checkbox-group"><span id="t_et_move1">☐</span> 거주지 이전</span>
+                    <span class="checkbox-group"><span id="t_et_move2">☐</span> 기관 연계(타정신건강복지센터)</span>
+                    <span class="checkbox-group"><span id="t_et_move3">☐</span> 타기관 이관</span>
+                </td>
+            </tr>
+            <tr>
+                <th style="background-color: white;"><span id="t_et_cat_fac">☐</span> 시설입소</th>
+                <td colspan="3">
+                    <span class="checkbox-group"><span id="t_et_fac1">☐</span> 정신의료기관</span>
+                    <span class="checkbox-group"><span id="t_et_fac2">☐</span> 기타 (<span class="val-text"
+                            id="t_fac_other_val"></span>)</span>
+                </td>
+            </tr>
+            <tr>
+                <th style="background-color: white;"><span id="t_et_cat_end">☐</span> 종결</th>
+                <td colspan="3">
+                    <span class="checkbox-group"><span id="t_et_end1">☐</span> 협의종결</span>
+                    <span class="checkbox-group"><span id="t_et_end2">☐</span> 부재종결</span>
+                    <span class="checkbox-group"><span id="t_et_end3">☐</span> 기관종결</span>
+                    <span class="checkbox-group"><span id="t_et_end4">☐</span> 본인희망</span>
+                </td>
+            </tr>
+            <tr>
+                <th style="background-color: white;"><span id="t_et_cat_risk">☐</span> 위험감소</th>
+                <td colspan="3">
+                    <span class="checkbox-group"><span id="t_et_risk1">☐</span> 자살위험감소</span>
+                </td>
+            </tr>
+            <tr>
+                <th>종결 평가<br>결과</th>
+                <td colspan="4" style="text-align: center;">
+                    <span class="checkbox-group"><span id="t_res_1">☐</span> 미등록관리(접수상담)</span>
+                    <span class="checkbox-group"><span id="t_res_2">☐</span> 일반관리</span>
+                    <span class="checkbox-group"><span id="t_res_3">☐</span> 종결</span>
+                </td>
+            </tr>
+            <tr>
+                <th style="padding-top: 15px; padding-bottom: 15px;">퇴록 후 거처</th>
+                <td colspan="4"
+                    style="text-align: center; white-space: nowrap; padding-top: 15px; padding-bottom: 15px;">
+                    <span class="checkbox-group"><span id="t_af_1">☐</span> 주거시설</span>
+                    <span class="checkbox-group"><span id="t_af_2">☐</span> 보호자 동거</span>
+                    <span class="checkbox-group"><span id="t_af_3">☐</span> 독립</span>
+                    <span class="checkbox-group"><span id="t_af_4">☐</span> 재입원</span>
+                    <span class="checkbox-group"><span id="t_af_5">☐</span> 기타 (<span class="val-text" id="t_af_other"
+                            style="width: 100px;"></span>)</span>
+                </td>
+            </tr>
+        </table>
+
+        <div class="center-logo">
+            제천시정신건강복지센터
+        </div>
+    </div>
+
+    <script>
+        function setCheckId(ids, conditionId) {
+            ids.forEach(obj => {
+                document.getElementById(obj.id).innerText = (conditionId === obj.val) ? '☑' : '☐';
+            });
+        }
+
+        window.addEventListener('message', function (event) {
+            const data = event.data;
+            if (data.type === 'updatePreview' || data.action === 'updatePreview' || data.action === 'render') {
+                const payload = data.payload || data.data || {};
+
+                document.getElementById('t_date').innerText = payload.v_date || '';
+                document.getElementById('t_manager').innerText = payload.v_manager || '';
+                document.getElementById('t_name').innerText = payload.v_name || '';
+                document.getElementById('t_gender').innerText = payload.v_gender || '';
+                document.getElementById('t_age').innerText = payload.v_age || '';
+
+                document.getElementById('t_period_total').innerText = payload.v_period_total || '';
+                document.getElementById('t_period_start').innerText = payload.v_period_start || '';
+                document.getElementById('t_period_end').innerText = payload.v_period_end || '';
+
+                document.getElementById('t_opinion').innerText = payload.v_opinion || '';
+
+                setCheckId([
+                    { id: 't_type_1', val: '만성' }, { id: 't_type_2', val: '자살' }, { id: 't_type_3', val: '아동' }
+                ], payload.v_type);
+
+                setCheckId([
+                    { id: 't_et_cat_die', val: '사망' }, { id: 't_et_cat_move', val: '전출' }, { id: 't_et_cat_fac', val: '시설입소' },
+                    { id: 't_et_cat_end', val: '종결' }, { id: 't_et_cat_risk', val: '위험감소' }
+                ], payload.v_end_cat);
+
+                setCheckId([
+                    { id: 't_et_disease', val: '질병' }, { id: 't_et_accident', val: '사고' }, { id: 't_et_suicide', val: '자살' }, { id: 't_et_die_other', val: '사망_기타' },
+                    { id: 't_et_move1', val: '거주지 이전' }, { id: 't_et_move2', val: '기관 연계(타정신건강복지센터)' }, { id: 't_et_move3', val: '타기관 이관' },
+                    { id: 't_et_fac1', val: '정신의료기관' }, { id: 't_et_fac2', val: '시설입소_기타' },
+                    { id: 't_et_end1', val: '협의종결' }, { id: 't_et_end2', val: '부재종결' }, { id: 't_et_end3', val: '기관종결' }, { id: 't_et_end4', val: '본인희망' },
+                    { id: 't_et_risk1', val: '자살위험감소' }
+                ], payload.v_end_type);
+                document.getElementById('t_die_other_val').innerText = (payload.v_end_type === '사망_기타') ? (payload.v_end_die_other || payload.v_end_type_other || '') : '';
+                document.getElementById('t_fac_other_val').innerText = (payload.v_end_type === '시설입소_기타') ? (payload.v_end_fac_other || payload.v_end_type_other || '') : '';
+
+                setCheckId([
+                    { id: 't_res_1', val: '미등록관리' }, { id: 't_res_2', val: '일반관리' }, { id: 't_res_3', val: '종결' }
+                ], payload.v_result);
+
+                setCheckId([
+                    { id: 't_af_1', val: '주거시설' }, { id: 't_af_2', val: '보호자 동거' }, { id: 't_af_3', val: '독립' },
+                    { id: 't_af_4', val: '재입원' }, { id: 't_af_5', val: '기타' }
+                ], payload.v_after);
+                document.getElementById('t_af_other').innerText = (payload.v_after === '기타') ? payload.v_after_other : '';
+
+                if (payload.lines && payload.lines.length > 0) {
+                    const table = document.getElementById('dynamic-approval-table');
+                    let thHtml = '<tr><th>담당자</th>';
+                    const createStampHtml = (stampSrc, name) => {
+                        const fallBackName = (name || '').substring(0, 3);
+                        // Check if stampSrc is a valid string and not purely empty or literal 'null'/'undefined'
+                        const hasRealStamp = stampSrc && typeof stampSrc === 'string' && stampSrc.length > 10 && stampSrc !== 'null' && stampSrc !== 'undefined';
+
+                        if (hasRealStamp) {
+                            return `<img src="${stampSrc}" style="max-height: 50px; max-width: 50px; object-fit: contain;" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"/>
+                            <div style="display:none; border: 2px solid #ef4444; color: #ef4444; border-radius: 50%; width: 45px; height: 45px; align-items: center; justify-content: center; font-weight: bold; font-size: 13px; margin: 0 auto; letter-spacing: 1px;">${fallBackName}</div>`;
+                        } else {
+                            return `<div style="border: 2px solid #ef4444; color: #ef4444; border-radius: 50%; width: 45px; height: 45px; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 13px; margin: 0 auto; letter-spacing: 1px;">${fallBackName}</div>`;
+                        }
+                    };
+
+                    let tdHtml = `<tr><td style="height:60px; vertical-align:middle; text-align:center;">${createStampHtml(payload.drafter_stamp, payload.drafter_name)}</td>`;
+
+                    payload.lines.forEach(line => {
+                        const position = line.approver_position || line.approver_name;
+                        thHtml += `<th>${position}</th>`;
+
+                        let stampHtml = '';
+                        if (line.status === 'APPROVED') {
+                            stampHtml = createStampHtml(line.approver_stamp, line.approver_name);
+                        } else if (line.status === 'REJECTED') {
+                            stampHtml = `<div style="color:white; background:#ef4444; border-radius: 4px; padding: 4px 8px; display: inline-block; font-size:12px; font-weight:bold;">반려</div>`;
+                        }
+
+                        tdHtml += `<td style="height:60px; vertical-align:middle; text-align:center;">${stampHtml}</td>`;
+                    });
+                    thHtml += '</tr>';
+                    tdHtml += '</tr>';
+
+                    table.innerHTML = thHtml + tdHtml;
+                }
+
+            } else if (data.action === 'print') {
+                window.print();
+            }
+        });
+    </script>
+</body>
+
+</html>

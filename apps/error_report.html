@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>오류 신고</title>
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8fafc;
+            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            margin: 0;
+            padding: 10px;
+            color: #334155;
+        }
+        .report-wrapper {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        .header-section {
+            margin-bottom: 10px;
+        }
+        .header-section h2 {
+            color: #0f172a;
+            margin: 0 0 4px 0;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 700;
+        }
+        .header-section p {
+            color: #64748b;
+            margin: 0;
+            font-size: 13px;
+            line-height: 1.3;
+        }
+        .card {
+            background: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 1px 2px -1px rgba(0, 0, 0, 0.05);
+            padding: 12px 16px;
+            margin-bottom: 10px;
+            border: 1px solid #e2e8f0;
+        }
+        .section-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            border-bottom: 1px solid #f1f5f9;
+            padding-bottom: 6px;
+        }
+        .section-title i { color: #3b82f6; }
+        
+        .form-row {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 10px;
+        }
+        .form-group {
+            flex: 1;
+            min-width: 200px;
+        }
+        /* When NOT in a row, also tiny margins */
+        .card > .form-group {
+            margin-bottom: 8px;
+        }
+        .card > .form-group:last-child {
+            margin-bottom: 0;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 4px;
+            font-weight: 600;
+            font-size: 12px;
+            color: #475569;
+        }
+        .form-control {
+            width: 100%;
+            padding: 8px 10px;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            font-size: 13px;
+            font-family: inherit;
+            color: #1e293b;
+            background-color: #f8fafc;
+            transition: all 0.2s;
+            box-sizing: border-box;
+        }
+        .form-control:focus {
+            outline: none;
+            border-color: #3b82f6;
+            background-color: #ffffff;
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+        }
+        select.form-control { cursor: pointer; }
+        textarea.form-control {
+            min-height: 120px;
+            resize: vertical;
+            line-height: 1.5;
+        }
+
+        /* Custom Radio Buttons for Urgency */
+        .urgency-group {
+            display: flex;
+            gap: 6px;
+        }
+        .urgency-label {
+            flex: 1;
+            text-align: center;
+            cursor: pointer;
+            position: relative;
+        }
+        .urgency-label input[type="radio"] {
+            position: absolute;
+            opacity: 0;
+            cursor: pointer;
+        }
+        .urgency-pill {
+            display: block;
+            padding: 6px 0;
+            border-radius: 6px;
+            border: 1px solid #e2e8f0;
+            background-color: #f8fafc;
+            font-size: 12px;
+            font-weight: 600;
+            color: #64748b;
+            transition: all 0.2s;
+        }
+        .urgency-label:hover .urgency-pill {
+            background-color: #f1f5f9;
+        }
+        
+        /* Specific Colors for Urgency */
+        .urgency-label input[value="낮음"]:checked + .urgency-pill { border-color: #10b981; background-color: #ecfdf5; color: #047857; }
+        .urgency-label input[value="보통"]:checked + .urgency-pill { border-color: #3b82f6; background-color: #eff6ff; color: #1d4ed8; }
+        .urgency-label input[value="높음"]:checked + .urgency-pill { border-color: #f59e0b; background-color: #fffbeb; color: #b45309; }
+        .urgency-label input[value="긴급"]:checked + .urgency-pill { border-color: #ef4444; background-color: #fef2f2; color: #b91c1c; }
+
+        /* Drag & Drop Zone */
+        .attach-dropzone {
+            border: 2px dashed #cbd5e1;
+            border-radius: 8px;
+            padding: 10px 15px;
+            text-align: center;
+            background-color: #f8fafc;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #64748b;
+        }
+        .attach-dropzone:hover, .attach-dropzone.dragover {
+            border-color: #3b82f6;
+            background-color: #eff6ff;
+            color: #3b82f6;
+        }
+        .attach-dropzone i { font-size: 20px; margin-bottom: 4px; color: inherit; }
+        .attach-dropzone p { margin: 0; font-size: 12px; font-weight: 500; }
+        .attach-dropzone span.sub-text { display: block; font-size: 11px; margin-top: 2px; opacity: 0.7; }
+
+        /* File List */
+        .file-list { margin-top: 6px; display: flex; flex-direction: column; gap: 4px; }
+        .file-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 6px 10px;
+            background: #f1f5f9;
+            border: 1px solid #e2e8f0;
+            border-radius: 4px;
+            font-size: 12px;
+            color: #334155;
+        }
+        .file-item i.fa-file-image { color: #8b5cf6; margin-right: 4px; }
+        .file-item i.fa-file { color: #64748b; margin-right: 4px; }
+        .remove-btn { color: #ef4444; cursor: pointer; font-weight: bold; font-size: 14px; padding: 0 4px; }
+        .remove-btn:hover { color: #dc2626; }
+
+        /* Submit Button */
+        .action-area {
+            text-align: right;
+            margin-top: 5px;
+        }
+        .btn-submit {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 2px 4px -1px rgba(59, 130, 246, 0.4);
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .btn-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 8px -1px rgba(59, 130, 246, 0.5);
+        }
+        .btn-submit:disabled {
+            background: #94a3b8;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        /* Require Star */
+        .req { color: #ef4444; margin-left: 2px; }
+    </style>
+</head>
+<body>
+    <div class="report-wrapper">
+        <div class="header-section">
+            <h2><i class="fas fa-bug" style="color:#ef4444; background: #fef2f2; padding: 8px; border-radius: 12px;"></i> 시스템 오류 신고</h2>
+            <p>시스템 사용 중 겪으신 문제를 상세히 알려주세요.<br>빠르게 확인하고 조치하여 더 나은 환경을 만들겠습니다.</p>
+        </div>
+
+        <div class="card">
+            <div class="section-title"><i class="fas fa-tags"></i> 기본 정보 분류</div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="report-category">오류 유형 <span class="req">*</span></label>
+                    <select id="report-category" class="form-control">
+                        <option value="">어떤 유형의 문제인가요?</option>
+                        <option value="기능 오류">⚡기능 오류 (버튼 안눌림, 페이지 안넘어감 등)</option>
+                        <option value="화면 깨짐">🎨화면 깨짐 (UI 겹침, 레이아웃 이상 등)</option>
+                        <option value="데이터 누락">💾데이터 이상 (저장 안됨, 내용이 다르게 보임 등)</option>
+                        <option value="개선 제안">💡개선 제안 (새로운 기능, 불편사항 개선 등)</option>
+                        <option value="기타">❓기타 시스템 문의</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>문제 긴급도 <span class="req">*</span></label>
+                    <div class="urgency-group">
+                        <label class="urgency-label">
+                            <input type="radio" name="urgency" value="낮음">
+                            <span class="urgency-pill">여유</span>
+                        </label>
+                        <label class="urgency-label">
+                            <input type="radio" name="urgency" value="보통" checked>
+                            <span class="urgency-pill">보통</span>
+                        </label>
+                        <label class="urgency-label">
+                            <input type="radio" name="urgency" value="높음">
+                            <span class="urgency-pill">높음</span>
+                        </label>
+                        <label class="urgency-label">
+                            <input type="radio" name="urgency" value="긴급">
+                            <span class="urgency-pill">긴급🚨</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="section-title"><i class="fas fa-pen-alt"></i> 상세 내용 작성</div>
+            <div class="form-group" style="margin-bottom: 20px;">
+                <label for="report-title">제목 <span class="req">*</span></label>
+                <input type="text" id="report-title" class="form-control" placeholder="발생한 문제의 핵심을 짧게 요약해 주세요. (예: 결재 문서 상신 버튼 클릭 시 에러 발생)">
+            </div>
+
+            <div class="form-group">
+                <label for="report-content">상세 설명 <span class="req">*</span></label>
+                <textarea id="report-content" class="form-control" placeholder="아래 양식을 참고하여 적어주시면 빠른 해결에 큰 도움이 됩니다.
+
+1. 문제 발생 메뉴 : (예: 전자결재 > 기안하기)
+2. 재현 방법 : (어떤 순서로 조작했을 때 오류가 발생했나요?)
+3. 발견하신 증상 : (화면에 나타난 에러 메시지나 잘못된 결과)"></textarea>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="section-title"><i class="fas fa-image"></i> 참고 자료 첨부 (선택)</div>
+            <div class="form-group" style="margin-bottom: 0;">
+                <div class="attach-dropzone" id="attach-dropzone">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                    <p>이곳을 클릭하거나 캡처 이미지 파일을 드래그 해보세요.</p>
+                    <span class="sub-text">지원 형식: 이미지 (JPG, PNG), 문서 (PDF), 압축파일 (ZIP) / 최대 20MB</span>
+                    <input type="file" id="report-files" multiple style="display:none;" accept="image/*, .pdf, .txt, .zip">
+                </div>
+                <div id="file-list" class="file-list"></div>
+            </div>
+        </div>
+
+        <div class="action-area">
+            <button class="btn-submit" id="btn-submit" onclick="submitErrorReport()">
+                <i class="fas fa-paper-plane"></i> 신고 접수 완료
+            </button>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="../js/config.js"></script>
+    <script src="../js/common.js"></script>
+    <script>
+        // Ensure Modal works inside iframe
+        const ParentModal = window.parent.Modal || {
+            alert: (msg) => alert(msg),
+            confirm: (msg) => confirm(msg)
+        };
+
+        let selectedFiles = [];
+
+        // --- Drag & drop logic ---
+        const dropzone = document.getElementById('attach-dropzone');
+        const fileInput = document.getElementById('report-files');
+        const fileListDiv = document.getElementById('file-list');
+
+        dropzone.addEventListener('click', () => fileInput.click());
+
+        dropzone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropzone.classList.add('dragover');
+        });
+
+        dropzone.addEventListener('dragleave', (e) => {
+            e.preventDefault();
+            dropzone.classList.remove('dragover');
+        });
+
+        dropzone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropzone.classList.remove('dragover');
+            handleFiles(e.dataTransfer.files);
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            handleFiles(e.target.files);
+        });
+
+        function handleFiles(files) {
+            for (let i = 0; i < files.length; i++) {
+                // simple max count / size constraints if needed
+                selectedFiles.push(files[i]);
+            }
+            renderFiles();
+            fileInput.value = ''; // reset
+        }
+
+        function removeFile(index, event) {
+            event.stopPropagation();
+            selectedFiles.splice(index, 1);
+            renderFiles();
+        }
+
+        function renderFiles() {
+            if (selectedFiles.length === 0) {
+                fileListDiv.innerHTML = '';
+                return;
+            }
+            let html = '';
+            selectedFiles.forEach((f, i) => {
+                const sizeKB = (f.size / 1024).toFixed(1);
+                html += `<div class="file-item">
+                            <span><i class="fas fa-file"></i> ${f.name} (${sizeKB} KB)</span>
+                            <span class="remove-btn" onclick="removeFile(${i}, event)">&times;</span>
+                         </div>`;
+            });
+            fileListDiv.innerHTML = html;
+        }
+
+        // --- Submit Logic ---
+        async function submitErrorReport() {
+            const categoryObj = document.getElementById('report-category');
+            const category = categoryObj.value;
+            const urgencyObj = document.querySelector('input[name="urgency"]:checked');
+            const urgency = urgencyObj ? urgencyObj.value : '보통';
+            const title = document.getElementById('report-title').value.trim();
+            const content = document.getElementById('report-content').value.trim();
+
+            if (!category) {
+                ParentModal.alert('오류 유형을 선택해 주세요.');
+                categoryObj.focus();
+                return;
+            }
+            if (!title) {
+                ParentModal.alert('제목을 입력해 주세요.');
+                document.getElementById('report-title').focus();
+                return;
+            }
+            if (!content) {
+                ParentModal.alert('상세 내용을 입력해 주세요.');
+                document.getElementById('report-content').focus();
+                return;
+            }
+
+            const userStr = sessionStorage.getItem('jc_user');
+            if (!userStr) {
+                ParentModal.alert('로그인 정보가 없습니다. 다시 로그인해 주세요.');
+                return;
+            }
+            const user = JSON.parse(userStr);
+            const apiURL = typeof window.parent.BASE_URL !== 'undefined' ? window.parent.BASE_URL : '/api/auth';
+            const btn = document.getElementById('btn-submit');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> 접수 중...';
+
+            try {
+                let attachmentPaths = [];
+                // 1. Upload files first
+                if (selectedFiles.length > 0) {
+                    const fd = new FormData();
+                    selectedFiles.forEach(f => fd.append('attachments', f));
+                    
+                    // URL needs to point to real server upload endpoint
+                    let uploadUrl = apiURL.replace('/api/auth', '/api/upload_error_report');
+                    if(apiURL === '/api/auth') uploadUrl = '/api/upload_error_report';
+
+                    const uRes = await fetch(uploadUrl, {
+                        method: 'POST',
+                        body: fd
+                    });
+                    const uJson = await uRes.json();
+                    if (uJson.result === 'success') {
+                        attachmentPaths = uJson.attachments; // eg ["error_reports/123_abc.png"]
+                    } else {
+                        throw new Error(uJson.message || '파일 업로드 실패');
+                    }
+                }
+
+                // 2. Submit data
+                const response = await fetch(apiURL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'save_error_report',
+                        author_id: user.id,
+                        author_name: user.name,
+                        category: category,
+                        urgency: urgency,
+                        title: title,
+                        content: content,
+                        attachments: attachmentPaths
+                    })
+                });
+
+                const result = await response.json();
+                if (result.result === 'success') {
+                    ParentModal.alert('오류 신고가 성공적으로 접수되었습니다. 최대한 빠르게 조치하겠습니다.');
+                    // Reset form
+                    document.getElementById('report-category').value = '';
+                    document.getElementById('report-title').value = '';
+                    document.getElementById('report-content').value = '';
+                    selectedFiles = [];
+                    renderFiles();
+                } else {
+                    ParentModal.alert('오류 신고 접수에 실패했습니다: ' + (result.message || '알 수 없는 오류'));
+                }
+            } catch (err) {
+                console.error(err);
+                ParentModal.alert('서버 통신 중 오류가 발생했습니다: ' + err.message);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-paper-plane"></i> 신고 접수하기';
+            }
+        }
+    </script>
+</body>
+</html>

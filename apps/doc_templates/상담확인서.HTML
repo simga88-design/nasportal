@@ -1,0 +1,597 @@
+﻿<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>?곷떞?뺤씤???먮룞 ?앹꽦湲?(V14 - Period Datepicker)</title>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet" />
+    <style>
+        /* 湲곕낯 ?ㅽ???... */
+        :root {
+            --bg-color: #f7f9fc;
+            --text-color: #333;
+            --panel-bg-color: white;
+            --border-color: #e9ecef;
+            --input-border-color: #dee2e6;
+            --header-color: #364fc7;
+            --button-bg: #4c6ef5;
+            --button-text: white;
+            --danger-button-bg: #f03e3e;
+            --point-color: #4c6ef5;
+            --sub-text-color: #868e96;
+        }
+
+        body {
+            margin: 0;
+            background: var(--bg-color);
+            font-family: 'Noto Sans KR', sans-serif;
+            color: var(--text-color);
+        }
+
+        .container {
+            display: flex;
+            align-items: flex-start;
+            gap: 20px;
+            max-width: 1800px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .panel {
+            background: var(--panel-bg-color);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, .05);
+            overflow: hidden;
+        }
+
+        /* Input ?⑤꼸 ?ㅽ???... */
+        .input-panel {
+            flex: 0 0 520px;
+            position: sticky;
+            top: 20px;
+        }
+
+        .panel-header {
+            padding: 16px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+            flex-shrink: 0;
+        }
+
+        .panel-header h2 {
+            font-size: 18px;
+            margin: 0;
+            font-weight: 700;
+        }
+
+        .panel-body {
+            padding: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 500;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .form-group input[type="text"],
+        .form-group input[type="date"],
+        .form-group textarea {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 12px 16px;
+            border: 1px solid var(--input-border-color);
+            border-radius: 10px;
+            font-size: 16px;
+            background-color: var(--panel-bg-color);
+            color: var(--text-color);
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 160px;
+        }
+
+        .inline-group {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        /* [?섏젙] align-items: center 異붽? */
+        .inline-group .form-group {
+            flex: 1;
+        }
+
+        /* Output ?⑤꼸 ?ㅽ???... */
+        .output-panel {
+            flex: 1 1 auto;
+            min-width: 0;
+        }
+
+        .output-body {
+            padding: 24px;
+            background: var(--bg-color);
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            overflow: hidden;
+        }
+
+        #printable-area {
+            background: #fff;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, .08);
+            position: relative;
+            border-radius: 5px;
+        }
+
+        /* A4 ?⑹? */
+        .paper {
+            padding: 1.8cm;
+            font-family: '留묒? 怨좊뵓', 'Malgun Gothic', sans-serif;
+            font-size: 11pt;
+            line-height: 1.6;
+            box-sizing: border-box;
+            color: #000;
+            width: 21cm;
+            height: 29.7cm;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .title {
+            text-align: center;
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 25px;
+            letter-spacing: 8px;
+            color: #111;
+        }
+
+        /* '?낅┰ ?뚯씠釉? 援ъ“ CSS */
+        .doc-table-group {
+            border-top: 1px solid #000;
+            border-bottom: 1px solid #000;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+        }
+
+        .doc-table-row {
+            width: 100%;
+            border-collapse: collapse;
+            border-spacing: 0;
+        }
+
+        .doc-table-row td {
+            border: 1px solid #000;
+            padding: 10px;
+            vertical-align: top;
+            line-height: 1.6;
+            color: #000;
+        }
+
+        .doc-table-group .doc-table-row+.doc-table-row td {
+            border-top: 0;
+        }
+
+        .doc-table-row .label {
+            background: #D9D9D9;
+            font-weight: 700;
+            text-align: center;
+            vertical-align: middle;
+        }
+
+        .content-table-row {
+            flex-grow: 1;
+            height: 100%;
+        }
+
+        .content-cell {
+            height: 100%;
+            vertical-align: top !important;
+            white-space: pre-wrap;
+        }
+
+        /* 洹몃━??1: Table 3 (?몄쟻?ы빆) */
+        .complex-grid-col-1 {
+            width: 110px;
+        }
+
+        .complex-grid-col-2 {
+            width: 100px;
+        }
+
+        .complex-grid-col-3 {
+            width: auto;
+        }
+
+        .complex-grid-col-4 {
+            width: 80px;
+        }
+
+        .complex-grid-col-5 {
+            width: 160px;
+        }
+
+        /* 洹몃━??2: ?⑥닚 2??*/
+        .simple-grid-col-1 {
+            width: 110px;
+        }
+
+        .simple-grid-col-2 {
+            width: auto;
+        }
+
+        /* 洹몃━??3: Table 6 (湲곌?紐? */
+        .org-grid-col-1 {
+            width: 110px;
+        }
+
+        .org-grid-col-2 {
+            width: auto;
+        }
+
+        .org-grid-col-3 {
+            width: 55px;
+        }
+
+        .org-grid-col-4 {
+            width: 135px;
+        }
+
+        .address-cell {
+            min-height: 50px;
+            vertical-align: top !important;
+        }
+
+        .org-cell {
+            font-size: 14px;
+            line-height: 1.8;
+            padding: 15px;
+            vertical-align: middle;
+            text-align: center;
+        }
+
+        .org-cell span {
+            font-weight: bold;
+        }
+
+        /* Footer ?ㅽ???*/
+        .date-signature {
+            margin-top: 30px;
+            font-size: 13pt;
+            text-align: center;
+            font-weight: 500;
+        }
+
+        .chief {
+            font-size: 30px;
+            font-weight: 700;
+            margin-top: 40px;
+            margin-bottom: 0;
+            text-align: center;
+        }
+
+        .confirmation-text {
+            text-align: center;
+            font-size: 13pt;
+            margin-top: 10px;
+            margin-bottom: 0;
+        }
+
+        .logo-footer {
+            text-align: center;
+            padding-top: 10px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="panel input-panel">
+            <div class="panel-header">
+                <h2>?곷떞?뺤씤???뺣낫 ?낅젰</h2>
+            </div>
+            <div class="panel-body">
+                <div class="form-group">
+                    <label>?뿎截??곷떞 湲곌컙</label>
+                    <div class="inline-group">
+                        <input type="date" id="period_start" style="flex: 1;">
+                        <span style="font-size: 18px; font-weight: 500; padding: 0 5px;">~</span>
+                        <input type="date" id="period_end" style="flex: 1;">
+                    </div>
+                </div>
+                <div class="form-group"><label for="type">?뮠 ?곷떞 ?뺥깭</label><input type="text" id="type"
+                        placeholder="?? ?댁냼?곷떞 (珥?5??" /></div>
+                <hr style="border: 0; border-top: 1px solid var(--border-color); margin: 20px 0;">
+                <div class="form-group"><label for="name">?뫀 ?대쫫</label><input type="text" id="name"
+                        placeholder="??곸옄 ?깅챸" /></div>
+                <div class="form-group"><label for="contact">?뱸 ?곕씫泥?/label><input type="text" id="contact"
+                        placeholder="?? 010-1234-5678" /></div>
+                <div class="form-group"><label for="address">?룧 二쇱냼</label><textarea id="address"
+                        style="min-height: 80px;" placeholder="??곸옄 二쇱냼"></textarea></div>
+                <hr style="border: 0; border-top: 1px solid var(--border-color); margin: 20px 0;">
+                <div class="form-group"><label for="content">?뱷 ?곷떞 ?댁슜</label><textarea id="content"
+                        placeholder="??곸옄??二쇳샇??臾몄젣 諛??곷떞 ?댁슜???묒꽦?⑸땲??"></textarea></div>
+                <div class="form-group"><label for="purpose">?㎛ ?쒖텧 ?⑸룄</label><input type="text" id="purpose"
+                        value="湲곌? ?쒖텧?? /></div>
+                <div class="form-group"><label for="issueDate">?뿎截?諛쒓툒??/label><input type="date" id="issueDate" /></div>
+                <hr style="border: 0; border-top: 1px solid var(--border-color); margin: 20px 0;">
+                <div class="inline-group">
+                    <div class="form-group"><label for="staffTitle">?쭛?랅윊??대떦??吏곸콉</label><input type="text"
+                            id="staffTitle" value="二쇱엫" /></div>
+                    <div class="form-group"><label for="staffName">?쭛?랅윊??대떦???깅챸</label><input type="text" id="staffName"
+                            value="?ш퇋?? /></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="panel output-panel">
+            <div class="output-body">
+                <div id="printable-area">
+                    <div class="paper">
+                        <h1 class="title">??????????/h1>
+
+                        <div class="doc-table-group">
+                            <table class="doc-table-row">
+                                <colgroup>
+                                    <col class="simple-grid-col-1">
+                                    <col class="simple-grid-col-2">
+                                </colgroup>
+                                <tbody>
+                                    <tr>
+                                        <td class="label">????湲?媛?/td>
+                                        <td id="fld_period" style="vertical-align: middle; text-align: center;"></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <table class="doc-table-row">
+                                <colgroup>
+                                    <col class="simple-grid-col-1">
+                                    <col class="simple-grid-col-2">
+                                </colgroup>
+                                <tbody>
+                                    <tr>
+                                        <td class="label">????????/td>
+                                        <td id="fld_type" style="vertical-align: middle;"></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <table class="doc-table-row">
+                                <colgroup>
+                                    <col class="complex-grid-col-1">
+                                    <col class="complex-grid-col-2">
+                                    <col class="complex-grid-col-3">
+                                    <col class="complex-grid-col-4">
+                                    <col class="complex-grid-col-5">
+                                </colgroup>
+                                <tbody>
+                                    <tr>
+                                        <td class="label" rowspan="2">????????/td>
+                                        <td class="label" style="vertical-align: middle;">??由?/td>
+                                        <td id="fld_name" style="vertical-align: middle;"></td>
+                                        <td class="label" style="vertical-align: middle;">?곕씫泥?/td>
+                                        <td id="fld_contact" style="vertical-align: middle;"></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="label">二???/td>
+                                        <td colspan="3" class="address-cell" id="fld_address"></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <table class="doc-table-row content-table-row">
+                                <colgroup>
+                                    <col class="simple-grid-col-1">
+                                    <col class="simple-grid-col-2">
+                                </colgroup>
+                                <tbody>
+                                    <tr>
+                                        <td class="label">????????/td>
+                                        <td id="fld_content" class="content-cell"></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <table class="doc-table-row">
+                                <colgroup>
+                                    <col class="simple-grid-col-1">
+                                    <col class="simple-grid-col-2">
+                                </colgroup>
+                                <tbody>
+                                    <tr>
+                                        <td class="label">??異?????/td>
+                                        <td id="fld_purpose" style="vertical-align: middle;"></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <table class="doc-table-row">
+                                <colgroup>
+                                    <col class="org-grid-col-1">
+                                    <col class="org-grid-col-2">
+                                    <col class="org-grid-col-3">
+                                    <col class="org-grid-col-4">
+                                </colgroup>
+                                <tbody>
+                                    <tr>
+                                        <td class="label">湲?愿 紐?/td>
+                                        <td class="org-cell">
+                                            <span>?쒖쿇?쒖젙?좉굔媛뺣났吏?쇳꽣</span><br>
+                                            (異⑹껌遺곷룄 ?쒖쿇???섎┝?濡?242 ?쒖쿇?쒕낫嫄댁냼 3痢?
+                                        </td>
+                                        <td class="label">?꾪솕</td>
+                                        <td class="org-cell" style="font-weight: 500;">
+                                            043)646-3074~5
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+
+                            <table class="doc-table-row">
+                                <colgroup>
+                                    <col class="simple-grid-col-1">
+                                    <col class="simple-grid-col-2">
+                                </colgroup>
+                                <tbody>
+                                    <tr>
+                                        <td class="label">??????/td>
+                                        <td style="text-align: center; vertical-align: middle;">
+                                            吏곸콉: <span id="fld_staffTitle"
+                                                style="display: inline-block; min-width: 100px;"></span> &nbsp;&nbsp;
+                                            ?깅챸: <span id="fld_staffName"
+                                                style="display: inline-block; min-width: 100px;"></span> &nbsp;&nbsp;(??
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+
+                            <table class="doc-table-row">
+                                <colgroup>
+                                    <col class="simple-grid-col-1">
+                                    <col class="simple-grid-col-2">
+                                </colgroup>
+                                <tbody>
+                                    <tr>
+                                        <td colspan="2"
+                                            style="padding: 20px 40px; vertical-align: top; border-bottom:0; border-top:0; text-align: center;">
+
+                                            <p class="confirmation-text">
+                                                ?꾩? 媛숈씠 ?곷떞 ?ъ떎???뺤씤?섏뿬 ?쒕┰?덈떎.
+                                            </p>
+                                            <p class="date-signature" id="fld_issueDateText" style="margin-top: 30px;">
+                                            </p>
+                                            <p class="chief" style="margin-top: 40px;">?쒖쿇?쒖젙?좉굔媛뺣났吏?쇳꽣??/p>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+
+                        </div>
+                        <div class="logo-footer">
+                            <img src="濡쒓퀬.PNG" alt="?쒖쿇?쒖젙?좉굔媛뺣났吏?쇳꽣 濡쒓퀬" style="width: 200px;">
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // [?섏젙] inputIds 紐⑸줉 蹂寃?(period ??젣, period_start/end 異붽?)
+        const inputIds = [
+            'period_start', 'period_end', 'type', 'name', 'contact', 'address',
+            'content', 'purpose', 'issueDate', 'staffTitle', 'staffName'
+        ];
+
+        // [?섏젙] simpleFieldMappings?먯꽌 period ??젣
+        const simpleFieldMappings = {
+            'type': 'fld_type',
+            'name': 'fld_name',
+            'contact': 'fld_contact',
+            'purpose': 'fld_purpose',
+            'staffTitle': 'fld_staffTitle',
+            'staffName': 'fld_staffName'
+        };
+
+        // 諛쒓툒???щ㎎ ?⑥닔 (YYYY?? MM?? DD?? - 湲곗〈 ?⑥닔
+        function formatDate(iso) {
+            if (!iso) { return '____??nbsp;&nbsp;&nbsp;____??nbsp;&nbsp;&nbsp;____??; }
+            const d = new Date(iso);
+            if (isNaN(d.getTime())) { return '____??nbsp;&nbsp;&nbsp;____??nbsp;&nbsp;&nbsp;____??; }
+            const offset = d.getTimezoneOffset() * 60000;
+            const correctedDate = new Date(d.getTime() + offset);
+            return `${correctedDate.getFullYear()}??nbsp;&nbsp;&nbsp;${correctedDate.getMonth() + 1}??nbsp;&nbsp;&nbsp;${correctedDate.getDate()}??;
+        }
+
+        // [?좎꽕] ?끸쁾???곷떞 湲곌컙???좎쭨 ?щ㎎ ?⑥닔 (YYYY??M??D?? ?끸쁾??
+        function formatPeriodDate(iso) {
+            if (!iso) { return '____??___??___??; } // ?쇰컲 怨듬갚 ?ъ슜
+            const d = new Date(iso);
+            if (isNaN(d.getTime())) { return '____??___??___??; }
+            const offset = d.getTimezoneOffset() * 60000;
+            const correctedDate = new Date(d.getTime() + offset);
+            return `${correctedDate.getFullYear()}??${correctedDate.getMonth() + 1}??${correctedDate.getDate()}??; // ?쇰컲 怨듬갚 ?ъ슜
+        }
+
+
+        // [?섏젙] updateOutput ?⑥닔 ?섏젙
+        function updateOutput() {
+            // 1. ?⑥닚 留ㅽ븨 ?ㅽ뻾
+            for (const [inputId, outputId] of Object.entries(simpleFieldMappings)) {
+                const el = document.getElementById(inputId);
+                const fld = document.getElementById(outputId);
+                if (el && fld) { fld.innerText = el.value; }
+            }
+
+            // 2. ?뱀닔 ?몃뱾??(湲곗〈)
+            const addressVal = document.getElementById('address').value;
+            document.getElementById('fld_address').innerHTML = addressVal.replace(/\n/g, '<br>');
+
+            const contentVal = document.getElementById('content').value;
+            document.getElementById('fld_content').innerHTML = contentVal.replace(/\n/g, '<br>');
+
+            const dateVal = document.getElementById('issueDate').value;
+            document.getElementById('fld_issueDateText').innerHTML = formatDate(dateVal);
+
+            // 3. [?좎꽕] ?끸쁾???곷떞 湲곌컙 (?좎쭨 2媛?議고빀) ?몃뱾???끸쁾??
+            const startDate = formatPeriodDate(document.getElementById('period_start').value);
+            const endDate = formatPeriodDate(document.getElementById('period_end').value);
+            document.getElementById('fld_period').innerHTML = `${startDate} ~ ${endDate}`;
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            inputIds.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) { el.addEventListener('input', updateOutput); }
+            });
+            // 諛쒓툒?쇱? ?ㅻ뒛 ?좎쭨濡??먮룞 ?명똿
+            document.getElementById('issueDate').valueAsDate = new Date();
+            // ?곷떞 湲곌컙 ?쒖옉?쇰룄 ?ㅻ뒛 ?좎쭨濡??먮룞 ?명똿 (?몄쓽 湲곕뒫)
+            document.getElementById('period_start').valueAsDate = new Date();
+            updateOutput();
+        });
+        /**
+ * [?몄뇙??理쒖쥌 HTML 以鍮??⑥닔]
+ * 遺紐?李??듯빀臾몄꽌)?먯꽌 ?몄뇙 踰꾪듉???꾨Ⅴ硫????⑥닔瑜??몄텧?⑸땲??
+ * ???⑥닔???꾩옱 臾몄꽌?먯꽌 ?몄뇙?섏뼱????'.paper' ?붿냼??
+ * 理쒖쥌 HTML 肄붾뱶瑜?臾몄옄?대줈 諛섑솚?섎뒗 ??븷???⑸땲??
+ */
+        function preparePrintHTML() {
+            // 1. (?좏깮?곸씠吏留?沅뚯옣) ?꾩옱 ?낅젰??紐⑤뱺 ?댁슜??HTML??媛뺤젣濡?諛섏쁺?⑸땲??
+            //    留뚯빟 'syncDOMWithState' 媛숈? ?⑥닔媛 ?덈떎硫??ш린???몄텧?댁＜?몄슂.
+            if (typeof syncDOMWithState === 'function') {
+                syncDOMWithState();
+            }
+
+            // 2. ?몄뇙??紐⑤뱺 '.paper' ?붿냼瑜?李얠뒿?덈떎. (臾몄꽌媛 ?щ윭 ?섏씠吏?????덉쑝誘濡?
+            const papers = document.querySelectorAll('.paper');
+            if (!papers.length) {
+                console.error("?몄뇙??.paper ?붿냼瑜?李얠쓣 ???놁뒿?덈떎.");
+                return ''; // ?몄뇙???댁슜???놁쑝硫?鍮?臾몄옄??諛섑솚
+            }
+
+            // 3. 李얠? 紐⑤뱺 '.paper' ?붿냼??HTML???섎굹??臾몄옄?대줈 ?⑹묩?덈떎.
+            let combinedHTML = '';
+            papers.forEach(p => {
+                combinedHTML += p.outerHTML;
+            });
+
+            // 4. ?⑹퀜吏?理쒖쥌 HTML 臾몄옄?댁쓣 遺紐?李쎌쑝濡??꾨떖?⑸땲??
+            return combinedHTML;
+        }
+    </script>
+</body>
+
+</html>

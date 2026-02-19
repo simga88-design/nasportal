@@ -1,0 +1,492 @@
+﻿<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>의뢰회신서 폼</title>
+    <link rel="stylesheet" as="style" crossorigin
+        href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.8/dist/web/static/pretendard.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+    <style>
+        :root {
+            --primary: #2563eb;
+            --border: #e2e8f0;
+            --text: #334155;
+            --text-muted: #64748b;
+        }
+
+        body {
+            font-family: 'Pretendard', sans-serif;
+            margin: 0;
+            padding: 0;
+            color: var(--text);
+            font-size: 14px;
+            background: transparent;
+        }
+
+        .form-group {
+            margin-bottom: 8px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 4px;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 6px 8px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 12px;
+            transition: border-color 0.2s;
+            box-sizing: border-box;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        textarea.form-control {
+            resize: vertical;
+            min-height: 50px;
+        }
+
+        .flex-row {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .flex-row>div {
+            flex: 1;
+        }
+
+        .section-header {
+            display: block;
+            font-weight: 700;
+            font-size: 14px;
+            color: var(--primary);
+            margin: 15px 0 10px 0;
+            padding-bottom: 4px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .section-header:first-of-type {
+            margin-top: 0;
+        }
+
+        .checkbox-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .checkbox-group label {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 13px;
+            font-weight: normal;
+            margin: 0;
+            cursor: pointer;
+            color: var(--text);
+        }
+    </style>
+</head>
+
+<body>
+    <div id="form-content" style="padding: 15px 20px 30px;">
+
+        <span class="section-header">1. 기본 정보</span>
+        <div class="form-group flex-row">
+            <div>
+                <label class="form-label">접수일자</label>
+                <input type="date" id="receptionDate" class="form-control">
+            </div>
+            <div>
+                <label class="form-label">회신일자</label>
+                <input type="date" id="replyDate" class="form-control">
+            </div>
+        </div>
+        <div class="form-group flex-row">
+            <div>
+                <label class="form-label">회신공문번호</label>
+                <div style="display: flex; gap: 5px;">
+                    <input type="text" id="docNumber" class="form-control" placeholder="발급 전" readonly>
+                    <button type="button" onclick="requestDocNumber()"
+                        style="padding: 6px 12px; font-size: 11px; background: #f59e0b; color: #fff; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; white-space: nowrap;">제정공발급</button>
+                </div>
+            </div>
+            <div>
+                <label class="form-label">담당자성명</label>
+                <input type="text" id="staffName" class="form-control" placeholder="홍길동">
+            </div>
+        </div>
+
+        <span class="section-header">2. 대상자 정보</span>
+        <div class="form-group flex-row">
+            <div style="flex:2;">
+                <label class="form-label">성명</label>
+                <input type="text" id="clientName" class="form-control">
+            </div>
+            <div style="flex:2;">
+                <label class="form-label">생년월일(6자리)</label>
+                <input type="text" id="birth" class="form-control" placeholder="900101">
+            </div>
+            <div style="flex:1;">
+                <label class="form-label">성별</label>
+                <select id="gender" class="form-control">
+                    <option>남성</option>
+                    <option>여성</option>
+                </select>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="form-label">주소</label>
+            <input type="text" id="address" class="form-control">
+        </div>
+        <div class="form-group">
+            <label class="form-label">연락처</label>
+            <input type="text" id="contact" class="form-control">
+        </div>
+
+        <span class="section-header">3. 기관 정보</span>
+        <div class="form-group flex-row">
+            <div>
+                <label class="form-label">기관구분</label>
+                <select id="agencyType" class="form-control">
+                    <option>행정기관</option>
+                    <option>의료기관</option>
+                    <option>정신보건기관</option>
+                    <option>지역사회기관</option>
+                </select>
+            </div>
+            <div>
+                <label class="form-label">의뢰 기관명(수신처)</label>
+                <input type="text" id="agencyDetail" class="form-control" placeholder="예: OO병원">
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="form-label">의뢰기관 담당자</label>
+            <input type="text" id="agencyContact" class="form-control">
+        </div>
+
+        <span class="section-header">4. 의뢰 및 결과</span>
+        <div class="form-group flex-row">
+            <div>
+                <label class="form-label">의뢰구분 (목적)</label>
+                <select id="requestType" class="form-control">
+                    <option>심리검사</option>
+                    <option>프로그램</option>
+                    <option>위기(응급)개입</option>
+                    <option>병의원연계</option>
+                    <option>상담 및 사례관리</option>
+                    <option>기타</option>
+                </select>
+            </div>
+            <div style="flex:2;">
+                <label class="form-label">사유 (문서상)</label>
+                <input type="text" id="requestReason" class="form-control" placeholder="구체적 사유">
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">▶ 의뢰과정</label>
+            <textarea id="processContent" class="form-control">2026.00.00. 의뢰 접수됨</textarea>
+        </div>
+        <div class="form-group">
+            <label class="form-label">▶ 상담내용</label>
+            <textarea id="counselingContent" class="form-control">초기상담 및 평가 진행함</textarea>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">▶ 사후 관리 (조치결과)</label>
+            <div class="checkbox-group">
+                <label><input type="checkbox" name="actionResult" value="1.지속상담"> 1.지속상담</label>
+                <label><input type="checkbox" name="actionResult" value="2.치료비지원"> 2.치료비지원</label>
+                <label><input type="checkbox" name="actionResult" value="3.서비스 거부"> 3.서비스 거부</label>
+                <label><input type="checkbox" name="actionResult" value="4.기관연계"> 4.기관연계</label>
+                <label><input type="checkbox" name="actionResult" value="5.행정지원"> 5.행정지원</label>
+                <label><input type="checkbox" name="actionResult" value="6.기타"> 6.기타</label>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">사후 관리 상세내용</label>
+            <textarea id="futurePlan" class="form-control">본 센터 등록 후 사례관리 서비스 제공 예정임</textarea>
+        </div>
+
+        <div class="form-group flex-row">
+            <div>
+                <label class="form-label">제공서비스 방법</label>
+                <select id="serviceMethod" class="form-control">
+                    <option>1.방문</option>
+                    <option>2.전화</option>
+                    <option>3.내소</option>
+                    <option>4.기타</option>
+                </select>
+            </div>
+            <div>
+                <label class="form-label">진행상황</label>
+                <input type="text" id="progressStatus" class="form-control" value="종결 / 등록 / 연계">
+            </div>
+        </div>
+
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+    <script>
+        const API_URL = `${(typeof window !== 'undefined' ? window.location.origin : 'http://localhost')}/api/auth`;
+
+        window.onload = function () {
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('replyDate').value = today;
+            document.getElementById('receptionDate').value = today;
+            setTimeout(updatePreview, 100);
+        };
+
+        const inputIds = [
+            'docNumber', 'receptionDate', 'replyDate', 'staffName',
+            'clientName', 'birth', 'gender', 'address', 'contact',
+            'agencyType', 'agencyDetail', 'agencyContact',
+            'requestType', 'requestReason',
+            'processContent', 'counselingContent',
+            'futurePlan', 'serviceMethod', 'progressStatus'
+        ];
+
+        function updatePreview() {
+            const data = {};
+            inputIds.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) data[id] = el.value;
+            });
+
+            data.actionResult = Array.from(document.querySelectorAll('input[name="actionResult"]:checked')).map(el => el.value);
+
+            window.parent.postMessage({ type: 'updatePreview', payload: data }, '*');
+        }
+
+        document.querySelectorAll('input, select, textarea').forEach(el => {
+            el.addEventListener('input', () => {
+                if (window.updateTimeout) clearTimeout(window.updateTimeout);
+                window.updateTimeout = setTimeout(updatePreview, 300);
+            });
+            el.addEventListener('change', () => {
+                if (window.updateTimeout) clearTimeout(window.updateTimeout);
+                window.updateTimeout = setTimeout(updatePreview, 300);
+            });
+        });
+
+        function requestDocNumber() {
+            window.parent.postMessage({
+                type: 'requestDocNumber',
+                formType: 'reply_letter',
+                clientName: document.getElementById('clientName').value,
+                agencyDetail: document.getElementById('agencyDetail').value
+            }, '*');
+        }
+
+        let caseParams = null;
+
+        window.addEventListener('message', function (event) {
+            if (event.data.action === 'save') {
+                saveData(event.data.commonData);
+            } else if (event.data.action === 'loadDoc') {
+                const doc = event.data.data;
+                const content = doc.content || {};
+
+                inputIds.forEach(id => {
+                    if (content[id] !== undefined) {
+                        const el = document.getElementById(id);
+                        if (el) {
+                            el.value = content[id];
+                            el.disabled = true; // Make readonly when viewing issued doc
+                        }
+                    }
+                });
+
+                const actions = content.actionResult || [];
+                document.querySelectorAll('input[name="actionResult"]').forEach(el => {
+                    el.checked = actions.includes(el.value);
+                    el.disabled = true; // Make readonly
+                });
+
+                document.querySelectorAll('select').forEach(el => el.disabled = true);
+                document.querySelectorAll('button').forEach(el => el.style.display = 'none');
+
+                updatePreview();
+            } else if (event.data.action === 'updateCommon') {
+                updatePreview();
+            } else if (event.data.action === 'unlockInputs') {
+                document.querySelectorAll('input, select, textarea').forEach(el => el.disabled = false);
+                document.querySelectorAll('button').forEach(el => el.style.display = '');
+            } else if (event.data.action === 'receiveDocNumber') {
+                document.getElementById('docNumber').value = event.data.number;
+                updatePreview();
+            } else if (event.data.action === 'initParams') {
+                const params = event.data.params;
+                if (params && params.rowIndex && params.category) {
+                    caseParams = params;
+                    if (params.mode === 'view') {
+                        loadCompletedCase(params.category, params.rowIndex);
+                    } else {
+                        loadPendingCase(params.category, params.rowIndex);
+                    }
+                }
+            }
+        });
+
+        function loadPendingCase(category, rowIndex) {
+            fetch(API_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: "get_pending", category: category })
+            })
+                .then(res => res.json())
+                .then(json => {
+                    const list = json.list || (json.data && json.data.list) || [];
+                    const data = list.find(item => String(item.rowIndex) === String(rowIndex) || String(item.id) === String(rowIndex));
+                    if (data) {
+                        fillFormWithCaseData(data);
+                    }
+                })
+                .catch(err => console.error(err));
+        }
+
+        function loadCompletedCase(category, rowIndex) {
+            fetch(API_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: "get_case_detail", category: category, rowIndex: rowIndex })
+            })
+                .then(res => res.json())
+                .then(json => {
+                    const data = json.data && json.data.data ? json.data.data : null;
+                    if (data) {
+                        fillFormWithCaseData(data);
+                        // view mode: disable inputs if necessary, but doc_issue handles printing anyway.
+                    }
+                })
+                .catch(err => console.error(err));
+        }
+
+        function fillFormWithCaseData(data) {
+            if (data.name) document.getElementById('clientName').value = data.name;
+            if (data.birth) document.getElementById('birth').value = data.birth;
+
+            if (data.gender) {
+                let g = data.gender.trim();
+                document.getElementById('gender').value = (g === "남" || g === "남성") ? "남성" : "여성";
+            }
+            if (data.address) document.getElementById('address').value = data.address;
+            if (data.contact) document.getElementById('contact').value = data.contact;
+
+            if (data.agency || data.agencyDetail) document.getElementById('agencyDetail').value = data.agency || data.agencyDetail || "";
+            if (data.agencyType) document.getElementById('agencyType').value = data.agencyType;
+            if (data.date) {
+                document.getElementById('receptionDate').value = data.date;
+                const parts = data.date.split('-');
+                if (parts.length === 3) {
+                    const pcEl = document.getElementById('processContent');
+                    if (pcEl.value === '2026.00.00. 의뢰 접수됨' || !pcEl.value) {
+                        pcEl.value = `${parts[0]}.${parts[1]}.${parts[2]}. 의뢰 접수됨`;
+                    }
+                }
+            }
+            if (data.agencyContact) {
+                document.getElementById('agencyContact').value = data.agencyContact;
+                document.getElementById('staffName').value = data.agencyContact;
+            }
+
+            if (data.reqType) document.getElementById('requestType').value = data.reqType;
+            if (data.reqReason) document.getElementById('requestReason').value = data.reqReason;
+
+            if (data.processContent) document.getElementById('processContent').value = data.processContent;
+            if (data.counselingContent) document.getElementById('counselingContent').value = data.counselingContent;
+            if (data.actionResult && typeof data.actionResult === 'string') {
+                const checkboxes = document.querySelectorAll('input[name="actionResult"]');
+                checkboxes.forEach(cb => {
+                    cb.checked = data.actionResult.includes(cb.value);
+                });
+            }
+            if (data.serviceMethod) document.getElementById('serviceMethod').value = data.serviceMethod;
+            if (data.progressStatus) document.getElementById('progressStatus').value = data.progressStatus;
+
+            updatePreview();
+        }
+
+        function saveData(commonData) {
+            const content = {};
+            inputIds.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) content[id] = el.value;
+            });
+            content.actionResult = Array.from(document.querySelectorAll('input[name="actionResult"]:checked')).map(el => el.value);
+
+            const target_name = content.clientName;
+            if (!target_name) {
+                Toastify({ text: "대상자 이름을 입력해주세요.", style: { background: "#ef4444" }, duration: 3000 }).showToast();
+                window.parent.postMessage({ type: 'saveError' }, '*');
+                return;
+            }
+
+            fetch(API_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    action: 'save_issued_doc',
+                    type: 'reply_letter',
+                    target_name,
+                    content: { ...commonData, ...content },
+                    issuer: commonData.issuer
+                })
+            })
+                .then(res => res.json())
+                .then(json => {
+                    if (json.result === 'success') {
+                        // Update Case Ledger if linked
+                        if (caseParams && caseParams.rowIndex && caseParams.category) {
+                            const finalResultText = content.actionResult.length > 0 ? `${content.actionResult.join(', ')} / ${content.futurePlan || ''}` : content.futurePlan || '';
+                            fetch(API_URL, {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                    action: "update_status",
+                                    category: caseParams.category,
+                                    rowIndex: caseParams.rowIndex,
+                                    docNum: json.id, // Ensure json.id is sent
+                                    issuedDocId: json.id, // Pass to Case Ledger
+                                    replyDate: document.getElementById('replyDate').value,
+                                    serviceMethod: document.getElementById('serviceMethod').value,
+                                    serviceDate: document.getElementById('replyDate').value,
+                                    staffName: document.getElementById('staffName').value,
+                                    actionResult: finalResultText,
+                                    processContent: document.getElementById('processContent').value,
+                                    counselingContent: document.getElementById('counselingContent').value,
+                                    progressStatus: document.getElementById('progressStatus').value
+                                })
+                            }).catch(e => console.error("Failed to update case ledger:", e));
+                        }
+                        window.parent.postMessage({ type: 'saveSuccess', id: json.id }, '*');
+                    } else {
+                        Toastify({ text: "오류 발생: " + json.message, style: { background: "#ef4444" }, duration: 4000 }).showToast();
+                        window.parent.postMessage({ type: 'saveError' }, '*');
+                    }
+                })
+                .catch(err => {
+                    Toastify({ text: "서버 통신 오류", style: { background: "#ef4444" }, duration: 4000 }).showToast();
+                    window.parent.postMessage({ type: 'saveError' }, '*');
+                });
+        }
+    </script>
+</body>
+
+</html>

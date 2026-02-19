@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <title>강의확인서 템플릿</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: white;
+            font-family: 'Malgun Gothic', '맑은 고딕', sans-serif;
+        }
+
+        /* 워터마크 CSS */
+        .watermark {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(-45deg);
+            font-size: 50px;
+            color: rgba(0, 0, 0, 0.04);
+            font-weight: 800;
+            white-space: nowrap;
+            pointer-events: none;
+            letter-spacing: 10px;
+            z-index: 0;
+        }
+
+        .a4-container {
+            width: 210mm;
+            min-height: 297mm;
+            padding: 10mm 20mm;
+            margin: 0 auto;
+            background-color: white;
+            box-sizing: border-box;
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 24pt;
+            letter-spacing: 5px;
+            margin-bottom: 25px;
+        }
+
+        .info-list {
+            font-size: 13pt;
+            line-height: 1.8;
+            margin-bottom: 15px;
+            list-style: none;
+            padding: 0;
+        }
+
+        .info-item {
+            margin-bottom: 10px;
+            display: flex;
+            align-items: baseline;
+        }
+
+        .info-label {
+            font-weight: bold;
+            margin-right: 8px;
+            white-space: nowrap;
+        }
+
+        .info-input {
+            flex-grow: 1;
+        }
+
+        .val-text {
+            display: block;
+            width: 100%;
+            min-height: 25px;
+            font-size: 13pt;
+        }
+
+        .val-textarea {
+            display: block;
+            width: 100%;
+            min-height: 25px;
+            font-size: 13pt;
+            white-space: pre-wrap;
+            line-height: 1.5;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: center;
+            margin-top: 10px;
+            margin-bottom: 20px;
+            table-layout: fixed;
+        }
+
+        th,
+        td {
+            border: 1px solid black;
+            padding: 8px;
+            font-size: 12pt;
+        }
+
+        th {
+            background-color: #f0f0f0;
+            font-weight: bold;
+        }
+
+        .checkbox-group {
+            margin-bottom: 50px;
+            padding-left: 20px;
+            font-size: 13pt;
+        }
+
+        .checkbox-group span {
+            margin-right: 20px;
+        }
+
+        .footer-section {
+            margin-top: 30px;
+            text-align: center;
+            font-size: 14pt;
+            line-height: 1.8;
+        }
+
+        .date-row {
+            margin-bottom: 25px;
+        }
+
+        .date-row span.val-text {
+            display: inline-block;
+            width: 150px;
+            text-align: center;
+        }
+
+        .signature-row {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            margin-bottom: 10px;
+            font-size: 14pt;
+        }
+
+        .signature-row span.val-text {
+            display: inline-block;
+            width: 150px;
+            text-align: center;
+            margin: 0 10px;
+        }
+
+        /* 인쇄용 CSS */
+        @media print {
+            @page {
+                margin: 0;
+            }
+
+            body {
+                background-color: white;
+            }
+
+            .a4-container {
+                margin: 0;
+                padding: 10mm 20mm;
+                box-shadow: none;
+                width: 100%;
+                height: 100%;
+            }
+
+            .val-text,
+            .val-textarea {
+                border-bottom: none !important;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="watermark">제천시정신건강복지센터</div>
+
+    <div class="a4-container">
+        <h1>강의확인서</h1>
+
+        <div class="info-list">
+            <div class="info-item">
+                <div class="info-label">1. 사업명:</div>
+                <div class="info-input"><span class="val-text" id="t_biz"></span></div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">2. 강의일시:</div>
+                <div class="info-input">
+                    <div class="val-textarea" id="t_datetime"></div>
+                </div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">3. 강의장소:</div>
+                <div class="info-input"><span class="val-text" id="t_place"></span></div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">4. 강의주제:</div>
+                <div class="info-input"><span class="val-text" id="t_topic"></span></div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">5. 강 사:</div>
+                <div class="info-input" style="display: flex; flex-direction: column;">
+                    <span class="val-text" id="t_teacher" style="width: 150px; margin-bottom: 5px;"></span>
+                    <span style="font-size: 13pt;">- 이력서 참조</span>
+                </div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">6. 활동내역</div>
+            </div>
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th style="width: 10%;">순번</th>
+                    <th style="width: 35%;">활동일자</th>
+                    <th style="width: 35%;">활동내역</th>
+                    <th style="width: 20%;">강사비</th>
+                </tr>
+            </thead>
+            <tbody id="t_acts_body">
+                <!-- Dynamic acts will be injected here -->
+            </tbody>
+        </table>
+
+        <div class="info-item" style="margin-bottom: 10px;">
+            <div class="info-label">7. 강사 종합소득세 신고</div>
+        </div>
+        <table>
+            <tr>
+                <td style="text-align: left; padding-left: 20px; width: 50%;">
+                    <span id="t_tax_biz">☐</span> 사업소득
+                </td>
+                <td style="text-align: left; padding-left: 20px; width: 50%;">
+                    <span id="t_tax_etc">☐</span> 기타소득
+                </td>
+            </tr>
+        </table>
+
+        <div class="footer-section">
+            <div class="date-row">
+                <span class="val-text" id="t_date"></span>
+            </div>
+
+            <div class="signature-row">
+                <span style="display: inline-block; width: 80px; text-align: left;">(강사)</span>
+                <span class="val-text" id="t_sign1"></span>
+                <span style="display: inline-block; width: 80px; text-align: right;">(서명/인)</span>
+            </div>
+            <div class="signature-row">
+                <span style="display: inline-block; width: 80px; text-align: left;">(담당자)</span>
+                <span class="val-text" id="t_sign2"></span>
+                <span style="display: inline-block; width: 80px; text-align: right;">(서명/인)</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        window.addEventListener('message', function (event) {
+            const data = event.data;
+            if (data.type === 'updatePreview' || data.action === 'updatePreview' || data.action === 'render') {
+                const payload = data.payload || data.data || {};
+
+                document.getElementById('t_biz').innerText = payload.v_biz || '';
+                document.getElementById('t_datetime').innerText = payload.v_datetime || '';
+                document.getElementById('t_place').innerText = payload.v_place || '';
+                document.getElementById('t_topic').innerText = payload.v_topic || '';
+                document.getElementById('t_teacher').innerText = payload.v_teacher || '';
+
+                const acts = payload.v_acts || [];
+                const tbody = document.getElementById('t_acts_body');
+                if (tbody) {
+                    tbody.innerHTML = '';
+                    if (acts.length === 0) {
+                        if (payload.v_act1_date || payload.v_act1_desc || payload.v_act1_fee) {
+                            tbody.innerHTML += `<tr><td>1</td><td>${payload.v_act1_date || ''}</td><td>${payload.v_act1_desc || ''}</td><td>${payload.v_act1_fee || ''}</td></tr>`;
+                        }
+                        if (payload.v_act2_date || payload.v_act2_desc || payload.v_act2_fee) {
+                            tbody.innerHTML += `<tr><td>2</td><td>${payload.v_act2_date || ''}</td><td>${payload.v_act2_desc || ''}</td><td>${payload.v_act2_fee || ''}</td></tr>`;
+                        }
+                    } else {
+                        acts.forEach((act, idx) => {
+                            tbody.innerHTML += `
+                                <tr>
+                                    <td>${idx + 1}</td>
+                                    <td>${act.date || ''}</td>
+                                    <td>${act.desc || ''}</td>
+                                    <td>${act.fee || ''}</td>
+                                </tr>
+                            `;
+                        });
+                    }
+                }
+
+                document.getElementById('t_tax_biz').innerText = payload.v_tax_biz ? '☑' : '☐';
+                document.getElementById('t_tax_etc').innerText = payload.v_tax_etc ? '☑' : '☐';
+
+                document.getElementById('t_date').innerText = payload.v_date || '';
+                document.getElementById('t_sign1').innerText = payload.v_sign1 || '';
+                document.getElementById('t_sign2').innerText = payload.v_sign2 || '';
+
+            } else if (data.action === 'print') {
+                window.print();
+            }
+        });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>퇴원사실통지서 회신서 (색인최적화)</title>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --surface: #ffffff;
+            --background: #f1f5f9;
+            --border: #e2e8f0;
+            --text: #334155;
+            --danger-button-bg: #e03131;
+        }
+
+        body {
+            margin: 0;
+            padding: 20px;
+            background: var(--surface);
+            font-family: 'Pretendard', sans-serif;
+            color: var(--text);
+        }
+
+        .container {
+            width: 100%;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 13px;
+            color: #475569;
+        }
+
+        .label-index {
+            color: #e67700;
+            display: inline-flex !important;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .label-index::after {
+            content: '★색인필수';
+            font-size: 11px;
+            font-weight: normal;
+            background: #fff3bf;
+            padding: 2px 6px;
+            border-radius: 4px;
+            color: #d9480f;
+        }
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            font-size: 14px;
+            box-sizing: border-box;
+            font-family: inherit;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        .radio-group {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .radio-group label {
+            font-weight: normal;
+            font-size: 14px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .select-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        /* 템플릿용 숨김 박스 - UI에는 노출 안 함 */
+        #hidden-template-container {
+            display: none;
+        }
+
+        .watermark {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(-45deg);
+            font-size: 40px;
+            color: rgba(0, 0, 0, 0.04);
+            font-weight: 800;
+            white-space: nowrap;
+            pointer-events: none;
+            letter-spacing: 10px;
+            z-index: 0;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="form-group"><label>수신처 (통지기관):</label><input id="recipient" placeholder="예: 00병원"
+                onfocus="this.select()" /></div>
+
+        <div class="form-group"
+            style="background: #f8f9fa; padding: 10px; border-radius: 8px; border: 1px solid #e9ecef;">
+            <label class="label-index">통지기관 소재지 (색인용)</label>
+            <div class="radio-group">
+                <label><input type="radio" name="locType" value="관내" checked> 관내(충북)</label>
+                <label><input type="radio" name="locType" value="관외"> 관외(타지역)</label>
+            </div>
+        </div>
+
+        <div class="form-group"><label>수신처 담당자:</label><input id="recipientPerson" value="원무과"
+                onfocus="this.select()" /></div>
+
+        <div class="form-group"><label>환자 성명:</label><input id="name" placeholder="환자 이름을 입력하세요" /></div>
+        <div class="form-group"><label>생년월일:</label><input id="birth" placeholder="예: 900101" /></div>
+        <div class="form-group"><label>성별:</label>
+            <select id="gender">
+                <option value="남성">남성</option>
+                <option value="여성">여성</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label class="label-index">진단명 (색인용)</label>
+            <input id="diagnosis" placeholder="예: 조현병 (출력안됨)" />
+        </div>
+
+        <div class="form-group"><label>연락처:</label><input id="contact" placeholder="연락처를 입력하세요" /></div>
+
+        <div class="form-group"><label>주소:</label><input id="address" value="제천시 의림대로 242" onfocus="this.select()" />
+        </div>
+
+        <div class="form-group"><label>입원일:</label><input type="date" id="admissionDate" /></div>
+        <div class="form-group"><label>퇴원일:</label><input type="date" id="dischargeDate" /></div>
+        <div class="form-group"><label>통보서 수신일 (접수일):</label><input type="date" id="receivedDate" /></div>
+
+        <div class="form-group"><label>의뢰목적:</label><textarea id="purpose" style="height: 60px;"
+                placeholder="예: 정신병동 퇴원환자에 대한 개입 및 관리"></textarea></div>
+        <div class="form-group"><label>의뢰과정:</label><textarea id="process" style="height: 80px;"
+                placeholder="예: 대상자 2025년 00월 00일 00병원 입원..."></textarea></div>
+
+        <hr style="border:0; border-top:2px dashed #dee2e6; margin: 20px 0;">
+        <div class="form-group">
+            <label class="label-index">조치 결과 분류 (색인 및 자동입력)</label>
+            <div class="select-group">
+                <select id="category1" onchange="updateSubCategory()">
+                    <option value="">- 1차 분류 -</option>
+                    <option value="접촉안됨">접촉안됨</option>
+                    <option value="기등록">기등록</option>
+                    <option value="조치">조치</option>
+                    <option value="기타">기타</option>
+                </select>
+                <select id="category2" onchange="generateContentText()">
+                    <option value="">- 2차 분류 -</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="form-group"><label>상담내용 (상세 조치결과):</label><textarea id="content"
+                placeholder="위 분류를 선택하면 내용이 자동 완성됩니다."></textarea></div>
+
+        <div class="form-group"><label>회신일:</label><input type="date" id="replyDate" /></div>
+        <div class="form-group"><label>센터 담당자:</label><input id="centerStaff" value="심규호" onfocus="this.select()" />
+        </div>
+
+        <div id="hidden-template-container">
+            <div class="paper">
+                <div class="watermark">제천시정신건강복지센터</div>
+                <h1 class="title">정신건강 지원 서비스 연계 의뢰 회신서</h1>
+                <table class="doc-table">
+                    <colgroup>
+                        <col style="width:14%">
+                        <col style="width:25%">
+                        <col style="width:14%">
+                        <col style="width:12%">
+                        <col style="width:10%">
+                        <col style="width:25%">
+                    </colgroup>
+                    <tbody>
+                        <tr>
+                            <td class="label">회신일자</td>
+                            <td id="fld_replyDate"></td>
+                            <td class="label">회신부서</td>
+                            <td colspan="3">제천시정신건강복지센터</td>
+                        </tr>
+                        <tr>
+                            <td class="label">성명</td>
+                            <td id="fld_name"></td>
+                            <td class="label">주소</td>
+                            <td colspan="3" id="fld_address"></td>
+                        </tr>
+                        <tr>
+                            <td class="label">생년월일</td>
+                            <td id="fld_birth"></td>
+                            <td class="label">성별</td>
+                            <td id="fld_gender"></td>
+                            <td class="label">연락처</td>
+                            <td id="fld_contact"></td>
+                        </tr>
+                        <tr>
+                            <td class="label">결과</td>
+                            <td colspan="5" class="result-cell">
+                                <div class="result-text">• 의뢰목적 : <span id="fld_purpose"></span></div>
+                                <div class="result-text">• 의뢰과정 : <span id="fld_process"></span></div>
+                                <div class="result-text">• 상담내용 : <span id="fld_content"></span></div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="label">수신처</td>
+                            <td id="fld_recipient" colspan="2"></td>
+                            <td class="label">담당자</td>
+                            <td id="fld_recipientPerson" colspan="2"></td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <p style="margin-top:10px; font-size: 11pt;">의뢰한 대상자에 대한 처리 결과를 회신하오니 업무에 참고하시기 바랍니다.</p>
+                <div class="signature">
+                    <p id="fld_replyDate2"></p>
+                    <p>담당자 : 제천시정신건강복지센터 <span id="fld_centerStaff"></span></p>
+                    <p>문의전화 : 043)646-3074</p>
+                    <p class="chief">제천시정신건강복지센터장</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ==========================================
+        // [필수] 앱스 스크립트 URL 입력
+        // ==========================================
+        const scriptURL = 'https://script.google.com/macros/s/AKfycbyq97wkqsF4DQwQ9LkRZcUyH16vdlOB4qbJW_CUPnDm1DwtKG5OkBTx8hYnkjKZE_V68g/exec';
+
+        const inputIds = ['recipient', 'recipientPerson', 'name', 'birth', 'gender', 'contact', 'address', 'admissionDate', 'dischargeDate', 'receivedDate', 'purpose', 'process', 'content', 'replyDate', 'centerStaff'];
+        const storageKey = 'dischargeReplyDataV6';
+
+        const categoryData = {
+            "접촉안됨": ["연락처미기재", "결번", "서비스거부"],
+            "기등록": ["기존등록회원"],
+            "조치": ["전화상담", "타기관 연계", "센터 사례관리등록"],
+            "기타": ["재입원", "유실"]
+        };
+
+        const autoTexts = {
+            "연락처미기재": "통보서 내 연락처가 기재되어 있지 않아 개입이 불가능함.",
+            "결번": "기재된 연락처가 없는 번호(결번)로 확인되어 접촉이 불가능함.",
+            "서비스거부": "대상자 및 보호자에게 유선 연락 취하였으나, 센터 서비스 이용 및 상담을 거부하여 종결함.",
+            "기존등록회원": "확인 결과 본 센터에 이미 등록되어 관리 중인 회원으로, 지속적인 사례관리 서비스 제공 예정임.",
+            "전화상담": "유선 상담을 진행하여 정신건강 정보 제공 및 정서적 지지를 하였으며, 추후 필요 시 재연락 안내함.",
+            "타기관 연계": "상담 결과 타 지역 거주 혹은 타 기관 이용이 적절하다고 판단되어 해당 기관으로 연계함.",
+            "센터 사례관리등록": "초기상담 진행 후 사례판정회의를 거쳐 본 센터 등록 회원으로 선정하여 사례관리 서비스 제공 계획함.",
+            "재입원": "연락 결과 현재 타 병원에 재입원 중인 것으로 확인되어, 추후 퇴원 시 재의뢰 안내함.",
+            "유실": "대상자 연락 두절 및 소재 파악이 불가하여 종결함."
+        };
+
+        function updateSubCategory() {
+            const cat1 = document.getElementById("category1").value;
+            const cat2 = document.getElementById("category2");
+            cat2.innerHTML = '<option value="">- 2차 분류 -</option>';
+            if (cat1 && categoryData[cat1]) {
+                categoryData[cat1].forEach(sub => {
+                    const option = document.createElement("option");
+                    option.value = sub;
+                    option.text = sub;
+                    cat2.appendChild(option);
+                });
+            }
+        }
+
+        function generateContentText() {
+            const cat2Val = document.getElementById("category2").value;
+            const contentBox = document.getElementById("content");
+            if (cat2Val && autoTexts[cat2Val]) {
+                const isAutoText = Object.values(autoTexts).some(text => text === contentBox.value);
+                if (contentBox.value.trim() === "" || isAutoText) {
+                    contentBox.value = autoTexts[cat2Val];
+                    updateOutput();
+                }
+            }
+        }
+
+        // ==========================================
+        // Parent Iframe Communication Logic
+        // ==========================================
+        let currentMode = 'new';
+        let rowData = null;
+
+        function formatDateISO(iso) {
+            if (!iso) return '';
+            const d = new Date(iso);
+            if (isNaN(d.getTime())) return '';
+            return `${d.getFullYear()}년 ${d.getMonth() + 1}월 ${d.getDate()}일`;
+        }
+
+        function nl2br(s) { return String(s || '').replace(/\n/g, '<br>'); }
+
+        function saveData() {
+            const data = {};
+            inputIds.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) data[id] = el.value;
+            });
+            data.diagnosis = document.getElementById('diagnosis').value;
+            const loc = document.querySelector('input[name="locType"]:checked');
+            if (loc) data.locType = loc.value;
+            data.category1 = document.getElementById('category1').value;
+            data.category2 = document.getElementById('category2').value;
+            localStorage.setItem(storageKey, JSON.stringify(data));
+        }
+
+        function loadData() {
+            const saved = localStorage.getItem(storageKey);
+            if (saved) {
+                const data = JSON.parse(saved);
+                inputIds.forEach(id => {
+                    if (document.getElementById(id)) document.getElementById(id).value = data[id] || '';
+                });
+                if (data.diagnosis) document.getElementById('diagnosis').value = data.diagnosis;
+                if (data.locType) {
+                    const radio = document.querySelector(`input[name="locType"][value="${data.locType}"]`);
+                    if (radio) radio.checked = true;
+                }
+                if (data.category1) {
+                    document.getElementById('category1').value = data.category1;
+                    updateSubCategory();
+                    if (data.category2) document.getElementById('category2').value = data.category2;
+                }
+            }
+        }
+
+        function updateOutput() {
+            const data = {};
+            inputIds.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) data[id] = el.value;
+            });
+
+            document.getElementById('fld_replyDate').innerText = formatDateISO(data.replyDate);
+            document.getElementById('fld_replyDate2').innerText = formatDateISO(data.replyDate);
+            document.getElementById('fld_name').innerText = data.name;
+            document.getElementById('fld_address').innerText = data.address;
+            document.getElementById('fld_birth').innerText = data.birth;
+            document.getElementById('fld_gender').innerText = data.gender;
+            document.getElementById('fld_contact').innerText = data.contact;
+            document.getElementById('fld_purpose').innerHTML = nl2br(data.purpose);
+            document.getElementById('fld_process').innerHTML = nl2br(data.process);
+            document.getElementById('fld_content').innerHTML = nl2br(data.content);
+            document.getElementById('fld_recipient').innerText = data.recipient;
+            document.getElementById('fld_recipientPerson').innerText = data.recipientPerson;
+            document.getElementById('fld_centerStaff').innerText = data.centerStaff;
+
+            sendPreviewUpdate();
+            saveData();
+        }
+
+        function sendPreviewUpdate() {
+            const container = document.querySelector('.paper');
+            if (container && window.parent !== window) {
+                // Ensure form values are synced to DOM before sending
+                const inputs = container.querySelectorAll('input, textarea, select');
+                inputs.forEach(el => {
+                    if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') el.setAttribute('value', el.value);
+                    if (el.tagName === 'TEXTAREA') el.innerHTML = el.value;
+                    if (el.tagName === 'SELECT') {
+                        const selectedText = el.options[el.selectedIndex] ? el.options[el.selectedIndex].text : '';
+                        el.setAttribute('data-selected', selectedText);
+                    }
+                });
+
+                window.parent.postMessage({
+                    type: 'updatePreview',
+                    payload: { html: container.outerHTML }
+                }, '*');
+            }
+        }
+
+        async function initData(params) {
+            currentMode = params.mode || 'new';
+            const rowIndex = params.rowIndex;
+            const category = params.category || '퇴원사실통보';
+
+            if (rowIndex) {
+                try {
+                    const BASE_URL = `${window.location.protocol}//${window.location.host}/api/auth`;
+                    let actionName = currentMode === 'view' ? 'get_case_detail' : 'get_pending';
+                    const reqBody = { action: actionName, category: category };
+                    if (currentMode === 'view') reqBody.rowIndex = rowIndex;
+
+                    const res = await fetch(BASE_URL, {
+                        method: 'POST',
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify(reqBody)
+                    });
+                    const json = await res.json();
+
+                    let item = null;
+                    if (currentMode === 'view') {
+                        item = json.data && json.data.data ? json.data.data : null;
+                    } else {
+                        const list = json.list || (json.data && json.data.list) || [];
+                        item = list.find(i => String(i.rowIndex) === String(rowIndex) || String(i.id) === String(rowIndex));
+                    }
+
+                    if (item) {
+                        rowData = item;
+
+                        document.getElementById('name').value = item.name || '';
+                        document.getElementById('contact').value = item.contact || '';
+                        document.getElementById('address').value = item.address || '';
+
+                        if (item.gender) {
+                            let g = item.gender.trim();
+                            document.getElementById('gender').value = (g === "여" || g === "여성") ? "여성" : "남성";
+                        }
+                        document.getElementById('birth').value = item.birth || '';
+
+                        document.getElementById('recipient').value = item.agencyDetail || item.agency || '';
+                        document.getElementById('recipientPerson').value = item.agencyContact || '원무과';
+                        document.getElementById('purpose').value = item.reqReason || '정신병동 퇴원환자에 대한 개입 및 관리 (퇴원사실통보)';
+
+                        if (item.date) {
+                            document.getElementById('receivedDate').value = item.date;
+                            const parts = item.date.split('-');
+                            if (parts.length === 3) {
+                                document.getElementById('process').value = `${parts[0]}.${parts[1]}.${parts[2]}. 의뢰 접수됨`;
+                            }
+                        }
+
+                        if (item.admissionDate) document.getElementById('admissionDate').value = item.admissionDate;
+                        if (item.dischargeDate) document.getElementById('dischargeDate').value = item.dischargeDate;
+
+                        if (item.processContent) {
+                            document.getElementById('process').value = item.processContent.replace(/<br>/g, '\n');
+                        }
+
+                        if (item.agencyLoc) {
+                            const locStr = item.agencyLoc.trim();
+                            const isOutside = locStr.includes('관외') || (!locStr.includes('제천') && !locStr.includes('관내'));
+                            const radio = document.querySelector(`input[name="locType"][value="${isOutside ? '관외' : '관내'}"]`);
+                            if (radio) radio.checked = true;
+                        }
+
+                        // 접수에서 불러온 데이터는 수정 불가(Read-Only) 처리
+                        const importedIds = ['name', 'contact', 'address', 'gender', 'birth', 'recipient', 'recipientPerson', 'purpose', 'receivedDate', 'admissionDate', 'dischargeDate', 'process'];
+                        importedIds.forEach(id => {
+                            const el = document.getElementById(id);
+                            if (el && el.value) {
+                                if (el.tagName === 'SELECT') {
+                                    el.disabled = true;
+                                    // Make select look readonly by removing appearance on webkit
+                                    el.style.appearance = 'none';
+                                } else {
+                                    el.readOnly = true;
+                                }
+                                el.style.backgroundColor = '#e9ecef';
+                                el.style.color = '#495057';
+                                el.style.cursor = 'not-allowed';
+                            }
+                        });
+                        document.getElementsByName('locType').forEach(r => {
+                            r.disabled = true;
+                            r.style.cursor = 'not-allowed';
+                        });
+
+                        // Apply existing history if view mode
+                        if (currentMode === 'view' && item.replyDate) {
+                            document.getElementById('replyDate').value = item.replyDate;
+                            document.getElementById('centerStaff').value = item.staffName || document.getElementById('centerStaff').value;
+                            if (item.actionResult) {
+                                // "[기등록-기존등록회원]" format parse
+                                const resMatch = item.actionResult.match(/\[(.*?)-(.*?)\]/);
+                                if (resMatch) {
+                                    document.getElementById('category1').value = resMatch[1];
+                                    updateSubCategory();
+                                    document.getElementById('category2').value = resMatch[2];
+                                }
+                            }
+                            if (item.counselingContent || item.content) {
+                                document.getElementById('content').value = (item.counselingContent || item.content || '').replace(/<br>/g, '\n');
+                            }
+                        }
+
+                        updateOutput();
+                    } else {
+                        console.error('Failed to load inquiry data: not found in list/result');
+                    }
+                } catch (e) {
+                    console.error('Error fetching inquiry:', e);
+                }
+            } else {
+                loadData();
+                updateOutput();
+            }
+
+            if (currentMode === 'view') {
+                document.querySelectorAll('.container input, .container textarea, .container select').forEach(el => el.disabled = true);
+                const btnDanger = document.querySelector('.btn-danger');
+                if (btnDanger) btnDanger.style.display = 'none';
+                if (window.parent !== window) {
+                    window.parent.postMessage({ type: 'disableSave' }, '*');
+                }
+            }
+        }
+
+        window.addEventListener('message', async function (event) {
+            const data = event.data;
+            if (!data) return;
+
+            if (data.action === 'initParams') {
+                initData(data.params);
+            } else if (data.action === 'updateCommon') {
+                if (data.commonData.issueDate) document.getElementById('replyDate').value = data.commonData.issueDate;
+                if (data.commonData.issuer) document.getElementById('centerStaff').value = data.commonData.issuer;
+                updateOutput();
+            } else if (data.action === 'save') {
+                if (window.parent !== window) {
+                    // Start saving process directly to parent for MDM integration
+                    if (!rowData || !rowData.id) {
+                        window.parent.postMessage({ type: 'saveError', message: '연결된 의뢰/통보 데이터가 없습니다.' }, '*');
+                        return;
+                    }
+
+                    const content = {};
+                    inputIds.forEach(id => {
+                        const el = document.getElementById(id);
+                        if (el) content[id] = el.value;
+                    });
+
+                    const cat1 = document.getElementById("category1").value || "미지정";
+                    const cat2 = document.getElementById("category2").value || "미지정";
+                    const formattedResult = `[${cat1}-${cat2}]`;
+                    content.actionResult = formattedResult;
+
+                    try {
+                        const BASE_URL = `${window.location.protocol}//${window.location.host}/api/auth`;
+
+                        // 1. 문서 발급 대장(issued_docs)에 저장
+                        const res1 = await fetch(BASE_URL, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                action: 'save_issued_doc',
+                                type: '퇴사통회신서발행기',
+                                target_name: content.name || '알수없음',
+                                content: { ...data.commonData, ...content },
+                                issuer: data.commonData.issuer
+                            })
+                        });
+                        const json1 = await res1.json();
+
+                        if (json1.result === 'success') {
+                            const replyContent = document.getElementById('content').value;
+                            const replyDate = document.getElementById('replyDate').value;
+                            const staffName = document.getElementById('centerStaff').value;
+
+                            // 2. 사례관리 대장(inquiries) 연동 업데이트
+                            await fetch(BASE_URL, {
+                                method: 'POST',
+                                headers: { "Content-Type": "application/json" },
+                                body: JSON.stringify({
+                                    action: "update_status",
+                                    category: rowData.category || '퇴원사실통보',
+                                    rowIndex: rowData.id,
+                                    issuedDocId: json1.id,
+                                    replyDate: replyDate,
+                                    staffName: staffName,
+                                    actionResult: formattedResult,
+                                    counselingContent: replyContent.replace(/\n/g, '<br>')
+                                })
+                            });
+
+                            // 부모 페이지로 성공 신호(postMessage) 전송 -> 발급완료 및 인쇄 실행
+                            window.parent.postMessage({ type: 'saveSuccess', id: json1.id, docNum: json1.id }, '*');
+                        } else {
+                            window.parent.postMessage({ type: 'saveError', message: json1.message }, '*');
+                        }
+                    } catch (err) {
+                        window.parent.postMessage({ type: 'saveError', message: '서버 통신 실패' }, '*');
+                    }
+                }
+            } else if (data.action === 'loadDoc') {
+                const doc = data.data;
+                const content = doc.content || doc;
+
+                rowData = { id: doc.id };
+
+                // Map saved fields back to the form
+                const ids = ['name', 'birth', 'gender', 'contact', 'address', 'recipient', 'recipientPerson', 'purpose', 'process', 'content', 'receivedDate', 'admissionDate', 'dischargeDate'];
+                ids.forEach(id => {
+                    if (content[id]) document.getElementById(id).value = content[id];
+                });
+
+                if (content.actionResult) {
+                    const resMatch = content.actionResult.match(/\[(.*?)-(.*?)\]/);
+                    if (resMatch) {
+                        document.getElementById('category1').value = resMatch[1];
+                        updateSubCategory();
+                        document.getElementById('category2').value = resMatch[2];
+                    }
+                }
+
+                if (content.agencyLoc) {
+                    const locStr = content.agencyLoc;
+                    const radio = document.querySelector(`input[name="locType"][value="${locStr}"]`);
+                    if (radio) radio.checked = true;
+                }
+
+                document.getElementById('replyDate').value = doc.issueDate || content.replyDate || '';
+                document.getElementById('centerStaff').value = doc.issuer || content.centerStaff || '';
+
+                updateOutput();
+
+                // Disable inputs to mimic view mode
+                document.querySelectorAll('.container input, .container textarea, .container select').forEach(el => el.disabled = true);
+                const btnDanger = document.querySelector('.btn-danger');
+                if (btnDanger) btnDanger.style.display = 'none';
+
+            } else if (data.action === 'print') {
+                // Remove borders for clean print
+                const table = document.querySelector('.doc-table');
+                if (table) table.style.border = '1px solid black';
+                window.parent.postMessage({
+                    type: 'setPrintPreview',
+                    data: { html: document.querySelector('.paper').outerHTML }
+                }, '*');
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const dateIds = ['replyDate', 'receivedDate'];
+            dateIds.forEach(id => {
+                if (!document.getElementById(id).value) {
+                    document.getElementById(id).valueAsDate = new Date();
+                }
+            });
+
+            const allInputs = document.querySelectorAll('.container input, .container textarea, .container select');
+            allInputs.forEach(el => {
+                el.addEventListener('input', () => {
+                    updateOutput();
+                });
+            });
+
+            if (window.parent === window) {
+                // Standalone mode loaded directly outside MDM
+                loadData();
+                updateOutput();
+            }
+        });
+    </script>
+</body>
+
+</html>

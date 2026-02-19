@@ -1,0 +1,49 @@
+{
+  "name": "jc-portal",
+  "version": "1.0.1",
+  "main": "main.js",
+  "description": "Jecheon Mental Health Welfare Center Portal",
+  "author": "Jecheon Mental Health Welfare Center",
+  "scripts": {
+    "start": "electron .",
+    "dist": "electron-builder",
+    "server": "node server.js"
+  },
+  "build": {
+    "appId": "com.jcmind.portal",
+    "productName": "제천시정신건강복지센터업무지원 시스템",
+    "win": {
+      "target": [
+        "nsis"
+      ],
+      "icon": "icon.png"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": false,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "제천시정신건강복지센터",
+      "license": "license.txt"
+    },
+    "files": [
+      "**/*",
+      "!**/*.ts",
+      "!*.map",
+      "!package-lock.json",
+      "!dist"
+    ]
+  },
+  "devDependencies": {
+    "electron": "^28.0.0",
+    "electron-builder": "^24.13.3"
+  },
+  "dependencies": {
+    "better-sqlite3": "^12.6.2",
+    "cors": "^2.8.6",
+    "exceljs": "^4.4.0",
+    "express": "^5.2.1",
+    "multer": "^2.0.2",
+    "xlsx": "^0.18.5"
+  }
+}

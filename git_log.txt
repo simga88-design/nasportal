@@ -1,0 +1,60 @@
+commit 7d0b8ce15acdcf120be052fff45f7bb4eaf5b4a6
+Author: simga88 <simga88@naver.com>
+Date:   Sat Feb 21 00:49:06 2026 +0900
+
+    feat: Implement initial server setup with new calendar, case management, and various administrative applications.
+
+ apps/approval.html                                 |  18 +-
+ apps/calendar_local.html                           |  57 +-
+ apps/doc_issue.html                                | 913 +++++++++++++++++----
+ apps/doc_issue.refactored.html                     | 856 +++++++++++++++++++
+ apps/doc_issue/definitions.js                      | 135 +++
+ apps/doc_issue/engine.js                           | 265 ++++++
+ apps/doc_issue/templates/confirmation.html         | 146 ++++
+ apps/doc_issue/templates/voucher.html              |  59 ++
+ apps/doc_numbering.html                            |  72 +-
+ apps/doc_templates/confirmation.html               | 401 +++++++++
+ apps/doc_templates/voucher.HTML                    | 714 ++++++----------
+ "apps/doc_templates/\353\241\234\352\263\240.png"  | Bin 0 -> 84245 bytes
+ ...3\264\355\231\225\354\235\270\354\204\234.HTML" | 597 ++++++++++++++
+ apps/profile_edit.html                             |  16 +-
+ apps/reply_letter.html                             | 605 ++++++++------
+ db/portal.sqlite                                   | Bin 98304 -> 11091968 bytes
+ db/portal.sqlite-shm                               | Bin 32768 -> 32768 bytes
+ db/portal.sqlite-wal                               | Bin 1038272 -> 7049352 bytes
+ index.html                                         |   7 +-
+ js/data_manager.js                                 |   8 +-
+ js/holidays.js                                     | 190 +++++
+ migrate.js                                         | 156 +---
+ server.js                                          |  75 +-
+ 23 files changed, 4218 insertions(+), 1072 deletions(-)
+
+commit 9e9ddc6ac322f463ea249dd9eb4b673febafafb1
+Author: simga88 <simga88@naver.com>
+Date:   Fri Feb 20 00:17:30 2026 +0900
+
+    갈길이멀다
+
+ apps/admin_manager.html         |   82 ++-
+ apps/approval.html              |  869 +++++++++++++++++++++++++
+ apps/calendar_local.html        | 1337 ++++++++++++++++-----------------------
+ apps/calendar_local.old.html    | 1058 +++++++++++++++++++++++++++++++
+ apps/case_management.html       |    2 +-
+ apps/circulation.html           |   13 +-
+ apps/doc_issue.html             |  246 +++++++
+ apps/doc_numbering.html         |  153 +----
+ apps/doc_templates/voucher.HTML |  529 ++++++++++++++++
+ apps/profile_edit.html          |  298 +++++++++
+ css/style.css                   |  130 ++++
+ db/portal.sqlite                |  Bin 0 -> 98304 bytes
+ db/portal.sqlite-shm            |  Bin 0 -> 32768 bytes
+ db/portal.sqlite-wal            |  Bin 0 -> 1038272 bytes
+ index.html                      |  213 ++++++-
+ js/config.js                    |   14 +-
+ js/data_manager.js              |    2 +-
+ migrate.js                      |  119 ++++
+ package-lock.json               | 1012 +++++++++++++++++++++++++++--
+ package.json                    |    8 +-
+ server.js                       |  637 +++++++++++++++++++
+ sync_from_gas.js                |  121 ++++
+ 22 files changed, 5819 insertions(+), 1024 deletions(-)

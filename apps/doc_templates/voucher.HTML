@@ -1,0 +1,282 @@
+﻿<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <title>의뢰서 템플릿</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet" />
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: #fff;
+        }
+
+        .paper {
+            width: 21cm;
+            min-height: 29.7cm;
+            box-sizing: border-box;
+            position: relative;
+            color: #000;
+        }
+
+        .doc-verification {
+            position: absolute;
+            bottom: 10mm;
+            right: 10mm;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 5px;
+            z-index: 100;
+        }
+
+        .doc-id-text {
+            font-size: 9px;
+            color: #94a3b8;
+            font-family: monospace;
+        }
+
+        #preview-voucher {
+            padding: 1.8cm;
+            font-family: 'Noto Sans KR', sans-serif;
+            font-size: 11pt;
+            line-height: 1.8;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        #preview-voucher .watermark {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(-45deg);
+            font-size: 40px;
+            color: rgba(0, 0, 0, 0.04);
+            font-weight: 800;
+            white-space: nowrap;
+            pointer-events: none;
+            letter-spacing: 10px;
+        }
+
+        #preview-voucher .title {
+            text-align: center;
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 25px;
+            letter-spacing: 8px;
+            color: #111;
+            margin-top: 0;
+        }
+
+        #preview-voucher .doc-table {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: fixed;
+        }
+
+        #preview-voucher .doc-table td {
+            border: 1px solid #adb5bd;
+            padding: 11px;
+            vertical-align: middle;
+        }
+
+        #preview-voucher .doc-table .basic-info td {
+            height: auto;
+        }
+
+        #preview-voucher .label {
+            background: #f1f3f5;
+            font-weight: 700;
+            text-align: center;
+            width: 120px;
+            color: #495057;
+        }
+
+        #preview-voucher .content-cell {
+            vertical-align: top !important;
+            height: 220px !important;
+            white-space: pre-wrap;
+        }
+
+        #preview-voucher .footer {
+            margin-top: auto;
+        }
+
+        #preview-voucher .footer p {
+            margin: 5px 0;
+        }
+
+        #preview-voucher .signature {
+            margin-top: 10px;
+            font-size: 12pt;
+            text-align: right;
+        }
+
+        #preview-voucher .chief {
+            font-size: 26px;
+            font-weight: 700;
+            margin-top: 20px;
+            margin-bottom: 40px;
+            letter-spacing: 4px;
+            text-align: center;
+        }
+
+        #preview-voucher .seal-text {
+            text-align: center;
+            margin: 0;
+        }
+
+        @media print {
+            @page {
+                size: A4 portrait;
+                margin: 0;
+            }
+
+            body {
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+                margin: 0;
+                padding: 0;
+            }
+
+            #preview-voucher {
+                padding: 15mm;
+            }
+
+            .doc-verification {
+                display: none !important;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div id="preview-voucher" class="paper">
+        <div class="watermark">제천시정신건강복지센터</div>
+        <h1 class="title">의 뢰 서</h1>
+        <table class="doc-table">
+            <colgroup>
+                <col style="width: 15%;">
+                <col style="width: 35%;">
+                <col style="width: 15%;">
+                <col style="width: 35%;">
+            </colgroup>
+            <tbody>
+                <tr class="basic-info">
+                    <td class="label">성명</td>
+                    <td id="fld_v_name"></td>
+                    <td class="label">성별</td>
+                    <td id="fld_v_gender"></td>
+                </tr>
+                <tr class="basic-info">
+                    <td class="label">생년월일</td>
+                    <td id="fld_v_birth"></td>
+                    <td class="label">연락처</td>
+                    <td id="fld_v_contact"></td>
+                </tr>
+                <tr>
+                    <td class="label">주소</td>
+                    <td colspan="3" id="fld_v_address"></td>
+                </tr>
+                <tr>
+                    <td class="label">주호소 문제</td>
+                    <td colspan="3" id="fld_v_mainIssue" style="white-space: pre-wrap;"></td>
+                </tr>
+                <tr>
+                    <td class="label">심리검사<br>실시 여부</td>
+                    <td colspan="3" id="fld_v_psyTest" style="white-space: pre-wrap;"></td>
+                </tr>
+                <tr>
+                    <td class="label">약물치료<br>여부</td>
+                    <td colspan="3" id="fld_v_medication"></td>
+                </tr>
+                <tr>
+                    <td class="label">의뢰 내용</td>
+                    <td colspan="3" class="content-cell" id="fld_v_content"></td>
+                </tr>
+            </tbody>
+        </table>
+        <div class="footer">
+            <p class="signature" id="fld_v_issueDate" style="font-size: 13pt; margin-bottom: 15px;"></p>
+            <p class="signature">의뢰담당자: <span id="fld_v_staffName"></span> <span id="fld_v_stamp"
+                    style="position:relative; display:inline-block; width:40px; text-align:center;">(인)</span></p>
+            <p class="signature" style="font-size: 10pt; color: #000;">문의처 : 043)646-3074, 5</p>
+            <div class="chief">
+                <p class="seal-text">제천시정신건강복지센터장</p>
+            </div>
+        </div>
+        <div class="doc-verification">
+            <div class="doc-id-text" id="v_doc_id"></div>
+        </div>
+    </div>
+
+    <script>
+        window.addEventListener('message', function (e) {
+            const data = e.data;
+            if (!data) return;
+
+            if (data.action === 'render') {
+                document.getElementById('fld_v_name').innerText = data.data.v_name || '';
+                document.getElementById('fld_v_birth').innerText = data.data.v_birth || '';
+                document.getElementById('fld_v_gender').innerText = data.data.v_gender || '';
+                document.getElementById('fld_v_contact').innerText = data.data.v_contact || '';
+                document.getElementById('fld_v_address').innerText = data.data.v_address || '';
+                document.getElementById('fld_v_staffName').innerText = data.data.issuer || '';
+
+                const stampContainer = document.getElementById('fld_v_stamp');
+                if (data.data.issuer_stamp) {
+                    stampContainer.innerHTML = `<img src="${data.data.issuer_stamp}" style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); max-width:50px; max-height:50px; opacity:0.9;" onerror="this.style.display='none'; this.parentElement.innerHTML='(인)';"/><span>(인)</span>`;
+                } else {
+                    stampContainer.innerHTML = '(인)';
+                }
+
+                const formatDt = (str) => {
+                    if (!str) return '____년 __월 __일';
+                    const d = new Date(str);
+                    if (isNaN(d.getTime())) return '____년 __월 __일';
+                    const offset = d.getTimezoneOffset() * 60000;
+                    const cDate = new Date(d.getTime() + offset);
+                    return `${cDate.getFullYear()}년 ${cDate.getMonth() + 1}월 ${cDate.getDate()}일`;
+                };
+                document.getElementById('fld_v_issueDate').innerText = formatDt(data.data.issueDate);
+
+                // Main Issue
+                const issues = data.data.v_mainIssue || [];
+                const uul = issues.includes('우울');
+                const bul = issues.includes('불안');
+                const gitaArr = issues.filter(i => i.startsWith('기타'));
+                const gita = gitaArr.length > 0;
+                const gitaTxt = data.data.v_mainIssue_other || '';
+
+                let issueHtml = `<span style="padding-right:20px;">${uul ? '☑' : '☐'} 우울</span>`;
+                issueHtml += `<span style="padding-right:20px;">${bul ? '☑' : '☐'} 불안</span>`;
+                issueHtml += `<span>${gita ? '☑' : '☐'} 기타(${gitaTxt || '___'})</span>`;
+                document.getElementById('fld_v_mainIssue').innerHTML = issueHtml;
+
+                // Psy Test
+                const phq = data.data.v_chk_phq9;
+                const phqS = data.data.v_score_phq9;
+                const gad = data.data.v_chk_gad7;
+                const gadS = data.data.v_score_gad7;
+                let testHtml = `<div><span style="display:inline-block; width: 50%;">${phq ? '☑' : '☐'} PHQ-9: ${phqS || '___'}점</span>`;
+                testHtml += `<span>${gad ? '☑' : '☐'} GAD-7: ${gadS || '___'}점</span></div>`;
+                document.getElementById('fld_v_psyTest').innerHTML = testHtml;
+
+                // Medication
+                const med = data.data.v_medication;
+                document.getElementById('fld_v_medication').innerHTML =
+                    `<span>${med === '있음' ? '☑' : '☐'} 있음</span><span style="padding-left: 50px;">${med === '없음' ? '☑' : '☐'} 없음</span>`;
+
+                document.getElementById('fld_v_content').innerHTML = (data.data.v_content || '').replace(/\n/g, '<br>');
+
+                document.getElementById('v_doc_id').innerText = data.data.doc_id || '';
+            } else if (data.action === 'print') {
+                window.print();
+            }
+        });
+    </script>
+</body>
+
+</html>

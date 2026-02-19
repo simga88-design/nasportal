@@ -1,0 +1,1222 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>?筌먦끇六욘ㅀ袁⑤뼬��뚳옙嶺뚯쉻�삕???占쎈츊占쎈룴??�뇦猿됲�쀯옙沅� ?占쎌뒩占쎈뼁??(System Ver.)</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <link rel="stylesheet" as="style" crossorigin
+        href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.8/dist/web/static/pretendard.css" />
+    <link rel="stylesheet" href="../css/modal.css">
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-hover: #1d4ed8;
+            --surface: #ffffff;
+            --background: #f1f5f9;
+            --border: #e2e8f0;
+            --text: #334155;
+            --text-muted: #64748b;
+        }
+
+        body {
+            font-family: 'Pretendard', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: var(--background);
+            color: var(--text);
+            height: 100vh;
+            box-sizing: border-box;
+            overflow: hidden;
+        }
+
+        .wrapper {
+            display: flex;
+            gap: 20px;
+            height: 100%;
+            max-width: 1920px;
+            margin: 0 auto;
+        }
+
+        /* ----- Left Panel ----- */
+        .left-panel {
+            flex: 0 0 450px;
+            background: var(--surface);
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            border: 1px solid var(--border);
+            z-index: 10;
+        }
+
+        .panel-header {
+            padding: 18px 20px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .panel-header h2 {
+            font-size: 16px;
+            font-weight: 700;
+            margin: 0;
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .file-controls {
+            display: flex;
+            gap: 8px;
+        }
+
+        .server-select {
+            padding: 6px;
+            border-radius: 6px;
+            border: 1px solid #cbd5e1;
+            font-size: 13px;
+            color: var(--text);
+            background: var(--surface);
+        }
+
+        .btn-file {
+            padding: 6px 12px;
+            background: #e2e8f0;
+            color: var(--text);
+            border: none;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .btn-file:hover {
+            background: #cbd5e1;
+        }
+
+        .panel-body {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 6px;
+            color: var(--text-muted);
+        }
+
+        .idx-label::after {
+            content: ' (?�뜝占�?�뿙占쎈뮔)';
+            font-size: 11px;
+            color: #f76707;
+            font-weight: normal;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            font-size: 14px;
+            font-family: inherit;
+            box-sizing: border-box;
+            transition: border-color 0.2s;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        .form-group input[readonly] {
+            background-color: #f8fafc;
+            color: #64748b;
+        }
+
+        .doc-num-input {
+            background-color: #eff6ff !important;
+            border-color: #93c5fd !important;
+            color: #2563eb !important;
+            font-weight: bold;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 60px;
+        }
+
+        .section-header {
+            display: block;
+            font-weight: 700;
+            font-size: 14px;
+            color: var(--primary);
+            margin: 20px 0 10px 0;
+            padding-bottom: 4px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .section-header:first-of-type {
+            margin-top: 0;
+        }
+
+        .divider {
+            height: 1px;
+            background: var(--border);
+            margin: 20px 0;
+        }
+
+        /* Checkboxes */
+        .checkbox-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .checkbox-group label {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 13px;
+            font-weight: normal;
+            margin: 0;
+            cursor: pointer;
+            color: var(--text);
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            width: auto;
+        }
+
+        /* ----- Center Panel ----- */
+        .center-panel {
+            flex: 1;
+            background: #4A5568;
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+            position: relative;
+        }
+
+        .output-header {
+            padding: 12px 20px;
+            background: #2D3748;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        .output-body {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            padding: 20px;
+        }
+
+        .preview-scale-wrapper {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Printable Area */
+        #printable-area {
+            background: white;
+            width: 210mm;
+            min-height: 297mm;
+            padding: 20mm 15mm;
+            box-sizing: border-box;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+            font-family: 'Malgun Gothic', 'Dotum', sans-serif;
+            position: relative;
+            transform-origin: center center;
+        }
+
+        .doc-title {
+            text-align: center;
+            font-size: 26pt;
+            font-weight: 800;
+            margin-bottom: 35px;
+            letter-spacing: -1px;
+        }
+
+        .doc-table {
+            width: 100%;
+            border-collapse: collapse;
+            border: 1px solid #000;
+            margin-bottom: 20px;
+            table-layout: fixed;
+        }
+
+        .doc-table th,
+        .doc-table td {
+            border: 1px solid #000;
+            padding: 4px 5px;
+            font-size: 10.5pt;
+            vertical-align: middle;
+            line-height: 1.3;
+            word-break: keep-all;
+        }
+
+        .doc-table th {
+            background-color: #e8e8e8;
+            text-align: center;
+            font-weight: 700;
+        }
+
+        .h-small {
+            height: 38px;
+        }
+
+        .result-box {
+            height: 350px;
+            vertical-align: top;
+            padding: 20px;
+            text-align: left;
+        }
+
+        .result-item {
+            margin-bottom: 25px;
+            display: flex;
+        }
+
+        .result-label {
+            font-weight: bold;
+            width: 90px;
+            flex-shrink: 0;
+        }
+
+        .result-content {
+            flex: 1;
+            white-space: pre-wrap;
+        }
+
+        .footer-wrap {
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .footer-date {
+            font-size: 14pt;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        .footer-info {
+            font-size: 11pt;
+            margin-bottom: 20px;
+            line-height: 1.4;
+        }
+
+        .footer-chief {
+            font-size: 24pt;
+            font-weight: 800;
+            letter-spacing: 2px;
+        }
+
+        /* Buttons */
+        .btn {
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 13px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            transition: 0.2s;
+        }
+
+        .btn-sheet {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-sheet:hover {
+            background: var(--primary-hover);
+        }
+
+        .btn-pdf {
+            background: #e2e8f0;
+            color: var(--text);
+        }
+
+        .btn-pdf:hover {
+            background: #cbd5e1;
+        }
+
+        .btn-print {
+            background: #fff;
+            color: var(--text);
+            border: 1px solid #cbd5e1;
+        }
+
+        .btn-print:hover {
+            background: #f8fafc;
+        }
+
+        .btn-warn {
+            background: #f59e0b;
+            color: white;
+        }
+
+        .btn-warn:hover {
+            background: #d97706;
+        }
+
+        @media print {
+
+            body,
+            .wrapper,
+            .center-panel,
+            .output-body {
+                background: white !important;
+                height: auto;
+                overflow: visible;
+                display: block;
+            }
+
+            body * {
+                visibility: hidden;
+            }
+
+            #printable-area,
+            #printable-area * {
+                visibility: visible;
+            }
+
+            #printable-area {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+                margin: 0;
+                padding: 0;
+                box-shadow: none;
+                transform: scale(1) !important;
+            }
+
+            @page {
+                size: A4 portrait;
+                margin: 10mm;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div id="loadingOverlay"
+        style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.3); z-index:9999; justify-content:center; align-items:center; flex-direction:column; backdrop-filter: blur(2px);">
+        <div
+            style="border: 5px solid #f3f3f3; border-top: 5px solid #1e3a8a; border-radius: 50%; width: 50px; height: 50px; animation: spin 1s linear infinite;">
+        </div>
+        <div id="loadingMsg"
+            style="margin-top:20px; font-weight:bold; color:white; text-shadow: 1px 1px 3px rgba(0,0,0,0.5); font-size:18px;">
+            嶺뚳퐣瑗띰옙遊� 繞벿살탳占쎈엷?占쎈쐞占쎈펲...</div>
+    </div>
+    <style>
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+    <div class="wrapper">
+        <div class="left-panel">
+            <div class="panel-header">
+                <h2><i class="fas fa-file-contract"></i> ?占쎄섬占쏙옙 ?占쎌뒩占쎈뼁 ?筌먲퐢沅� ?占쎄턁占쎌졑</h2>
+                <div class="file-controls">
+                    <button id="btnUnlock" class="btn-file" style="display:none; background:#f59e0b; color:white;"
+                        onclick="enableEditMode()">?��억옙 ?占쎄섭占쎌젧</button>
+                    <select id="pendingList" class="server-select" onchange="selectPendingItem()">
+                        <option value="">[嶺뚮ㅄ維뽨빳占� 占쎄껀占쎈쐞占쎌몠?占쎈걝�뵳占�]</option>
+                    </select>
+                    <button class="btn-file" onclick="loadPendingList()" title="?占쎈쐞餓λ뛽占썩뫁伊숃눧占�"><i
+                            class="fas fa-sync-alt"></i></button>
+                    <button class="btn-file" onclick="clearData()" style="color:#ef4444;" title="占쎈／占쎈쐝�뵳占�??><i
+                            class="fas fa-trash"></i></button>
+                </div>
+            </div>
+
+            <div class="panel-body">
+                <input type="hidden" id="rowIndex">
+                <input type="hidden" id="loadCategory">
+
+                <span class="section-header">1. �뼨轅명�∽옙沅� ?筌먲퐢沅�</span>
+                <div class="form-group">
+                    <label class="idx-label">?占쎌뒩占쎈뼁占쏙옙�뫀踰됪룇�뵓怨뺣쐡占쎄퉰</label>
+                    <div style="display: flex; gap: 5px;">
+                        <input type="text" id="docNumber" class="doc-num-input" placeholder="�뵓怨뺣쐡占쎄퉰 �뛾�룇裕꾬옙�땵 �뵓怨뚯뫓占쎈괏???熬곣뱿���?筌뤾쑴�뭵" readonly>
+                        <button class="btn-file"
+                            style="background:#fcc419; font-weight:bold; white-space:nowrap; padding: 6px 12px; width: auto; min-width: 80px;"
+                            onclick="issueDocNumber()">?占쏙옙蹂��벐?筌뤾퍔六ｇ뼨占�?/button>
+                    </div>
+                </div>
+
+                <div class="form-group"><label>?�눧誘⑸빢?占쎈닔占쎌겱</label><input type="date" id="receptionDate"></div>
+                <div class="form-group"><label>?占쎌뒩占쎈뼁?占쎈닔占쎌겱</label><input type="date" id="replyDate"></div>
+                <div class="form-group"><label>?占쏙옙占쏙옙堉�??/label><input type="text" id="staffName" value="?占쎈뜇�눂??></div>
+
+                <div class="divider"></div>
+
+                <span class="section-header">2. ?�뜝占�?��⑤챷�겱 ?筌먲퐢沅�</span>
+                <div class="form-group"><label>?繹먮굞援�</label><input type="text" id="clientName" placeholder="?占쎌뵩筌랃옙??></div>
+                <div class="form-group"><label>?占쎈퉾占쏙옙占�?�겫�슦逾�(6?�솒占쏙옙遊�)</label><input type="text" id="birth" placeholder="900101">
+                </div>
+                <div class="form-group"><label class="idx-label">?繹먮굟占쏙옙</label>
+                    <select id="gender">
+                        <option>?占쎈쳛�땻占�</option>
+                        <option>?占쎈봽�뎽</option>
+                    </select>
+                </div>
+                <div class="form-group"><label>�썒�슣�닔占쎄틬</label><input type="text" id="address"></div>
+                <div class="form-group"><label>?��⑤벡逾�嶺뚳옙?/label><input type="text" id="contact"></div>
+
+                <div class="divider"></div>
+
+                <span class="section-header">3. �뼨轅명��? ?筌먲퐢沅�</span>
+                <div class="form-group"><label class="idx-label">�뼨轅명��?占쎈쨨占쎈맪���</label>
+                    <select id="agencyType">
+                        <option value="?占쎈㎥占쎌젧�뼨轅명��?">?占쎈㎥占쎌젧�뼨轅명��?</option>
+                        <option value="?占쎄섬筌앸렇臾얏�⑨옙?">?占쎄섬筌앸렇臾얏�⑨옙?</option>
+                        <option value="?筌먦끇六욜솻洹ｋ뼬�뤃遺밸Ь��⑨옙?">?筌먦끇六욜솻洹ｋ뼬�뤃遺밸Ь��⑨옙?</option>
+                        <option value="嶺뚯쉻�삕??亦낉옙?占쎌뒦�뵳寃쎄슈�뜝占�">嶺뚯쉻�삕??亦낉옙?占쎌뒦�뵳寃쎄슈�뜝占�</option>
+                    </select>
+                </div>
+                <div class="form-group"><label>?筌륅옙? �뼨轅명��?嶺뚳옙?(?占쎄섭占쎈뼁嶺뚳옙?</label><input type="text" id="agencyDetail"
+                        placeholder="?? OO�솻洹ｌ탳占쎈쐸"></div>
+                <div class="form-group">
+                    <label>?占쎄섬占쎈Ł臾얏�⑨옙? ?占쏙옙占쏙옙堉�??/label>
+                    <input type="text" id="agencyContact" placeholder="?�솒占썹뙴占� ?占쎄턁占쎌졑??>
+                </div>
+                <div class="divider"></div>
+
+                <span class="section-header">4. ?占쎄섬占쏙옙 �뛾占�?�뇦猿됲�쀯옙沅�</span>
+                <div class="form-group"><label class="idx-label">?占쎄섬占쎈Ł琉껓옙�맪��� (嶺뚮ㅄ維쀯옙�쓤)</label>
+                    <select id="requestType">
+                        <option value="?占쎈맍遊븅뇦猿볦삕??>?占쎈맍遊븅뇦猿볦삕??/option>
+                        <option value="?熬곣뫁夷��윜諛몄굡占쎌궕">?熬곣뫁夷��윜諛몄굡占쎌궕</option>
+                        <option value="?熬곥룗�뵛(?�눧濡곕땵)�뤆�룇裕뉛옙肉�">?熬곥룗�뵛(?�눧濡곕땵)�뤆�룇裕뉛옙肉�</option>
+                        <option value="�솻洹ｌ탳占쎈꺄?�솒占썼굢寃쏙옙占�?>�솻洹ｌ탳占쎈꺄?�솒占썼굢寃쏙옙占�?/option>
+                        <option value="?��⑤８堉� �뛾占�??占쏙옙?占쎄슈�뜝�뜾逾�?>?��⑤８堉� �뛾占�??占쏙옙?占쎄슈�뜝�뜾逾�?/option>
+                        <option value="�뼨轅명��?">�뼨轅명��?</option>
+                    </select>
+                </div>
+                <div class="form-group"><label>?占쎈봿占쏙옙 (占쎈닱筌뤾쑨�맋??</label><input type="text" id="requestReason"
+                        placeholder="占쎈쨨占쎈봽�뜢???占쎈봿占쏙옙"></div>
+
+                <hr style="margin: 10px 0; border: 0; border-top: 1px dashed #ccc;">
+                <p style="font-size:12px; color:#1c7ed6; font-weight:bold;">??[�뇦猿됲�쀯옙沅�] �뛾�룆踰∽옙裕� ?��⑤㈇�돪 ?占쎈샍占쎈뮔</p>
+
+                <div class="form-group"><label>???占쎄섬占쎈Ł占썩뫁�닔占쎌젧</label><textarea
+                        id="processContent">2026.00.00. ?占쎄섬占쏙옙 ?�눧誘⑸빢??</textarea></div>
+                <div class="form-group"><label>???��⑤８堉�?占쎈샍占쎈뮔</label><textarea id="counselingContent">占쎈／占쎈쐝�뵳占�?��⑤８堉� �뛾占�??占쎈㏄? 嶺뚯쉳�뫓筌묕옙??</textarea>
+                </div>
+
+                <div class="form-group">
+                    <label class="idx-label">??占쎈퉲�뀎占쏙옙�쐩 占쎄슈�뜝�뜾逾�?(�댖怨뚰�ｏ옙�뭵�뇦猿됲�쀯옙沅�)</label>
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="chk_1" name="actionResult" value="1.嶺뚯쉻�삕?占쎌뵰疫뀐옙??><label for="chk_1">1.
+                            嶺뚯쉻�삕?占쎌뵰疫뀐옙??/label>
+                        <input type="checkbox" id="chk_2" name="actionResult" value="2.�뇖�궡瑗띰쭩釉낅쑏熬곻옙???><label for="chk_2">2.
+                            �뇖�궡瑗띰쭩釉낅쑏熬곻옙???/label>
+                        <input type="checkbox" id="chk_3" name="actionResult" value="3.?占쎈츊占쎈룴??濾곌쑨���?"><label for="chk_3">3. ?占쎈츊占쎈룴??
+                            濾곌쑨���?</label>
+                        <input type="checkbox" id="chk_4" name="actionResult" value="4.�뼨轅명��??��⑤슦占쏙옙"><label for="chk_4">4.
+                            �뼨轅명��??��⑤슦占쏙옙</label>
+                        <input type="checkbox" id="chk_5" name="actionResult" value="5.?占쎈㎥占쎌젧嶺뚯쉻�삕??><label for="chk_5">5.
+                            ?占쎈㎥占쎌젧嶺뚯쉻�삕??/label>
+                        <input type="checkbox" id="chk_6" name="actionResult" value="6.�뼨轅명��?"><label for="chk_6">6.
+                            �뼨轅명��?</label>
+                    </div>
+                </div>
+
+                <div class="form-group"><label>占쎈퉲�뀎占쏙옙�쐩 占쎄슈�뜝�뜾逾�??��⑤㈇�돪?占쎈샍占쎈뮔</label><textarea
+                        id="futurePlan">�솻占�??占쎈닗�땻占� ?繹먮굞夷� ???占쏙옙?占쎄슈�뜝�뜾逾�??占쎈츊占쎈룴???占쎈츇占쎄텢 ?占쎈쐠占쎌젧??</textarea></div>
+
+                <div class="form-group"><label class="idx-label">?占쎈츇占쎄텢?占쎈츊占쎈룴??�뛾�렮維뽬떋占�</label>
+                    <select id="serviceMethod">
+                        <option>1.�뛾�렮維뽪룇</option>
+                        <option>2.?熬곥굦�꼨</option>
+                        <option>3.?占쎈샍占쎄틬</option>
+                        <option>4.�뼨轅명��?</option>
+                    </select>
+                </div>
+                <div class="form-group"><label>嶺뚯쉳�뫓筌묕옙?��⑤���꽯</label><input type="text" id="progressStatus" value="占쎈꽞占쎄탿�뙼占� / ?繹먮굞夷� / ?��⑤슦占쏙옙">
+                </div>
+            </div>
+        </div>
+
+        <div class="center-panel">
+            <div class="output-header">
+                <button id="btnSave" class="btn btn-sheet" onclick="completeProcess()"><i
+                        class="fas fa-cloud-upload-alt"></i> ?占쎌뒩占쎈뼁 ?熬곣뫁�뵹 (?占쎈츊�떋占� ?�뜝占�??</button>
+                <button class="btn btn-pdf" onclick="executePdf()"><i class="fas fa-file-pdf"></i> PDF ?�뜝占�??/button>
+                <button class="btn btn-print" onclick="executePrint()"><i class="fas fa-print"></i> ?筌뤾쑬�눝?占쎄섧�뵳占�</button>
+            </div>
+            <div class="output-body">
+                <div class="preview-scale-wrapper" id="preview-wrapper">
+                    <div id="printable-area">
+                        <div class="doc-title">?筌먦끇六욘ㅀ袁⑤뼬��뚳옙嶺뚯쉻�삕???占쎈츊占쎈룴??�뇦猿됲�쀯옙沅� ?占쎌뒩占쎈뼁??/div>
+
+                        <table class="doc-table">
+                            <colgroup>
+                                <col style="width: 15%;">
+                                <col style="width: 15%;">
+                                <col style="width: 25%;">
+                                <col style="width: 15%;">
+                                <col style="width: 35%;">
+                            </colgroup>
+                            <tr class="h-small">
+                                <th>?占쎌뒩占쎈뼁?占쎈닔占쎌겱</th>
+                                <td colspan="2" id="view_replyDate" style="text-align:center;"></td>
+                                <th>?占쎌뒩占쎈뼁占쎄껀�뜝占�??/th>
+                                <td style="text-align:center;">?占쎈츋�뜎占�?占쎈츋占쎌젧?�넫�맦�꺑�뤆�룆踰좑옙沅쀧춯�쉻�삕?占쎈닗�땻占�</td>
+                            </tr>
+                            <tr class="h-small">
+                                <th rowspan="2">?�뜝占�?��⑤챷�겱</th>
+                                <th>?繹먮굞援�</th>
+                                <td id="view_clientName" style="text-align:center;"></td>
+                                <th>�썒�슣�닔占쎄틬</th>
+                                <td id="view_address" style="text-align:left; padding-left:10px;"></td>
+                            </tr>
+                            <tr class="h-small">
+                                <th style="font-size: 9pt;">?占쎈퉾占쏙옙占�?�겫�슦逾�/?繹먮굟占쏙옙</th>
+                                <td id="view_birthGender" style="text-align:center;"></td>
+                                <th>?��⑤벡逾�嶺뚳옙?/th>
+                                <td id="view_contact" style="text-align:center;"></td>
+                            </tr>
+                            <tr class="h-small" style="height: 50px;">
+                                <th>?占쎄섬占쎈㉡彛쀯옙維쀯옙�쓤<br>(?占쎈봿占쏙옙)</th>
+                                <td colspan="4" style="text-align:left; padding-left:10px;">
+                                    [<span id="view_requestType"></span>] <span id="view_requestReason"></span>
+                                </td>
+                            </tr>
+                            <tr class="h-small">
+                                <th>?占쎄섬占쏙옙?占쎈닔占쎌겱</th>
+                                <td colspan="4" id="view_receptionDate" style="text-align:left; padding-left:10px;">
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>�뇦猿됲�쀯옙沅�</th>
+                                <td colspan="4" class="result-box">
+                                    <div class="result-item">
+                                        <div class="result-label">???占쎄섬占쎈Ł占썩뫁�닔占쎌젧:</div>
+                                        <div class="result-content" id="view_processContent"></div>
+                                    </div>
+                                    <div class="result-item">
+                                        <div class="result-label">???��⑤８堉�?占쎈샍占쎈뮔:</div>
+                                        <div class="result-content" id="view_counselingContent"></div>
+                                    </div>
+                                    <div class="result-item">
+                                        <div class="result-label">??占쎈퉲�뀎占쏙옙�쐩 占쎄슈�뜝�뜾逾�?</div>
+                                        <div class="result-content" id="view_futurePlan"></div>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr class="h-small">
+                                <th>嶺뚯쉳�뫓筌묕옙?��⑤���꽯</th>
+                                <td colspan="4" id="view_progressStatus" style="text-align:left; padding-left:10px;">
+                                </td>
+                            </tr>
+                            <tr class="h-small">
+                                <th>?占쎄섭占쎈뼁嶺뚳옙?/th>
+                                <td colspan="2" id="view_agencyDetail" style="text-align:left; padding-left:10px;"></td>
+                                <th>?占쏙옙占쏙옙堉�??/th>
+                                <td style="text-align:center;" id="view_agencyContact"></td>
+                            </tr>
+                        </table>
+
+                        <div style="text-align: center; margin-top: 30px; font-size: 11pt;">
+                            <p>?占쎄섬占쏙옙???�뜝占�?��⑤챷�겱???�뜝占�??嶺뚳퐣瑗띰옙遊� �뇦猿됲�쀯옙沅�占쎈ご??占쎌뒩占쎈뼁?占쎄섭占쎄텕???占쎄턁甸�??嶺뚣�볝늾占쏙옙占�?占쎄섭占쎈뻣�뼨占�?�뛾�룆���占쎈옐?占쎈쐞占쎈펲.</p>
+                        </div>
+
+                        <div class="footer-wrap">
+                            <p class="footer-date" id="view_todayDate"></p>
+                            <div class="footer-info">
+                                <p>?占쏙옙占쏙옙堉�??: ?占쎈츋�뜎占�?占쎈츋占쎌젧?�넫�맦�꺑�뤆�룆踰좑옙沅쀧춯�쉻�삕?占쎈닗�땻占� <span id="view_staffName"></span></p>
+                                <p>占쎈닱筌뤾쑴踰�?熬곥굦�꼨 : 043)646-3074</p>
+                            </div>
+                            <div class="footer-chief">?占쎈츋�뜎占�?占쎈츋占쎌젧?�넫�맦�꺑�뤆�룆踰좑옙沅쀧춯�쉻�삕?占쎈닗�땻占�??/div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="../js/config.js"></script>
+    <script src="../js/modal.js"></script>
+    <script>
+        // Modal Fallback: If parent.Modal is not accessible, use local Modal
+        const SystemModal = (typeof parent !== 'undefined' && parent.Modal) ? parent.Modal : (typeof Modal !== 'undefined' ? Modal : {
+            alert: (msg) => { alert(msg); return Promise.resolve(true); },
+            confirm: (msg) => { return Promise.resolve(confirm(msg)); }
+        });
+
+        // ?占쎈뇵�젆占�???占쎈쾹�뜮占� API �썒�슣�닔占쎄틬 ?占쎈뇵�젆占�??
+        const UNIFIED_URL = BASE_URL; // from config.js
+
+        const SCRIPT_URL = UNIFIED_URL;
+        const DOC_API_URL = UNIFIED_URL;
+
+        let pendingDataMap = {};
+
+        // 亦껋꼶梨띰옙遊븀솻洹ｋ뼬�뵳占�??ID 嶺뚮ㅄ維뽨빳占�
+        // ?占쎈뇵�젆占�??[?占쎄섭占쎌젧 ?? 'agencyContact' ?占쎄섬�뤃諭꾩춹???嶺뚯쉶理먨젆占�?影��슣紐�?筌뤾쑴�뭵 ?占쎈뇵�젆占�??
+        const inputIds = [
+            'docNumber', 'receptionDate', 'replyDate', 'staffName',
+            'clientName', 'birth', 'gender', 'address', 'contact',
+            'agencyType', 'agencyDetail', 'agencyContact', // ???占쎈뜄�뵛 占쎈퉲�겫占�?!
+            'requestType', 'requestReason',
+            'processContent', 'counselingContent',
+            'futurePlan', 'serviceMethod', 'progressStatus'
+        ];
+
+        // --- 占쎈／占쎈쐝�뵳占�??---
+        document.addEventListener("DOMContentLoaded", () => {
+            const today = new Date().toISOString().slice(0, 10);
+
+            // URL ?占쎌뒧占쎈뎄亦껋꼶梨멱땻占� ?筌먦끉逾�
+            const urlParams = new URLSearchParams(window.location.search);
+            const mode = urlParams.get('mode');
+            const rowIndex = urlParams.get('rowIndex');
+            const category = urlParams.get('category'); // �뇖�궠�샑占쏙옙誘ㅿ옙�뫁伊볩옙遊� �뤆�룆占썩뫖利� �뛾�룇猷뉛옙踰�
+
+            if (mode === 'view' && rowIndex && category) {
+                loadCompletedCase(category, rowIndex);
+            } else {
+                document.getElementById('replyDate').value = today;
+                // ???占쎈뜄�뵛??rowIndex?�뜝占� category占쎈ご??????占쎄섧�댆�뇤鍮놂옙瑗룬뜮占� '嶺뚮∥�뵯�빊占�??占쎈ご??筌먐쇰꼪??嶺뚢돦堉싷옙裕�?占쎈쐞占쎈펲.
+                loadPendingList(rowIndex, category);
+            }
+
+            // ?占쎄턁占쎌졑 �뤆�룆흮??占쎄섭�굢占� 亦껋꼶梨띰옙遊븀솻洹ｋ뼬�뵳占� ?占쎄턁占쎌몥?占쎈샑占쎈콦
+            inputIds.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.addEventListener('input', updatePreview);
+            });
+        });
+
+
+        // ?占쎈뇵�젆占�??[�슖�돦裕녽�억옙 ?占쎈츋�젆占� ?占쎈쳛占쎈빢 占쎈퉲�겫占�?] ?占쎈뇵�젆占�??
+        function showLoading(show, msg = "嶺뚳퐣瑗띰옙遊� 繞벿살탳占쎈엷?占쎈쐞占쎈펲...") {
+            const overlay = document.getElementById('loadingOverlay');
+            const msgEl = document.getElementById('loadingMsg');
+            if (show) {
+                msgEl.innerText = msg;
+                overlay.style.display = 'flex'; // ?�겫�뻼�듆 ?�넫�맪�땴
+            } else {
+                overlay.style.display = 'none'; // ?�넫�맪�땴 ?占쎈샍占쎌젷
+            }
+        }
+        // ?饔낅∥�꽎??[占쎈퉲�겫占�? ?? ?饔낅∥�꽎??
+
+        // ============================================================
+        // [�뼨轅명�∽옙裕� 1] ?熬곣뫁�뵹???占쎌뒩占쎈뼁???��⑤㈇�돪 ?占쎈샍占쎈뮔 占쎄껀占쎈쐞占쎌몠?占쎈걝�뵳占� (View Mode)
+        // ============================================================
+        function loadCompletedCase(category, rowIndex) {
+            // UI 占쎈／占쎈쐝�뵳占�??
+            document.querySelector('.panel-header h2').innerText = "?占쎌뒩占쎈뼁??�댖怨뚰�э옙�뤂 (?熬곣뫁�뵹??";
+
+            // ???占쎄섭占쎌젧 �뵓怨뚯뫓占쎈괏 ?筌뤾쑵��� 占쎈／占쎈쐝�뵳占�??
+            document.getElementById('btnUnlock').style.display = 'none';
+
+            // ?占쎈뇵�젆占�??[占쎈퉲�겫占�?] �슖�돦裕녽�억옙 ?占쎈츋占쎌굚 ?占쎈뇵�젆占�??
+            showLoading(true, "?占쎌뒩占쎈뼁???筌먲퐢沅뽳옙紐�?占쎄껀占쎈쐞占쎌몠?占쎈걞占쎈츎 繞벿살탳占쎈엷?占쎈쐞占쎈펲...");
+
+            fetch(SCRIPT_URL, {
+                method: 'POST',
+                redirect: 'follow',
+                headers: { "Content-Type": "text/plain;charset=utf-8" },
+                body: JSON.stringify({
+                    action: "get_case_detail",
+                    category: category,
+                    rowIndex: rowIndex
+                })
+            })
+                .then(res => res.json())
+                .then(json => {
+                    const data = json.data.data;
+                    if (!data) { SystemModal.alert("?��⑥�щ턄?��⑨옙? 占쎄껀占쎈쐞占쎌몠?占쎈걠? 嶺뚮쪇沅�筌묕옙?占쎈쾳占쎈퉵??"); return; }
+
+                    // --- ?��⑥�щ턄??嶺뚳옙熬곣뫗�뮡�뼨占�?(�뼨轅명�ｏ옙占쏙옙 占쎄턀�겫�뼔援�?�뜝占� ?占쎈듌占쎈뎄) ---
+                    document.getElementById('rowIndex').value = rowIndex; // ??繞벿살탳占쎈뭵: ?�뜝占�???熬곣뫚�뭵
+                    document.getElementById('loadCategory').value = category; // ??繞벿살탳占쎈뭵: �뇖�궠�샑占쏙옙誘ㅿ옙�뫁伊볩옙遊�
+
+                    document.getElementById('docNumber').value = data.docNum || "";
+                    document.getElementById('receptionDate').value = data.date || "";
+                    document.getElementById('replyDate').value = data.replyDate || "";
+                    if (data.staffName) document.getElementById('staffName').value = data.staffName;
+
+                    document.getElementById('clientName').value = data.name || "";
+                    document.getElementById('birth').value = data.birth || "";
+
+                    // Agency 占쎄슈�뜝占�??
+                    if (data.agency) document.getElementById('agencyDetail').value = data.agency;
+                    if (data.agencyContact) document.getElementById('agencyContact').value = data.agencyContact; // ?占쏙옙占쏙옙堉�??
+                    if (data.agencyType) document.getElementById('agencyType').value = data.agencyType;
+
+                    // �뼨轅명��? ?熬곣뫀援�
+                    if (document.getElementById('address')) document.getElementById('address').value = data.address || "";
+                    if (document.getElementById('contact')) document.getElementById('contact').value = data.contact || "";
+                    if (document.getElementById('requestType')) document.getElementById('requestType').value = data.reqType || "�뼨轅명��?";
+                    if (document.getElementById('requestReason')) document.getElementById('requestReason').value = data.reqReason || "";
+
+                    if (data.gender) {
+                        let g = data.gender.trim();
+                        document.getElementById('gender').value = (g === "?? || g === "?占쎈쳛�땻占�") ? "?占쎈쳛�땻占�" : "?占쎈봽�뎽";
+                    }
+
+                    // �뇦猿됲�쀯옙沅� ?��⑤㈇�돪
+                    document.getElementById('processContent').value = data.processContent || "";
+                    document.getElementById('counselingContent').value = data.counselingContent || "";
+                    document.getElementById('futurePlan').value = data.actionResult || "";
+                    if (document.getElementById('serviceMethod')) document.getElementById('serviceMethod').value = data.serviceMethod || "1.�뛾�렮維뽪룇";
+                    if (document.getElementById('progressStatus')) document.getElementById('progressStatus').value = data.progressStatus || "";
+
+                    // 嶺뚳퐢�샑野껊틺爾몌쭚�끇裕� 嶺뚳퐣瑗띰옙遊�
+                    if (data.actionResult) {
+                        const checkboxes = document.querySelectorAll('input[name="actionResult"]');
+                        checkboxes.forEach(cb => {
+                            cb.checked = data.actionResult.includes(cb.value);
+                        });
+                    }
+
+                    // --- UI ?�넫�맪�땴 �뛾占�??占쎄섭占쎌젧�뵓怨뚯뫓占쎈괏 ?占쎈츋�땻占�??---
+                    disableAllInputs(); // ?占쎈닑占쎈펺 ???�넫�맪�땴
+
+                    // ??[?占쎈쾴占쎈펿] ?占쎄섭占쎌젧?占쎄섧�뵳占� �뵓怨뚯뫓占쎈괏??�솻洹ｋ샍�굢�귣뭄占쎌뵯占쎈퉵??
+                    document.getElementById('btnUnlock').style.display = 'inline-block';
+
+                    // ?占쎈츊占쎈뙓?占쎈걠占쎈뮧 ?占쎈츋占쎈뻣
+                    const selectEl = document.getElementById('pendingList');
+                    selectEl.innerHTML = `<option selected>[?熬곣뫁�뵹] ${data.name}</option>`;
+                    selectEl.disabled = true;
+
+                    updatePreview();
+                })
+                .catch(err => {
+                    console.error(err);
+                    SystemModal.alert("?��⑤㈇�돪 �댖怨뚰�э옙�뤂 繞볩옙??占쎈걞筌잞옙 �뛾�룇裕뉑틦占�");
+                })
+                .finally(() => {
+                    showLoading(false);
+                });
+        }
+
+        function disableAllInputs() {
+            // ?筌뤾쑬�눝, PDF, ?占쎄틒�뵳占� �뵓怨뚯뫓占쎈괏, �윜諛몄굡占쎈뉴占쏙옙占�????占쎄섭占쎌젧?占쎄섧�뵳占� �뵓怨뚯뫓占쎈괏]?占쎄턂? ?�넫�맧�쟽嶺뚯쉻�삕 嶺뚮씭흮�뇡占�???占쎈쳳占쎈퉵??
+            document.querySelectorAll('input, select, textarea, button').forEach(el => {
+                if (
+                    !el.classList.contains('btn-print') &&
+                    !el.classList.contains('btn-pdf') &&
+                    el.id !== 'btnUnlock' // ????繞벿븐뫒占쎈턄 占쎈퉲�겫占�??占쎄섭�굢占�?占쎈쾳占쎈퉵?? (?占쎄섭占쎌젧�뵓怨뚯뫓占쎈괏 ?占쎈츋占쎈뇶)
+                ) {
+                    el.disabled = true;
+                }
+            });
+
+            // ?�뜝占�??�뵓怨뚯뫓占쎈괏?�뜝占� ?占쎈닑占쎈펺 ?占쎈た�뵳寃쏙옙占�?占쎈쑏熬곥굦�꽎?繹먮봿�꼨 (?占쎄섭占쎌젧 嶺뚮ㅄ維�獄�占� ?熬곣뱿���嶺뚳옙??占쎈샍�뇡占�??
+            const saveBtn = document.getElementById('btnSave');
+            if (saveBtn) {
+                saveBtn.style.display = 'none';
+                saveBtn.disabled = true; // ?筌먦끇堉�?占쎄섧�떋占� ?�넫�맪�땴
+            }
+        }
+
+        // ============================================================
+        // [�뼨轅명�∽옙裕� 2] ?�눧誘⑥뎽 嶺뚮ㅄ維�獄�占�??嶺뚮ㅄ維뽨빳占� 占쎄껀占쎈쐞占쎌몠?占쎈걝�뵳占� (?�솒占썹뙴占� ?�넫琉얜Ц �뼨轅명�∽옙裕� �뤆�룆踰ㅿ옙�꼨)
+        function loadPendingList(targetRowIndex = null, targetCategory = null) {
+            const categories = ['?熬곣뫀吏�', '?繹먮냱逾�', '?�솒占썸쾮占�', '?占쎈샍占쎈쐸?占쎈봾堉�?占쎈쾳占쎄텠'];
+
+
+            const selectEl = document.getElementById('pendingList');
+
+            // ?占쎈뇵�젆占�??[占쎈퉲�겫占�?] �슖�돦裕녽�억옙 ?占쎈츋占쎌굚 ?占쎈뇵�젆占�??
+            showLoading(true, "?�뜝�뜽臾�?嶺뚮ㅄ維뽨빳占�??�뤆�룄�돫占쎈뼁 繞벿살탳占쎈엷?占쎈쐞占쎈펲...");
+
+            selectEl.innerHTML = '<option>?��⑥�щ턄?��⑨옙? 占쎄껀占쎈쐞占쎌몠?占쎈걞占쎈츎 繞벿살탳占쎈엷?占쎈쐞占쎈펲...</option>';
+            selectEl.disabled = true;
+
+            Promise.all(categories.map(cat =>
+                fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    redirect: 'follow',
+                    headers: { "Content-Type": "text/plain;charset=utf-8" },
+                    body: JSON.stringify({ action: "get_pending", category: cat })
+                })
+                    .then(res => res.json())
+                    .then(json => {
+                        const list = json.list || (json.data && json.data.list) || [];
+                        list.forEach(item => item._category = cat);
+                        return list;
+                    })
+                    .catch(err => [])
+            ))
+                .then(results => {
+                    const combinedList = results.flat();
+                    combinedList.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+                    selectEl.innerHTML = '<option value="">?�뜝占�?��⑤챷�겱占쎈ご??�넫琉얜Ц?占쎈샍塋딉옙?筌뤾쑴�뭵</option>';
+                    pendingDataMap = {};
+
+                    if (combinedList.length > 0) {
+                        combinedList.forEach(item => {
+                            // ?占쎈뇵�젆占�??[?占쎄섭占쎌젧] �뛾�룄�돯占쎈폆(`) 占쎈퉲�겫占�????占쎈뇵�젆占�??
+                            const uniqueKey = `${item._category}_${item.rowIndex}`;
+                            const opt = document.createElement('option');
+                            opt.value = uniqueKey;
+                            opt.text = `[${item._category}] ${item.name} (${item.date})`;
+                            // ?饔낅∥�꽎??[?占쎄섭占쎌젧 ?? ?饔낅∥�꽎??
+                            selectEl.appendChild(opt);
+                            pendingDataMap[uniqueKey] = item;
+                        });
+                    } else {
+                        selectEl.innerHTML += '<option disabled>?�뜝�뜽臾얏�⑥�с돡??濾곌쑬�샍占쎈턄 ?占쎈꺊占쎈��?占쎈쐞占쎈펲</option>';
+                    }
+                    selectEl.disabled = false;
+
+                    if (targetRowIndex) {
+                        let foundKey = null;
+                        if (targetCategory) {
+                            // ?占쎈뇵�젆占�??[?占쎄섭占쎌젧] �뛾�룄�돯占쎈폆(`) 占쎈퉲�겫占�????占쎈뇵�젆占�??
+                            const tryKey = `${targetCategory}_${targetRowIndex}`;
+                            if (pendingDataMap[tryKey]) foundKey = tryKey;
+                        }
+                        if (!foundKey) {
+                            foundKey = Object.keys(pendingDataMap).find(k => k.endsWith(`_${targetRowIndex}`));
+                            // ?饔낅∥�꽎??[?占쎄섭占쎌젧 ?? ?饔낅∥�꽎??
+                        }
+                        if (foundKey) {
+                            selectEl.value = foundKey;
+                            selectPendingItem();
+                        }
+                    }
+                })
+                .catch(err => {
+                    console.error(err);
+                    selectEl.innerHTML = '<option>嶺뚮ㅄ維뽨빳占� �슖�돦裕녽�억옙 ?占쎈걢占쎌넮</option>';
+                })
+                .finally(() => {
+                    showLoading(false);
+                });
+        }
+
+        function selectPendingItem() {
+            const selectEl = document.getElementById('pendingList');
+            const uniqueKey = selectEl.value;
+
+            // ?��⑥�щ턄?��⑨옙? ?占쎈걤�뤃占�???�넫琉얜Ц ????
+            if (!uniqueKey || !pendingDataMap || !pendingDataMap[uniqueKey]) return;
+
+            const data = pendingDataMap[uniqueKey];
+
+            // 1. �뼨轅명�∽옙沅� ?筌먲퐢沅� 嶺뚮씞�걢�뇡占�
+            document.getElementById('rowIndex').value = data.rowIndex;
+            document.getElementById('loadCategory').value = data._category;
+
+            // 2. ?�뜝占�?��⑤챷�겱 ?筌먲퐢沅� (?占쏙옙占썲럴占�, ?占쎈퉾占쏙옙占�?�겫�슦逾�, ?繹먮굟占쏙옙)
+            document.getElementById('clientName').value = data.name || "";
+            if (data.birth) document.getElementById('birth').value = data.birth;
+
+            if (data.gender) {
+                let g = data.gender.trim();
+                document.getElementById('gender').value = (g === "?? || g === "?占쎈쳛�땻占�") ? "?占쎈쳛�땻占�" : "?占쎈봽�뎽";
+            }
+
+            // ?占쎄꺅占쎄께??[?占쎈뜄�뵛?占쎈츊???占쎈퉲�겫占�???占쎄껀�뜝�띂寃�? ?占쎄꺅占쎄께??
+            // 3. ?熬곣뫁逾�?占쎄섭�굢占�???筌먲퐢沅�??(�썒�슣�닔占쎄틬, ?��⑤벡逾�嶺뚳옙?
+            if (data.address) document.getElementById('address').value = data.address; // �썒�슣�닔占쎄틬
+            if (data.contact) document.getElementById('contact').value = data.contact; // ?��⑤벡逾�嶺뚳옙?
+
+            // 4. �뼨轅명��? �뛾占�??占쎄섬占쏙옙 ?占쎈봿占쏙옙 ?筌먲퐢沅�
+            if (data.agency) document.getElementById('agencyDetail').value = data.agency;
+            if (data.agencyType) document.getElementById('agencyType').value = data.agencyType;
+            if (data.date) document.getElementById('receptionDate').value = data.date;
+
+            // ?占쎈뇵�젆占�??[占쎈퉲�겫占�???占쎄턀�겫�뼔援�] ?占쎈뇵�젆占�??
+            // ?占쎈츊�떋占�?�솒占썼땻占� �뛾�룇猷뉔뇡占�???占쏙옙占쏙옙堉�???占쏙옙占썲럴占�(agencyContact)???占쎄턁占쎌졑�뇖�궠梨룩굢占� ?影��봾�뵛
+            if (data.agencyContact) {
+                document.getElementById('agencyContact').value = data.agencyContact;
+            } else {
+                document.getElementById('agencyContact').value = ""; // ?占쎈꺊占쎈さ嶺뚳옙?占쎈쑏占쎈쐠�맱占�
+            }
+            // ?饔낅∥�꽎??[占쎈퉲�겫占�? ?? ?饔낅∥�꽎??
+            // 5. ?占쎄섬占쏙옙 ?占쎈봿占쏙옙 (嶺뚮ㅄ維쀯옙�쓤, 占쎈쨨占쎈봽�뜢???占쎈봿占쏙옙)
+            if (data.reqType) document.getElementById('requestType').value = data.reqType; // ?占쎄섬占쎈Ł琉껓옙�맪���
+            if (data.reqReason) document.getElementById('requestReason').value = data.reqReason; // ??占쎈쨨占쎈봽�뜢???占쎈봿占쏙옙 (?占쎈뜄�뵛!)
+
+            // ?占쎈샍占쎈쐸?占쎈봾堉�?占쎈쾳占쎄텠??�뇦猿뗫윪占쎈뮡 ?熬곣뫀援←춯琉욧턂占쎈턄 ?占쎈걞? ???占쎈쐠占쎈さ??嶺뚳퐢�샑野껓옙 (�솻洹ｌ탮筌�占� ??
+            if (data._category === '?占쎈샍占쎈쐸?占쎈봾堉�?占쎈쾳占쎄텠' && data.disease) {
+                // ?占쎈샍占쎈쐸?占쎈쾳占쎄텠??'嶺뚯쉳�뫊占쎈펺嶺뚳옙????占쎄섬占쏙옙?占쎈봿占쏙옙??占쎈쑏熬곥룊占쏙옙?�뜝占�???影��뵁占쏙옙 ?占쎌벞占쎈펲嶺뚳옙??��⑤슡�뜖
+                // ?? document.getElementById('requestReason').value = data.disease; 
+            }
+
+            // 占쏙옙�뫀踰됪룇�뵓怨뺣쐡占쎄퉰???占쎈쐞餓ο옙 ?��⑥�ロ뒍 ?占쎄섬?�슖占�?占쎈／占쎈쐝�뵳占�??
+            document.getElementById('docNumber').value = "";
+
+            // 亦껋꼶梨띰옙遊븀솻洹ｋ뼬�뵳占� 嶺뚯빖留⑼옙六� ?占쎄턁占쎌몥?占쎈샑占쎈콦
+            updatePreview();
+        }
+
+        // ============================================================
+        // [�뼨轅명�∽옙裕� 3] 占쏙옙�뫀踰륅옙苑� �뼨轅명�∽옙裕� (�뵓怨뺣쐡占쎄퉰�뛾�룇裕꾬옙�땵, ?�뜝占�?? PDF ??
+        // ============================================================
+        async function issueDocNumber() {
+            const name = document.getElementById('clientName').value;
+            const agency = document.getElementById('agencyDetail').value;
+            const staff = document.getElementById('staffName').value;
+            const todayStr = document.getElementById('replyDate').value;
+
+            if (!name) return SystemModal.alert("?�뜝占�?��⑤챷�겱占쎈ご?占쎌넂占쎈닔? ?�넫琉얜Ц?占쎈샍塋딉옙?筌뤾쑴�뭵.");
+            if (!await SystemModal.confirm(`[${agency}] ?占쎌돵占쎈さ�슖占�?占쏙옙�뫀踰됪룇�뵓怨뺣쐡占쎄퉰占쎈ご?�뛾�룇裕꾬옙�땵?占쎄섭占쎈뻣�뇦猿뗭쪠占쎈��?占쎈쐝占쎈뤀?`)) return;
+
+            // ?占쎈뇵�젆占�??[?占쎄섭占쎌젧] �슖�돦裕녽�억옙 ?占쎈츋占쎌굚! ?占쎈뇵�젆占�??
+            showLoading(true, "占쏙옙�뫀踰됪룇�뵓怨뺣쐡占쎄퉰 �뛾�룇裕꾬옙�땵 繞볩옙?..");
+
+            const btn = event.target;
+            const originalText = btn.innerText;
+            btn.innerText = "嶺뚳퐣瑗띰옙遊븅쨹占�?."; btn.disabled = true;
+
+            fetch(DOC_API_URL, {
+                method: 'POST',
+                body: JSON.stringify({
+                    action: "issue",
+                    docType: "?占쎈츋占쎌젧占쏙옙占�?,
+                    title: `${name} ???占쎄섬占쏙옙 ?占쎌뒩占쎈뼁??,
+                    sender: staff,
+                    target: agency,
+                    sentDate: todayStr
+                })
+            })
+                .then(res => res.json())
+                .then(async json => {
+                    if (json.success || json.result === 'success') {
+                        let newDocNum = (json.data && json.data.docNum) || json.docNum;
+                        if (!newDocNum && json.data && json.data.message) {
+                            const match = json.data.message.match(/?占쎈츋占쎌젧占쏙옙占�?\d+/);
+                            if (match) newDocNum = match[0];
+                        }
+                        if (newDocNum) {
+                            document.getElementById('docNumber').value = newDocNum;
+                            await SystemModal.alert(`?占쎌쑆 ?熬곣뫁�뵹!\n占쏙옙�뫀踰됪룇�뵓怨뺣쐡占쎄퉰: ${newDocNum}\n?�뜝占�?�뿙�굢占� �뛾�룇裕뉛옙苑�?占쎈닔占쎌겱濚밸Ŧ�뒩? ?繹먮굞夷�?占쎄섭�굢占�?占쎈쾳占쎈퉵??`);
+                            updatePreview();
+                        } else {
+                            SystemModal.alert("占쎈닱筌뤾쑨�맋�뵓怨뺣쐡占쎄퉰占쎈ご?�뛾�룇猷뉔뇡占�?占쎈걠? 嶺뚮쪇沅�筌묕옙?占쎈쾳占쎈퉵??");
+                        }
+                    } else {
+                        SystemModal.alert("?占쎈걞筌잞옙: " + json.message);
+                    }
+                })
+                .catch(err => SystemModal.alert("?占쎈쾴占쎈뼁 ?占쎈걞筌잞옙: " + err.message))
+                .finally(() => {
+                    btn.innerText = originalText;
+                    btn.disabled = false;
+                    showLoading(false);
+                });
+        }
+        function updatePreview() {
+            inputIds.forEach(id => {
+                const elView = document.getElementById('view_' + id);
+                const elInput = document.getElementById(id);
+                if (elView && elInput) elView.innerText = elInput.value;
+            });
+
+            const rDate = document.getElementById('replyDate').value;
+            if (rDate) {
+                const d = new Date(rDate);
+                // ?占쎈뇵�젆占�??[?占쎄섭占쎌젧] �뛾�룄�돯占쎈폆(`) 占쎈퉲�겫占�????占쎈뇵�젆占�??
+                const dateStr = `${d.getFullYear()}??${d.getMonth() + 1}??${d.getDate()}??;
+                // ?饔낅∥�꽎??[?占쎄섭占쎌젧 ?? ?饔낅∥�꽎??
+                const viewReply = document.getElementById('view_replyDate');
+                const viewToday = document.getElementById('view_todayDate');
+                if (viewReply) viewReply.innerText = dateStr;
+                if (viewToday) viewToday.innerText = dateStr;
+            }
+
+            const birth = document.getElementById('birth').value;
+            const gender = document.getElementById('gender').value;
+            const viewBirth = document.getElementById('view_birthGender');
+            // ?占쎈뇵�젆占�??[?占쎄섭占쎌젧] �뛾�룄�돯占쎈폆(`) 占쎈퉲�겫占�????占쎈뇵�젆占�??
+            if (viewBirth) viewBirth.innerText = `${birth} / ${gender}`;
+            // ?饔낅∥�꽎??[?占쎄섭占쎌젧 ?? ?饔낅∥�꽎??
+        }
+
+        function executePdf() {
+            const name = document.getElementById('clientName').value || '?占쎌뒩占쎈뼁??;
+            const element = document.getElementById('printable-area');
+            // ?占쎈뇵�젆占�??[?占쎄섭占쎌젧] �뛾�룄�돯占쎈폆(`) 占쎈퉲�겫占�????占쎈뇵�젆占�??
+            const opt = { margin: 0, filename: `?占쎌뒩占쎈뼁??${name}.pdf`, image: { type: 'jpeg', quality: 1 }, html2canvas: { scale: 2, useCORS: true }, jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' } };
+            // ?饔낅∥�꽎??
+            html2pdf().from(element).set(opt).save();
+        }
+        function executePrint() { window.print(); }
+        async function clearData() { if (await SystemModal.confirm("占쎈／占쎈쐝�뵳占�???占쎄섭占쎈뻣�뇦猿뗭쪠占쎈��?占쎈쐝占쎈뤀?")) location.reload(); }
+
+        async function enableEditMode() {
+            if (!await SystemModal.confirm("?占쏙옙占�? ?熬곣뫁�뵹??濾곌쑬�샍占쎈엷?占쎈쐞占쎈펲.\n?占쎈샍占쎈뮔???占쎄섭占쎌젧?占쎄섭占쎈뻣�뇦猿뗭쪠占쎈��?占쎈쐝占쎈뤀?")) return;
+
+            // 1. 嶺뚮ㅄ維�獄�占� ?占쎄턁占쎌졑嶺뚳옙??�넫�맪�땴 ?占쎈샍占쎌젷 (占쏙옙�뫀踰됪룇�뵓怨뺣쐡占쎄퉰 ?占쎈츋占쎈뇶)
+            document.querySelectorAll('input, select, textarea').forEach(el => {
+                if (el.id !== 'docNumber') el.disabled = false;
+            });
+
+            // 2. ?�뜝占�??�뵓怨뚯뫓占쎈괏 ?占쎄섭亦끸넀逾놂옙�뜄�뵛 & ?占쎈걢???�솻洹⑥삕�뇦占�?
+            const saveBtn = document.getElementById('btnSave');
+
+            // ??[繞벿살탳占쎈뭵] ?熬곥룊�뤀 disableAllInputs?�솒占썼땻占� ?�넫�맩類�??濾곤옙??占쎈뜄�뵛???�뜝占�?占쎈샍鸚뤄옙???占쎈쳳占쎈퉵??
+            saveBtn.disabled = false;
+
+            saveBtn.style.display = 'inline-flex'; // ?占쎈걠占쎈뻣 �솻洹ｋ샍占쎈턄�뼨占�?
+            saveBtn.innerHTML = '<i class="fas fa-exclamation-triangle"></i> ?占쎄섭占쎌젧 �뛾�룇瑗뤄옙寃�';
+            saveBtn.classList.remove('btn-sheet');
+            saveBtn.classList.add('btn-warn');
+
+            // 3. ?占쎄섭占쎌젧 �뵓怨뚯뫓占쎈괏?�뜝占� ?占쎈た?
+            document.getElementById('btnUnlock').style.display = 'none';
+
+            // 4. ?占쎈걞占쎌맠 ?占쎌뵰占쎈츩??�솻洹⑥삕�뇦占�?
+            document.querySelector('.panel-header h2').innerText = "?筌먲퐢沅� ?占쎄섭占쎌젧 嶺뚮ㅄ維�獄�占�";
+
+            SystemModal.alert("?占쎄섭占쎌젧 嶺뚮ㅄ維�獄��쑜�뿉??熬곥굦�꼶?占쎄섭�굢占�?占쎈쾳占쎈퉵??\n?占쎈샍占쎈뮔??占쏙옙�뫁伊숋옙�뭵占쏙옙占�?�썒�슣�닗占쎈꽯??�뵓怨뚯뫓占쎈괏???占쎌뒧占쎌몠�썒�슣�닔�땻占�??");
+        }
+
+        async function completeProcess() {
+            const docNum = document.getElementById('docNumber').value;
+            const rowIndex = document.getElementById('rowIndex').value;
+            const category = document.getElementById('loadCategory').value;
+            const saveBtn = document.getElementById('btnSave');
+
+            if (!rowIndex || !category) return SystemModal.alert("?�뜝占�?��⑤챷�겱占쎈ご??�넫琉얜Ц?占쎄섭? ?占쎈늉�뇡占�?占쎈쾳占쎈퉵??");
+            if (!docNum) return SystemModal.alert("占쏙옙�뫀踰됪룇�뵓怨뺣쐡占쎄퉰�뤆�룊�삕 �뛾�룇裕꾬옙�땵?占쎄섭? ?占쎈늉�뇡占�?占쎈쾳占쎈퉵??");
+
+            // ??[?占쎈쾴占쎈펿] ?占쎄섭占쎌젧 嶺뚮ㅄ維�獄�占�?筌륅옙? ?筌먦끉逾� (�뵓怨뚯뫓占쎈괏 ?占쏙옙占쏙옙�굥?占쎈걞餓ο옙 ?�솒占쏙옙堉�)
+            const isEditMode = saveBtn.classList.contains('btn-warn');
+
+            let confirmMsg = "?占쏙옙占�?�슖占�??占쎌뒩占쎈뼁 嶺뚳퐣瑗띰옙遊븝옙紐�??熬곣뫁�뵹?占쎄섭占쎈뻣�뇦猿뗭쪠占쎈��?占쎈쐝占쎈뤀?";
+            if (isEditMode) {
+                confirmMsg = "?�넫臾볥땾 [�썒�슣�닔占쎈꺄] ?占쏙옙占�? ?熬곣뫁�뵹??濾곌쑬�샍占쎈엷?占쎈쐞占쎈펲.\n?筌먲퐣異� ?占쎄섭占쎌젧 ?占쎈샍占쎈뮔???�뜝占�?�뿙�굢占� ??�젆占�?��⑥�ル뻣�뇦猿뗭쪠占쎈��?占쎈쐝占쎈뤀?";
+            }
+
+            if (!await SystemModal.confirm(confirmMsg)) return;
+
+            // --- ?占쎈샑�뇡占� ?��⑥�щ턄???占쎄섭壤쏉옙 �슖�돦裕뉐퐲占� ?占쎈듌占쎈뎄 ---
+            const checkboxes = document.querySelectorAll('input[name="actionResult"]:checked');
+            const actionList = Array.from(checkboxes).map(cb => cb.value).join(', ');
+
+            const processContent = document.getElementById('processContent').value;
+            const counselingContent = document.getElementById('counselingContent').value;
+            const futurePlan = document.getElementById('futurePlan').value;
+            const progressStatus = document.getElementById('progressStatus').value;
+            const finalResultText = actionList ? `${actionList} / ${futurePlan}` : futurePlan;
+
+            // �뵓怨뚯뫓占쎈괏 占쎈쑏熬곥굦�꽎?繹먮봿�꼨
+            saveBtn.disabled = true;
+            saveBtn.innerText = "嶺뚳퐣瑗띰옙遊� 繞볩옙?..";
+
+            fetch(SCRIPT_URL, {
+                method: 'POST',
+                redirect: 'follow',
+                headers: { "Content-Type": "text/plain;charset=utf-8" },
+                body: JSON.stringify({
+                    action: "update_status",
+                    category: category,
+                    rowIndex: rowIndex,
+                    docNum: docNum,
+                    replyDate: document.getElementById('replyDate').value,
+                    serviceMethod: document.getElementById('serviceMethod').value,
+                    serviceDate: document.getElementById('replyDate').value, // �솻洹ｋ샑占쎄쉼 ?占쎌뒩占쎈뼁???占쎈츊占쎈룴?占쎈걠占쎈뎄
+                    staffName: document.getElementById('staffName').value,
+
+                    // ?��⑤㈇�돪 ?��⑥�щ턄??
+                    actionResult: finalResultText,
+                    processContent: processContent,
+                    counselingContent: counselingContent,
+                    progressStatus: progressStatus
+                })
+            })
+                .then(res => res.json())
+                .then(async json => {
+                    if (json.success || json.result === 'success') {
+                        await SystemModal.alert(isEditMode ? "???占쎄섭占쎌젧 ?熬곣뫁�뵹?占쎄섭�굢占�?占쎈쾳占쎈퉵??" : "?占쎌쑆 ?占쎌뒩占쎈뼁 ?熬곣뫁�뵹!");
+
+                        if (isEditMode) {
+                            location.reload(); // ?占쎄섭占쎌젧 ?熬곣뫖�벀 ?占쎈쐞餓λ뛽占썩뫁伊숃눧占�?占쎈샍�땻占� 濚밸Ŧ���椰꾬옙?占쎄섧�떋占�
+                        } else {
+                            loadPendingList(); // ?�넫�맪�눂 ?�뜝占�?�뿙占쎈턄嶺뚳옙?嶺뚮ㅄ維뽨빳占� �뤆�룄�돫占쎈뼁
+                            // ?占쎄턁占쎌졑嶺뚳옙?占쎈쑏熬곣뫗�뮡�뼨占�???..
+                            document.getElementById('clientName').value = "";
+                            document.getElementById('docNumber').value = "";
+                            document.querySelectorAll('input[name="actionResult"]').forEach(cb => cb.checked = false);
+                            updatePreview();
+
+                            // �뵓怨뚯뫓占쎈괏 ?�솒占쏙옙沅�
+                            saveBtn.disabled = false;
+                            saveBtn.innerText = "?占쎌뒩占쎈뼁 ?熬곣뫁�뵹 (?占쎈츊�떋占� ?�뜝占�??";
+                        }
+                    } else {
+                        SystemModal.alert("?占쎈걞筌잞옙: " + json.message);
+                        saveBtn.disabled = false;
+                    }
+                })
+                .catch(err => {
+                    SystemModal.alert("?占쎈쾴占쎈뼁 ?占쎈걞筌잞옙 �뛾�룇裕뉑틦占�");
+                    saveBtn.disabled = false;
+                });
+        }
+
+        function adjustPreviewScale() {
+            const wrapper = document.getElementById('preview-wrapper');
+            const printable = document.getElementById('printable-area');
+            if (!wrapper || !printable) return;
+
+            // Standard A4 dimensions 794x1123
+            const availableWidth = wrapper.clientWidth - 40;
+            const availableHeight = wrapper.clientHeight - 40;
+
+            const scaleX = availableWidth / 794;
+            const scaleY = availableHeight / 1123;
+            // Best fit
+            const scale = Math.min(1, Math.min(scaleX, scaleY));
+            printable.style.transform = `scale(${scale})`;
+        }
+
+        window.addEventListener('resize', adjustPreviewScale);
+        setTimeout(adjustPreviewScale, 100);
+    </script>
+</body>
+
+</html>
+```

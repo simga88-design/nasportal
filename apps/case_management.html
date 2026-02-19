@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <title>의뢰 및 회신 관리 시스템</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #1e3a8a;
+            --bg-color: #f8fafc;
+            --border: #e2e8f0;
+            --success: #2f9e44;
+            --danger: #fa5252;
+            --warn: #fcc419;
+            --dark: #343a40;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background: var(--bg-color);
+            font-family: 'Pretendard', 'Malgun Gothic', sans-serif;
+            color: #333;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .container {
+            display: flex;
+            width: 100vw;
+            height: 100vh;
+            margin: 0;
+            padding: 0;
+            gap: 0;
+        }
+
+        /* [왼쪽] 입력 패널 */
+        .panel.input-panel {
+            width: 450px;
+            background: white;
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            z-index: 50;
+            box-shadow: 4px 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .panel-header {
+            padding: 15px;
+            background: var(--primary);
+            color: white;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .panel-body {
+            padding: 20px;
+            overflow-y: auto;
+            flex: 1;
+        }
+
+        /* [오른쪽] 출력 패널 */
+        .panel.output-panel {
+            flex: 1;
+            background: #f1f5f9;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        .output-header {
+            padding: 10px 20px;
+            background: white;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .output-body {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #555;
+            font-size: 14px;
+        }
+
+        input,
+        select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            box-sizing: border-box;
+            font-size: 14px;
+            font-family: inherit;
+        }
+
+        input:focus,
+        select:focus {
+            border-color: #4a90e2;
+            outline: none;
+        }
+
+        input[readonly] {
+            background-color: #f8f9fa;
+            color: #0056b3;
+            font-weight: bold;
+            cursor: default;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .discharge-mode {
+            border: 2px solid #ff9f43;
+            background: #fffaf0;
+            padding: 15px;
+            border-radius: 8px;
+        }
+
+        .child-only {
+            background-color: #f0f8ff;
+            border: 1px solid #bcdeff;
+            padding: 10px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            color: white;
+            background: var(--primary);
+            transition: 0.2s;
+            font-size: 16px;
+        }
+
+        .btn:hover {
+            opacity: 0.9;
+        }
+
+        .btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        /* Tabs & Table & Loader (Same as before) */
+        .tabs {
+            display: flex;
+            gap: 5px;
+        }
+
+        .tab {
+            padding: 8px 16px;
+            cursor: pointer;
+            border-radius: 6px;
+            font-weight: bold;
+            color: #64748b;
+            background: #e2e8f0;
+            transition: 0.2s;
+            font-size: 14px;
+        }
+
+        .tab.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        th {
+            background: #f8fafc;
+            padding: 12px;
+            text-align: left;
+            font-weight: 700;
+            color: #475569;
+            border-bottom: 2px solid #e2e8f0;
+            font-size: 13px;
+        }
+
+        td {
+            padding: 12px;
+            border-bottom: 1px solid #f1f5f9;
+            font-size: 14px;
+            color: #1e293b;
+        }
+
+        tr:hover {
+            background-color: #f8fafc;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: bold;
+        }
+
+        .badge-pending {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .badge-done {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .loader-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.7);
+            z-index: 9999;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid var(--primary);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="loader-overlay" id="loadingSpinner">
+        <div class="spinner"></div>
+        <div style="margin-top:10px; font-weight:bold; color:var(--primary);">처리 중입니다...</div>
+    </div>
+
+    <div class="container">
+        <div class="panel input-panel">
+            <div class="panel-header">
+                <span>📝 의뢰서 접수</span>
+            </div>
+            <div class="panel-body">
+
+                <div class="form-group">
+                    <label>📂 접수 분류 (Category)</label>
+                    <select id="category" onchange="toggleForm()">
+                        <option value="아동">👶 아동·청소년</option>
+                        <option value="성인">🧑 성인 정신건강</option>
+                        <option value="자살">🆘 자살예방</option>
+                        <option value="퇴원사실통보">🏥 퇴원사실통보</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>📅 접수일자</label>
+                    <input type="date" id="date">
+                </div>
+
+                <div id="form-general">
+                    <div class="form-group hidden child-only" id="child-type-group">
+                        <label style="color: #0056b3;">👶 아동 분류 (필수선택)</label>
+                        <select id="childClass">
+                            <option value="일반">일반</option>
+                            <option value="정서행동특성검사">정서행동특성검사</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>대상자 성명</label>
+                        <input type="text" id="gen_name" placeholder="이름 입력">
+                    </div>
+
+                    <div style="display: flex; gap: 10px;">
+                        <div class="form-group" style="flex: 1;">
+                            <label>생년월일 (6자리)</label>
+                            <input type="text" id="birth" placeholder="예: 870306" maxlength="6" onkeyup="calcAutoAge()">
+                        </div>
+                        <div class="form-group" style="flex: 0.6;">
+                            <label>나이 (만)</label>
+                            <input type="text" id="age" placeholder="자동" readonly>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>성별</label>
+                        <select id="gender">
+                            <option>남</option>
+                            <option>여</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>주소 (거주지)</label>
+                        <input type="text" id="gen_address" placeholder="대상자 주소 입력">
+                    </div>
+                    <div class="form-group">
+                        <label>연락처</label>
+                        <input type="text" id="gen_contact" placeholder="010-0000-0000">
+                    </div>
+
+                    <div class="form-group">
+                        <label>🏫 의뢰기관 (구분)</label>
+                        <select id="agencyType">
+                            <option value="행정기관">행정기관</option>
+                            <option value="의료기관">의료기관</option>
+                            <option value="정신보건기관">정신보건기관</option>
+                            <option value="지역사회기관">지역사회기관</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>세부 기관명</label>
+                        <input type="text" id="agencyDetail" placeholder="예: OO행정복지센터, OO병원">
+                    </div>
+
+                    <div class="form-group">
+                        <label>👨‍💼 의뢰기관 담당자</label>
+                        <input type="text" id="agencyContact" placeholder="담당자 성명 입력">
+                    </div>
+
+                    <div class="form-group">
+                        <label>📋 의뢰 구분 (목적)</label>
+                        <select id="reqType">
+                            <option value="심리검사">심리검사</option>
+                            <option value="프로그램">프로그램</option>
+                            <option value="위기(응급)개입">위기(응급)개입</option>
+                            <option value="병의원연계">병의원연계</option>
+                            <option value="상담 및 사례관리">상담 및 사례관리</option>
+                            <option value="기타">기타</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>📝 구체적 사유</label>
+                        <input type="text" id="reqReason" placeholder="의뢰 사유를 간략히 입력">
+                    </div>
+                </div>
+
+                <div id="form-discharge" class="hidden discharge-mode">
+                    <div class="form-group">
+                        <label>환자명</label>
+                        <input type="text" id="dis_name">
+                    </div>
+
+                    <div style="display: flex; gap: 10px;">
+                        <div class="form-group" style="flex: 1;">
+                            <label>생년월일 (6자리)</label>
+                            <input type="text" id="dis_birth" placeholder="예: 870306" maxlength="6">
+                        </div>
+                        <div class="form-group" style="flex: 1;">
+                            <label>성별</label>
+                            <select id="dis_gender">
+                                <option>남성</option>
+                                <option>여성</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>환자 주소 (회신서용)</label>
+                        <input type="text" id="dis_address" placeholder="환자 실거주지">
+                    </div>
+
+                    <div class="form-group">
+                        <label>환자 연락처</label>
+                        <input type="text" id="dis_contact" placeholder="010-0000-0000">
+                    </div>
+
+                    <div class="form-group">
+                        <label>진단명 (질환)</label>
+                        <input type="text" id="disease" placeholder="예: 조현병">
+                    </div>
+
+                    <div class="form-group">
+                        <label>발송 기관명 (병원)</label>
+                        <input type="text" id="dis_agency">
+                    </div>
+
+                    <div class="form-group">
+                        <label>👨‍⚕️ 병원 담당자</label>
+                        <input type="text" id="dis_agency_contact" placeholder="병원 담당자 성명">
+                    </div>
+
+                    <div class="form-group">
+                        <label>발송기관 소재지 (관내/관외)</label>
+                        <input type="text" id="agencyLoc" placeholder="예: 제천시, 원주시">
+                    </div>
+
+                    <div style="display: flex; gap: 10px;">
+                        <div class="form-group" style="flex: 1;">
+                            <label>입원일</label>
+                            <input type="date" id="dis_admission_date">
+                        </div>
+                        <div class="form-group" style="flex: 1;">
+                            <label>퇴원일</label>
+                            <input type="date" id="dis_discharge_date">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>통보서 수신일 (발송일)</label>
+                        <input type="date" id="notifyDate">
+                    </div>
+                </div>
+
+                <button id="btnSubmit" class="btn" onclick="submitData()">접수 등록하기</button>
+
+            </div>
+        </div>
+
+        <div class="panel output-panel">
+            <div class="output-header">
+                <div class="tabs">
+                    <div class="tab active" onclick="switchTab('pending', this)">⏳ 회신대기</div>
+                    <div class="tab" onclick="switchTab('성인', this)">성인대장</div>
+                    <div class="tab" onclick="switchTab('아동', this)">아동대장</div>
+                    <div class="tab" onclick="switchTab('자살', this)">자살대장</div>
+                    <div class="tab" onclick="switchTab('퇴원사실통보', this)">퇴원사실</div>
+                </div>
+                <div style="flex:1;"></div>
+                <button class="btn" style="width:auto; padding: 8px 16px; font-size:13px; background:#495057;"
+                    onclick="refreshCurrentTab()"><i class="fas fa-sync-alt"></i> 새로고침</button>
+            </div>
+            <div class="output-body">
+                <div id="initial-load-view"
+                    style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; text-align:center;">
+                    <div style="font-size: 40px; color:#cbd5e1; margin-bottom:20px;"><i class="fas fa-search"></i></div>
+                    <button class="btn" style="width: auto; padding: 12px 30px; font-size: 16px; background:#495057;"
+                        onclick="startInitialLoad()">
+                        <i class="fas fa-list"></i> 회신대기 및 대장 조회하기
+                    </button>
+                    <p style="margin-top:15px; color:#adb5bd; font-size:13px;">
+                        * 목록은 자동 조회되지 않습니다. 위 버튼을 눌러주세요.
+                    </p>
+                </div>
+
+                <table id="resultTable" style="display:none;">
+                    <thead></thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script src="../js/config.js"></script>
+    <script>
+        // ▼▼▼ 통합 API 주소 ▼▼▼
+        const UNIFIED_URL = BASE_URL; // from config.js
+
+        let currentTab = 'pending';
+
+        function showLoading(show) {
+            document.getElementById('loadingSpinner').style.display = show ? 'flex' : 'none';
+        }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            const today = new Date().toISOString().slice(0, 10);
+            document.getElementById('date').value = today;
+            document.getElementById('notifyDate').value = today;
+            toggleForm();
+        });
+
+        function startInitialLoad() {
+            document.getElementById('initial-load-view').style.display = 'none';
+            document.getElementById('resultTable').style.display = 'table';
+            fetchPending();
+        }
+
+        // [기능 1] 폼 전환 로직
+        function toggleForm() {
+            const cat = document.getElementById('category').value;
+            const general = document.getElementById('form-general');
+            const discharge = document.getElementById('form-discharge');
+            const childGroup = document.getElementById('child-type-group');
+
+            if (cat === '퇴원사실통보') {
+                general.classList.add('hidden');
+                discharge.classList.remove('hidden');
+            } else {
+                general.classList.remove('hidden');
+                discharge.classList.add('hidden');
+                cat === '아동' ? childGroup.classList.remove('hidden') : childGroup.classList.add('hidden');
+            }
+        }
+
+        // [기능 2] 생년월일 자동계산
+        function calcAutoAge() {
+            const birth = document.getElementById('birth').value;
+            const ageField = document.getElementById('age');
+            if (birth.length !== 6) { ageField.value = ""; return; }
+
+            const now = new Date();
+            const currentYear = now.getFullYear();
+            const prefix = parseInt(birth.substring(0, 2));
+            let birthYear = (prefix <= (currentYear % 100)) ? (2000 + prefix) : (1900 + prefix);
+            ageField.value = currentYear - birthYear; // 단순 연나이 계산 (필요시 만나이 로직 복구 가능)
+        }
+
+        // [추가] 생년월일 유효성 검사 (YYMMDD)
+        function isValidBirthDate(birthStr) {
+            if (!/^\d{6}$/.test(birthStr)) return false;
+            const yy = parseInt(birthStr.substring(0, 2), 10);
+            const mm = parseInt(birthStr.substring(2, 4), 10);
+            const dd = parseInt(birthStr.substring(4, 6), 10);
+            if (mm < 1 || mm > 12) return false;
+            if (dd < 1 || dd > 31) return false;
+
+            // 단순 윤년/월별 일수 체크를 위한 Date 객체 생성
+            const fullYear = (yy >= 0 && yy <= new Date().getFullYear() % 100) ? 2000 + yy : 1900 + yy;
+            const dateObj = new Date(fullYear, mm - 1, dd);
+            if (dateObj.getFullYear() !== fullYear || dateObj.getMonth() !== mm - 1 || dateObj.getDate() !== dd) {
+                return false;
+            }
+            return true;
+        }
+
+        async function submitData() {
+            const cat = document.getElementById('category').value;
+            const btn = document.getElementById('btnSubmit');
+            let payload = { action: 'save_inquiry', category: cat, date: document.getElementById('date').value };
+
+            // 폼에 따라 다른 데이터 수집
+            if (cat === '퇴원사실통보') {
+                const name = document.getElementById('dis_name').value;
+                if (!name) { parent.Modal.alert("환자명을 입력해주세요."); return; }
+
+                payload.name = name;
+                payload.birth = document.getElementById('dis_birth').value;
+                payload.gender = document.getElementById('dis_gender').value;
+                payload.address = document.getElementById('dis_address').value;   // 환자 주소
+                payload.contact = document.getElementById('dis_contact').value;   // 환자 연락처
+                payload.agencyDetail = document.getElementById('dis_agency').value; // 병원명
+
+                // ★ [추가] 병원 담당자
+                payload.agencyContact = document.getElementById('dis_agency_contact').value;
+
+                payload.agencyLoc = document.getElementById('agencyLoc').value;     // 병원 소재지
+                payload.disease = document.getElementById('disease').value;
+                payload.admissionDate = document.getElementById('dis_admission_date').value;
+                payload.dischargeDate = document.getElementById('dis_discharge_date').value;
+                payload.notifyDate = document.getElementById('notifyDate').value;
+            } else {
+                // 일반 의뢰 (성인/자살/아동)
+                const name = document.getElementById('gen_name').value;
+                if (!name) { parent.Modal.alert("대상자 성명을 입력해주세요."); return; }
+
+                const birthVal = document.getElementById('birth').value;
+                if (!isValidBirthDate(birthVal)) {
+                    parent.Modal.alert("유효한 생년월일 6자리를 입력해주세요. (예: 900512)");
+                    return;
+                }
+
+                payload.name = name;
+                payload.birth = birthVal;
+                payload.gender = document.getElementById('gender').value;
+                payload.address = document.getElementById('gen_address').value;   // 대상자 주소
+                payload.contact = document.getElementById('gen_contact').value;   // 대상자 연락처
+                payload.agencyType = document.getElementById('agencyType').value;
+                payload.agencyDetail = document.getElementById('agencyDetail').value;
+
+                // ★ [추가] 의뢰기관 담당자
+                payload.agencyContact = document.getElementById('agencyContact').value;
+
+                payload.reqType = document.getElementById('reqType').value;
+                payload.reqReason = document.getElementById('reqReason').value;   // 구체적 사유
+
+                if (cat === '아동') {
+                    payload.childClass = document.getElementById('childClass').value;
+                }
+            }
+
+            if (!await parent.Modal.confirm("이대로 접수하시겠습니까?")) return;
+
+            btn.disabled = true; btn.innerText = "서버 저장 중...";
+
+            fetch(UNIFIED_URL, {
+                method: 'POST',
+                redirect: 'follow',
+                headers: { "Content-Type": "text/plain;charset=utf-8" },
+                body: JSON.stringify(payload)
+            })
+                .then(res => res.json())
+                .then(async json => {
+                    if (json.success || json.result === 'success') {
+                        await parent.Modal.alert("✅ 접수 완료!");
+                        location.reload();
+                    } else {
+                        parent.Modal.alert("❌ 저장 실패: " + json.message);
+                    }
+                })
+                .catch(err => {
+                    parent.Modal.alert("서버 통신 오류!");
+                    console.error(err);
+                })
+                .finally(() => {
+                    btn.disabled = false; btn.innerText = "접수 등록하기";
+                });
+        }
+
+        // --- 목록 조회 로직 (기존과 동일) ---
+        function switchTab(tabName, el) {
+            currentTab = tabName;
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            if (el) el.classList.add('active');
+
+            document.getElementById('initial-load-view').style.display = 'none';
+            document.getElementById('resultTable').style.display = 'table';
+
+            if (tabName === 'pending') fetchPending();
+            else fetchLedger(tabName);
+        }
+
+        function refreshCurrentTab() {
+            if (currentTab === 'pending') fetchPending();
+            else fetchLedger(currentTab);
+        }
+
+        function fetchPending() {
+            showLoading(true);
+            const tbody = document.querySelector('#resultTable tbody');
+            const thead = document.querySelector('#resultTable thead');
+            thead.innerHTML = `<tr><th style="width:50px;">No</th><th>이름</th><th>생년월일</th><th>의뢰/발송기관</th><th>접수일</th><th style="width:80px;">상태</th><th style="width:100px;">관리</th></tr>`;
+            tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:20px;">로딩 중...</td></tr>';
+
+            const categories = ['아동', '성인', '자살', '퇴원사실통보'];
+
+            Promise.all(categories.map(cat =>
+                fetch(UNIFIED_URL, { method: 'POST', body: JSON.stringify({ action: "get_pending", category: cat }) })
+                    .then(r => r.json())
+                    .then(j => {
+                        // ▼▼▼ [수정된 부분] 데이터 꺼내는 로직 강화 ▼▼▼
+                        const l = j.list || (j.data && j.data.list) || [];
+                        // ▲▲▲ [수정 끝] ▲▲▲
+
+                        l.forEach(i => i._category = cat);
+                        return l;
+                    }).catch(e => {
+                        console.error(e); // 에러 확인용 로그 추가
+                        return [];
+                    })
+            )).then(results => {
+                const combined = results.flat().sort((a, b) => new Date(b.date) - new Date(a.date));
+                renderTable(combined, 'pending');
+            }).finally(() => showLoading(false));
+        }
+
+        function fetchLedger(type) {
+            showLoading(true);
+            const tbody = document.querySelector('#resultTable tbody');
+            const thead = document.querySelector('#resultTable thead');
+            thead.innerHTML = `<tr><th style="width:50px;">No</th><th>이름</th><th>생년월일</th><th>기관</th><th>접수일</th><th style="width:80px;">상태</th><th style="width:100px;">회신일</th></tr>`;
+            tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:20px;">조회 중...</td></tr>';
+
+            fetch(UNIFIED_URL, { method: 'POST', body: JSON.stringify({ action: "get_case_ledger", category: type }) })
+                .then(r => r.json())
+                .then(json => {
+                    // ▼▼▼ [수정된 부분] 데이터 꺼내는 로직 강화 ▼▼▼
+                    const list = json.list || (json.data && json.data.list) || [];
+                    renderTable(list, 'ledger');
+                    // ▲▲▲ [수정 끝] ▲▲▲
+                })
+                .catch(err => {
+                    console.error(err);
+                    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; color:red;">데이터 로드 실패</td></tr>';
+                })
+                .finally(() => showLoading(false));
+        }
+
+        function renderTable(list, mode) {
+            const tbody = document.querySelector('#resultTable tbody');
+            if (!list || list.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding:20px;">데이터가 없습니다.</td></tr>`;
+                return;
+            }
+
+            let html = '';
+            list.forEach((item, idx) => {
+                const rowClass = idx % 2 === 0 ? 'bg-gray-50' : '';
+                // 회신일자(replyDate)가 있거나 상태가 '회신완료'면 완료된 것으로 간주
+                const isCompleted = item.status === '회신완료' || (item.replyDate && item.replyDate !== '');
+
+                // 회신대기 탭에서는 이미 완료된 건은 숨김 처리
+                if (mode === 'pending' && isCompleted) return;
+
+                let btn = '';
+                let status = '';
+
+                // 버튼에 들어갈 카테고리값 (아이템에 없으면 현재 탭값 사용)
+                const categoryVal = item._category || item.category || currentTab;
+
+                // [공통 로직] 완료 여부에 따라 버튼 분기
+                if (isCompleted) {
+                    // 1. 완료된 경우 -> [보기] 버튼
+                    status = '<span class="badge badge-done">완료</span>';
+                    if (item.issuedDocId) {
+                        btn = `${item.replyDate}<br>
+                               <button class="btn" style="padding:2px 6px; font-size:11px; width:auto; background:#3b82f6; margin-top:2px;" 
+                               onclick="window.open('doc_issue.html?openHistoryId=${item.issuedDocId}', '_blank', 'width=1400,height=900,scrollbars=yes')">문서보기</button>`;
+                    } else {
+                        btn = `${item.replyDate}<br>
+                               <button class="btn" style="padding:2px 6px; font-size:11px; width:auto; background:#adb5bd; margin-top:2px;" 
+                               onclick="openReplyPopup('${item.rowIndex}', '${categoryVal}', true)">보기</button>`;
+                    }
+                } else {
+                    // 2. 미완료(대기)인 경우 -> [회신작성] 버튼 (모드 상관없이 노출!)
+                    status = '<span class="badge badge-pending">대기</span>';
+                    btn = `<button class="btn" style="padding:4px 8px; font-size:12px; width:auto;" 
+                           onclick="openReplyPopup('${item.rowIndex}', '${categoryVal}')">회신작성</button>`;
+                }
+
+                // 정보 컬럼 (생년월일 or 질환명 등)
+                let info = item.birth || item.disease || '-';
+
+                html += `<tr class="${rowClass}">
+                    <td>${item.id || item.rowIndex}</td>
+                    <td style="font-weight:bold;">${item.name}</td>
+                    <td>${info}</td>
+                    <td>${item.agencyDetail || item.agency || '-'}</td>
+                    <td>${item.date}</td>
+                    <td>${status}</td>
+                    <td>${btn}</td>
+                </tr>`;
+            });
+            tbody.innerHTML = html;
+        }
+
+        function openReplyPopup(rowIndex, category, isView) {
+            let docType = 'reply_letter';
+            if (category === '퇴원사실통보') {
+                docType = '퇴사통회신서발행기';
+            }
+            const url = `doc_issue.html?autoSelect=${docType}&rowIndex=${rowIndex}&category=${category}${isView ? '&mode=view' : ''}`;
+            window.open(url, '_blank', 'width=1400,height=900,scrollbars=yes');
+        }
+    </script>
+</body>
+
+</html>

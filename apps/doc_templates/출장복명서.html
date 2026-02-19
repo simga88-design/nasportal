@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <title>출장복명서</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: white;
+            font-family: 'Malgun Gothic', '맑은 고딕', sans-serif;
+        }
+
+        .a4-container {
+            width: 100%;
+            max-width: 210mm;
+            min-height: 297mm;
+            padding: 20mm 15mm;
+            margin: 0 auto;
+            background-color: white;
+            box-sizing: border-box;
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 24pt;
+            letter-spacing: 5px;
+            margin-bottom: 20px;
+        }
+
+        .approval-table {
+            float: right;
+            margin-bottom: 20px;
+            border-collapse: collapse;
+            text-align: center;
+        }
+
+        .approval-table th,
+        .approval-table td {
+            border: 1px solid black;
+            width: 80px;
+            font-size: 11pt;
+        }
+
+        .approval-table th {
+            background-color: #f0f0f0;
+            padding: 5px;
+        }
+
+        .approval-table td {
+            height: 60px;
+        }
+
+        .clear {
+            clear: both;
+        }
+
+        .header-info {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-size: 12pt;
+        }
+
+        .main-table {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: fixed;
+        }
+
+        .main-table tr {
+            page-break-inside: avoid;
+        }
+
+        /* Allow the large content row to break across pages cleanly */
+        .report-content-row {
+            page-break-inside: auto;
+        }
+
+        .main-table th,
+        .main-table td {
+            border: 1px solid black;
+            padding: 8px;
+            font-size: 11pt;
+        }
+
+        .main-table th {
+            background-color: #f0f0f0;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .photo-container {
+            display: flex;
+            gap: 10px;
+            justify-content: space-around;
+            padding: 10px 0;
+        }
+
+        .photo-box {
+            width: 45%;
+            text-align: center;
+        }
+
+        .photo-box img {
+            max-width: 100%;
+            max-height: 220px;
+            border: 1px solid #ccc;
+            background: #fafafa;
+            object-fit: contain;
+        }
+
+        .photo-box .no-photo {
+            height: 220px;
+            border: 1px dashed #ccc;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #999;
+            font-size: 11pt;
+            background: #f9f9f9;
+        }
+
+        .val-text {
+            min-height: 20px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            font-family: inherit;
+        }
+
+        .center-logo {
+            text-align: center;
+            font-size: 16pt;
+            font-weight: bold;
+            margin-top: 50px;
+            letter-spacing: 2px;
+        }
+
+        @media print {
+            @page {
+                size: a4;
+                margin: 20mm 15mm;
+            }
+
+            body {
+                background-color: white;
+            }
+
+            .a4-container {
+                margin: 0;
+                padding: 0;
+                box-shadow: none;
+                width: 100%;
+                height: auto;
+                min-height: auto;
+            }
+
+            .main-table,
+            .report-content-row,
+            .report-content-row td {
+                /* Let printer decide natural breaks */
+                page-break-inside: auto !important;
+                break-inside: auto !important;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="a4-container">
+        <h1>출 장 복 명 서</h1>
+
+        <table class="approval-table" id="dynamic-approval-table">
+            <tr>
+                <th>담당자</th>
+                <th>주임</th>
+                <th>팀장</th>
+                <th>센터장</th>
+            </tr>
+            <tr>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+        </table>
+        <div class="clear"></div>
+
+        <div class="header-info">
+            <div style="font-weight: bold;">작성일자: <span class="val-text" id="t_date" style="margin-left: 5px;"></span>
+            </div>
+            <div style="font-weight: bold;">복명자:
+                <span class="val-text" id="t_manager_team" style="margin-left: 5px;"></span>
+                <span class="val-text" id="t_manager_name" style="margin-left: 5px;"></span>
+            </div>
+        </div>
+
+        <table class="main-table">
+            <colgroup>
+                <!-- 1열: 출장자 / 하명 (8%) -->
+                <col style="width: 9%;">
+                <!-- 2열: 구분 / 목적 (기존 7%에서 4% 확장 -> 11%) -->
+                <col style="width: 10%;">
+                <!-- 3열: 출발일시 제목 (줄이고자 하신 만큼 좁힘 -> 6.5%) -->
+                <col style="width: 12%;">
+                <!-- 4열: 출발일시 텍스트 값 (줄어든 만큼 넓어짐 -> 52.5%) -->
+                <col style="width: 40%;">
+                <!-- 5열: 직위 / 이동방법 제목 (10%) -->
+                <col style="width: 12%;">
+                <!-- 6열: 성명 / 이동방법 텍스트 (12%) -->
+                <col style="width: 12%;">
+            </colgroup>
+            <tbody id="traveler_tbody">
+                <!-- Javascript will substitute traveler layout dynamically -->
+            </tbody>
+            <tbody id="instruction_tbody">
+                <tr>
+                    <th rowspan="4">하명</th>
+                    <th>목적</th>
+                    <td colspan="4">
+                        <div class="val-text" id="t_instruction_purpose"></div>
+                    </td>
+                </tr>
+                <tr>
+                    <th>출장지</th>
+                    <td colspan="4">
+                        <div class="val-text" id="t_destination"></div>
+                    </td>
+                </tr>
+                <tr>
+                    <th rowspan="2">기간<br>(시간)</th>
+                    <th style="background-color:#f0f0f0; text-align:center;">출발일시</th>
+                    <td>
+                        <div class="val-text" id="t_start_time"></div>
+                    </td>
+                    <th style="background-color:#f0f0f0; text-align:center;">이동방법</th>
+                    <td>
+                        <div class="val-text" id="t_transport"></div>
+                    </td>
+                </tr>
+                <tr>
+                    <th style="background-color:#f0f0f0; text-align:center;">귀사일시</th>
+                    <td>
+                        <div class="val-text" id="t_end_time"></div>
+                    </td>
+                    <th style="background-color:#f0f0f0; text-align:center;">숙박일수</th>
+                    <td>
+                        <div class="val-text" id="t_lodging"></div>
+                    </td>
+                </tr>
+            </tbody>
+            <tbody>
+                <tr>
+                    <th colspan="6" style="text-align:left; padding-left: 15px;">복명사항(내용)</th>
+                </tr>
+                <tr class="report-content-row">
+                    <td colspan="6" style="vertical-align: top; padding: 15px; min-height: 200px;">
+                        <div style="margin-bottom: 8px;">&#9634; 제 목 : <span class="val-text" id="t_title"></span></div>
+                        <div style="margin-bottom: 8px;">&#9634; 일 시 : <span class="val-text" id="t_datetime"></span>
+                        </div>
+                        <div style="margin-bottom: 8px;">
+                            <span style="white-space:nowrap; margin-right:5px;">&#9634; 목 적 :</span>
+                            <span class="val-text" id="t_purpose"
+                                style="display:inline-block; vertical-align:top; max-width: 90%;"></span>
+                        </div>
+                        <div style="margin-top: 15px;">
+                            <div style="margin-bottom: 5px;">&#9634; 내 용</div>
+                            <div class="val-text" style="min-height:100px; padding-left: 15px;" id="t_content"></div>
+                        </div>
+
+                        <!-- 사진 표시 영역 (복명사항 내부에 밀착) -->
+                        <div id="t_photo_container_wrapper" style="display:none; margin-top: 20px;">
+                            <div class="photo-container">
+                                <div class="photo-box">
+                                    <img id="t_photo1_img" style="display:none;" />
+                                    <div id="t_photo1_empty" class="no-photo">사진 1</div>
+                                </div>
+                                <div class="photo-box">
+                                    <img id="t_photo2_img" style="display:none;" />
+                                    <div id="t_photo2_empty" class="no-photo">사진 2</div>
+                                </div>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+
+                <tr>
+                    <th>환류 계획</th>
+                    <td colspan="5" style="height: 60px; vertical-align: top;">
+                        <div class="val-text" id="t_feedback"></div>
+                    </td>
+                </tr>
+                <tr>
+                    <th>첨부</th>
+                    <td colspan="5">
+                        <div class="val-text" id="t_attachment_text"></div>
+                    </td>
+                </tr>
+        </table>
+
+        <div class="center-logo">
+            제천시정신건강복지센터
+        </div>
+    </div>
+
+    <!-- Scan Pages (hidden by default, shown if v_include_scan is true) -->
+    <div class="a4-container" id="scan_page_1" style="display: none; padding: 0;">
+        <img id="t_scan1_img" style="width: 100%; height: 100%; object-fit: contain; display: none;" />
+    </div>
+
+    <div class="a4-container" id="scan_page_2" style="display: none; padding: 0;">
+        <img id="t_scan2_img" style="width: 100%; height: 100%; object-fit: contain; display: none;" />
+    </div>
+
+    <script>
+        window.addEventListener('message', function (event) {
+            const data = event.data;
+            if (data.type === 'updatePreview' || data.action === 'updatePreview' || data.action === 'render') {
+                const payload = data.payload || data.data || {};
+
+                document.getElementById('t_date').innerText = payload.v_date || '';
+
+                // Construct dynamic travelers layout
+                let travelers = payload.v_travelers || [];
+                if (travelers.length === 0) {
+                    travelers = [{
+                        type: payload.v_trip_type || '',
+                        team: payload.v_team || '',
+                        position: payload.v_position || '',
+                        name: payload.v_name || payload.v_manager || ''
+                    }];
+                }
+
+                // Top header fallback to the first traveler
+                document.getElementById('t_manager_name').innerText = travelers[0].name || '';
+                document.getElementById('t_manager_team').innerText = travelers[0].team || '';
+
+                let tHtml = `
+                <tr>
+                    <th rowspan="${travelers.length + 1}">출장자</th>
+                    <th>구분</th>
+                    <th colspan="2">소속(팀)</th>
+                    <th>직위</th>
+                    <th>성명</th>
+                </tr>
+                `;
+                travelers.forEach(t => {
+                    tHtml += `
+                    <tr>
+                        <td style="text-align:center;"><div class="val-text">${t.type || ''}</div></td>
+                        <td colspan="2" style="text-align:center;"><div class="val-text">${t.team || ''}</div></td>
+                        <td style="text-align:center;"><div class="val-text">${t.position || ''}</div></td>
+                        <td style="text-align:center;"><div class="val-text">${t.name || ''}</div></td>
+                    </tr>
+                    `;
+                });
+                const travelerBody = document.getElementById('traveler_tbody');
+                if (travelerBody) travelerBody.innerHTML = tHtml;
+
+                document.getElementById('t_instruction_purpose').innerText = payload.v_instruction_purpose || '';
+                document.getElementById('t_destination').innerText = payload.v_destination || '';
+
+                document.getElementById('t_start_time').innerText = payload.v_start_time || '';
+                document.getElementById('t_transport').innerText = payload.v_transport || '';
+                document.getElementById('t_end_time').innerText = payload.v_end_time || '';
+                document.getElementById('t_lodging').innerText = payload.v_lodging || '';
+
+                document.getElementById('t_title').innerText = payload.v_title || '';
+                document.getElementById('t_datetime').innerText = payload.v_datetime || '';
+                document.getElementById('t_purpose').innerText = payload.v_purpose || '';
+                document.getElementById('t_content').innerText = payload.v_content || '';
+                document.getElementById('t_feedback').innerText = payload.v_feedback || '';
+                document.getElementById('t_attachment_text').innerText = payload.v_attachment_text || '';
+
+                // Default include photo flag to true if undefined
+                const includePhoto = payload.v_include_photo === false ? false : true;
+                if (includePhoto) {
+                    document.getElementById('t_photo_container_wrapper').style.display = 'block';
+
+                    if (payload.v_photo1) {
+                        document.getElementById('t_photo1_img').src = payload.v_photo1;
+                        document.getElementById('t_photo1_img').style.display = 'block';
+                        document.getElementById('t_photo1_empty').style.display = 'none';
+                    } else {
+                        document.getElementById('t_photo1_img').style.display = 'none';
+                        document.getElementById('t_photo1_empty').style.display = 'flex';
+                    }
+
+                    if (payload.v_photo2) {
+                        document.getElementById('t_photo2_img').src = payload.v_photo2;
+                        document.getElementById('t_photo2_img').style.display = 'block';
+                        document.getElementById('t_photo2_empty').style.display = 'none';
+                    } else {
+                        document.getElementById('t_photo2_img').style.display = 'none';
+                        document.getElementById('t_photo2_empty').style.display = 'flex';
+                    }
+                } else {
+                    document.getElementById('t_photo_container_wrapper').style.display = 'none';
+                }
+
+                const includeScan = payload.v_include_scan;
+                if (includeScan) {
+                    if (payload.v_scan1) {
+                        document.getElementById('scan_page_1').style.display = 'block';
+                        document.getElementById('t_scan1_img').src = payload.v_scan1;
+                        document.getElementById('t_scan1_img').style.display = 'block';
+                    } else {
+                        document.getElementById('scan_page_1').style.display = 'none';
+                    }
+
+                    if (payload.v_scan2) {
+                        document.getElementById('scan_page_2').style.display = 'block';
+                        document.getElementById('t_scan2_img').src = payload.v_scan2;
+                        document.getElementById('t_scan2_img').style.display = 'block';
+                    } else {
+                        document.getElementById('scan_page_2').style.display = 'none';
+                    }
+                } else {
+                    document.getElementById('scan_page_1').style.display = 'none';
+                    document.getElementById('scan_page_2').style.display = 'none';
+                }
+
+                if (payload.lines && payload.lines.length > 0) {
+                    const table = document.getElementById('dynamic-approval-table');
+                    let thHtml = '<tr><th>담당자</th>';
+                    const createStampHtml = (stampSrc, name) => {
+                        const fallBackName = (name || '').substring(0, 3);
+                        const hasRealStamp = stampSrc && typeof stampSrc === 'string' && stampSrc.length > 10 && stampSrc !== 'null' && stampSrc !== 'undefined';
+                        if (hasRealStamp) {
+                            return `<img src="${stampSrc}" style="max-height: 50px; max-width: 50px; object-fit: contain;" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"/>
+                            <div style="display:none; border: 2px solid #ef4444; color: #ef4444; border-radius: 50%; width: 45px; height: 45px; align-items: center; justify-content: center; font-weight: bold; font-size: 13px; margin: 0 auto; letter-spacing: 1px;">${fallBackName}</div>`;
+                        } else {
+                            return `<div style="border: 2px solid #ef4444; color: #ef4444; border-radius: 50%; width: 45px; height: 45px; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 13px; margin: 0 auto; letter-spacing: 1px;">${fallBackName}</div>`;
+                        }
+                    };
+
+                    let tdHtml = `<tr><td style="height:60px; vertical-align:middle; text-align:center;">${createStampHtml(payload.drafter_stamp, payload.drafter_name)}</td>`;
+
+                    payload.lines.forEach(line => {
+                        const position = line.approver_position || line.approver_name;
+                        thHtml += `<th>${position}</th>`;
+
+                        let stampHtml = '';
+                        if (line.status === 'APPROVED') {
+                            stampHtml = createStampHtml(line.approver_stamp, line.approver_name);
+                        } else if (line.status === 'REJECTED') {
+                            stampHtml = `<div style="color:white; background:#ef4444; border-radius: 4px; padding: 4px 8px; display: inline-block; font-size:12px; font-weight:bold;">반려</div>`;
+                        }
+
+                        tdHtml += `<td style="height:60px; vertical-align:middle; text-align:center;">${stampHtml}</td>`;
+                    });
+                    thHtml += '</tr>';
+                    tdHtml += '</tr>';
+                    table.innerHTML = thHtml + tdHtml;
+                }
+            } else if (data.action === 'print') {
+                window.print();
+            }
+        });
+    </script>
+</body>
+
+</html>

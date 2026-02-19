@@ -1,0 +1,814 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <title>공람확인 시스템</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #1e3a8a;
+            --unread: #ef4444;
+            --read: #10b981;
+            --bg: #f8fafc;
+        }
+
+        body {
+            font-family: 'Pretendard', sans-serif;
+            margin: 0;
+            padding: 25px;
+            background: var(--bg);
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        /* 카드 스타일 */
+        .circ-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            border-left: 5px solid #cbd5e1;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .circ-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .circ-card.is-read {
+            border-left-color: var(--read);
+            opacity: 0.8;
+        }
+
+        .status-badge {
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.8em;
+            font-weight: bold;
+        }
+
+        .bg-unread {
+            background: #fee2e2;
+            color: var(--unread);
+        }
+
+        .bg-read {
+            background: #dcfce7;
+            color: var(--read);
+        }
+
+        .file-section {
+            background: #f1f5f9;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            border: 1px solid #e2e8f0;
+        }
+
+        .file-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px;
+            cursor: pointer;
+            color: var(--primary);
+            border-radius: 4px;
+        }
+
+        .file-item:hover {
+            background: #e2e8f0;
+            text-decoration: underline;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: white;
+            width: 700px;
+            padding: 30px;
+            border-radius: 15px;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        .btn-blue {
+            padding: 10px 20px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .btn-gray {
+            padding: 10px 20px;
+            background: #94a3b8;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .btn-red {
+            padding: 10px 20px;
+            background: #ef4444;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .btn-orange {
+            padding: 10px 20px;
+            background: #f59e0b;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        input[type="text"],
+        textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            margin-bottom: 10px;
+        }
+
+        /* 로딩 스피너 */
+        #loading {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.7);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid var(--primary);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* 파일 업로드 영역 레이아웃 */
+        .file-upload-grid {
+            display: flex;
+            gap: 20px;
+            /* 좌우 간격 */
+            margin-top: 10px;
+            margin-bottom: 15px;
+        }
+
+        .file-group {
+            flex: 1;
+            /* 반반씩 차지 */
+            display: flex;
+            flex-direction: column;
+        }
+
+        .file-group label {
+            margin-bottom: 8px !important;
+            display: block;
+        }
+
+        /* 파일 선택 인풋 디자인 추가 (드래그앤드롭) */
+        .drop-zone {
+            border: 2px dashed #cbd5e1;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            background: #f8fafc;
+            color: #64748b;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+        }
+
+        .drop-zone:hover, .drop-zone.dragover {
+            border-color: var(--primary);
+            background: #eff6ff;
+            color: var(--primary);
+        }
+
+        .drop-zone input[type="file"] {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            opacity: 0;
+            cursor: pointer;
+        }
+        
+        .pdf-viewer-container {
+            width: 100%;
+            height: 600px;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+            background: #f8fafc;
+        }
+        .pdf-viewer-container iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="loading">
+        <div class="spinner"></div>
+    </div>
+
+    <div class="container">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+            <h2><i class="fas fa-network-wired" style="color:var(--primary)"></i> 공람함</h2>
+            <button id="writeBtn" class="btn-blue" onclick="openRegModal()" style="display:none;">
+                <i class="fas fa-plus"></i> 새 공람 등록
+            </button>
+        </div>
+
+        <div style="margin-bottom: 15px;">
+            <label><input type="checkbox" id="showUnreadOnly" onchange="renderList()"> 미확인 공람만 보기</label>
+            <button onclick="loadList()" class="btn-gray"
+                style="padding: 5px 10px; font-size: 0.8em; margin-left: 10px;">새로고침</button>
+        </div>
+
+        <div id="circulationList"></div>
+    </div>
+
+    <div id="viewModal" class="modal">
+        <div class="modal-content">
+            <button onclick="closeModal('viewModal')"
+                style="position:absolute; top:20px; right:20px; border:none; background:none; font-size:1.5em; cursor:pointer;">&times;</button>
+
+            <h2 id="viewTitle" style="margin-top:0;"></h2>
+            <div id="viewMeta"
+                style="margin-bottom:15px; border-bottom:1px solid #eee; padding-bottom:10px; color:#666; font-size:0.9em;">
+            </div>
+            
+            <div id="viewPdfContainer" class="pdf-viewer-container">
+                <iframe id="pdfViewer" src=""></iframe>
+            </div>
+
+            <div id="viewContent" style="line-height:1.6; white-space:pre-wrap; margin-bottom:20px;"></div>
+
+            <div class="file-section">
+                <p style="font-weight:bold; margin-bottom:10px;"><i class="fas fa-folder-open"></i> 첨부 파일</p>
+                <div id="fileList"></div>
+            </div>
+
+            <!-- 미확인자 목록 추가 -->
+            <div id="unreadSection"
+                style="background:#fff1f2; padding:15px; border-radius:8px; margin:15px 0; border:1px solid #fecdd3; display:none;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                    <p style="font-weight:bold; color:var(--unread); margin:0;"><i class="fas fa-user-clock"></i> 미확인자
+                        목록 (<span id="unreadCount">0</span>명)</p>
+                    <button id="notifyUnreadBtn" class="btn-red" style="padding: 5px 10px; font-size: 0.8em;"
+                        onclick="notifyUnread()">알림 전송</button>
+                </div>
+                <div id="unreadList" style="font-size:0.9em; color:#475569; display:flex; flex-wrap:wrap; gap:8px;">
+                </div>
+            </div>
+
+            <div id="confirmArea"
+                style="text-align:center; padding:20px; background:#f0f9ff; border-radius:10px; margin-bottom: 20px;">
+                <button id="confirmBtn" class="btn-blue" style="width:100%; max-width:300px; padding:15px;"
+                    onclick="confirmRead()">
+                    <i class="fas fa-check"></i> 내용을 확인했습니다 (전자서명)
+                </button>
+                <p id="alreadyReadMsg" style="display:none; color:var(--read); font-weight:bold; font-size:1.1em;">
+                    <i class="fas fa-check-circle"></i> 확인 완료된 문서입니다.
+                </p>
+            </div>
+
+            <div id="modalFooter" style="text-align:right; border-top:1px solid #eee; padding-top:15px;">
+                <span id="authorActions" style="display:none; margin-right: 5px;">
+                    <button class="btn-orange" onclick="openEditModal()">수정</button>
+                    <button class="btn-red" onclick="deleteDoc()">삭제</button>
+                </span>
+                <button class="btn-gray" onclick="closeModal('viewModal')">닫기</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="regModal" class="modal">
+        <div class="modal-content" style="width: 600px;">
+            <h3 id="regModalTitle" style="margin-bottom: 20px;">신규 공람 등록</h3>
+            <input type="hidden" id="edit-id">
+
+            <div class="form-group">
+                <label><b>제목</b></label>
+                <input type="text" id="reg-title" placeholder="제목 입력">
+            </div>
+
+            <div class="form-group">
+                <label><b>내용</b></label>
+                <textarea id="reg-content" style="height:120px;"></textarea>
+            </div>
+
+            <div class="file-upload-grid">
+                <div class="file-group">
+                    <label><b>메인 파일 (PDF 등)</b></label>
+                    <div id="current-mainFile"
+                        style="font-size:0.8em; color:blue; margin-bottom:5px; min-height: 18px;"></div>
+                    <div class="drop-zone" id="drop-main">
+                        <i class="fas fa-file-upload" style="font-size: 24px; margin-bottom: 10px;"></i>
+                        <div id="drop-text-main">클릭하거나 파일을 마우스로 끌어오세요.</div>
+                        <input type="file" id="reg-mainFile">
+                    </div>
+                </div>
+
+                <div class="file-group">
+                    <label><b>추가 첨부파일</b></label>
+                    <div id="current-attachments"
+                        style="font-size:0.8em; color:blue; margin-bottom:5px; min-height: 18px;"></div>
+                    <div class="drop-zone" id="drop-attach">
+                        <i class="fas fa-copy" style="font-size: 24px; margin-bottom: 10px;"></i>
+                        <div id="drop-text-attach">클릭하거나 여러 파일을 끌어오세요.</div>
+                        <input type="file" id="reg-attachments" multiple>
+                    </div>
+                </div>
+            </div>
+
+            <div style="text-align:right; margin-top:20px; border-top: 1px solid #eee; padding-top: 15px;">
+                <button class="btn-blue" onclick="processRegistration()">저장하기</button>
+                <button class="btn-gray" onclick="closeModal('regModal')">취소</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="../js/config.js"></script>
+    <script src="../js/data_manager.js"></script>
+    <script>
+        // const fs = require('fs');
+        // const path = require('path');
+        // const { shell } = require('electron');
+
+        // ▼ 본인 GAS URL 확인
+        const SCRIPT_URL = BASE_URL; // from config.js
+
+        // ▼ NAS 경로 (config.js의 설정을 따름)
+        const FILE_DIR = NAS_CIRCULATION_PATH;
+        // const ATTACH_DIR = path.join(FILE_DIR, 'attachments');
+        const ATTACH_DIR = FILE_DIR + '/attachments'; // Simple concatenation for string path if needed, but path.join is better if available. Since it's not, we manually conform.
+
+        let user = {};
+        try {
+            user = JSON.parse(sessionStorage.getItem('jc_user'));
+        } catch (e) { }
+
+        let globalList = [];
+        let globalMembers = [];
+        let currentDoc = null;
+        let deleteQueue = [];
+
+        // if (!fs.existsSync(FILE_DIR)) fs.mkdirSync(FILE_DIR, { recursive: true });
+        // if (!fs.existsSync(ATTACH_DIR)) fs.mkdirSync(ATTACH_DIR, { recursive: true });
+
+        function init() {
+            if (!user) return;
+
+            // 관리 직책 목록
+            const adminRoles = ['관리자', '센터장', '팀장', '주임'];
+
+            // [수정] 시스템 관리자, 명시적 공람 관리자, 혹은 관리 직책일 경우 등록 버튼 노출
+            if (user.isSystemAdmin || user.isCirculationAdmin || adminRoles.includes(user.role)) {
+                const writeBtn = document.getElementById('writeBtn');
+                if (writeBtn) writeBtn.style.display = 'block';
+            }
+
+            DataManager.getMembers((json) => {
+                if (json.result === 'success') {
+                    // 퇴사, 휴직, Inactive(비활성) 제외
+                    globalMembers = json.list.filter(m => m.status !== '퇴사' && m.status !== '휴직' && m.status !== 'Inactive');
+                }
+            });
+
+            loadList();
+
+            // 배경에서 10초마다 실시간 동기화 (모달이 없을 때만 조용히 갱신)
+            setInterval(() => {
+                const viewModal = document.getElementById('viewModal');
+                const regModal = document.getElementById('regModal');
+                if (viewModal.style.display !== 'flex' && regModal.style.display !== 'flex') {
+                    loadList(true);
+                }
+            }, 10000);
+        }
+
+        async function apiCall(payload, isSilent = false) {
+            if (!isSilent) document.getElementById('loading').style.display = 'flex';
+            try {
+                const res = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    body: JSON.stringify(payload)
+                });
+                return await res.json();
+            } catch (e) {
+                if (!isSilent) parent.Modal.alert("서버 통신 오류: " + e.message);
+                return { result: 'error' };
+            } finally {
+                if (!isSilent) document.getElementById('loading').style.display = 'none';
+            }
+        }
+
+        async function loadList(isSilent = false) {
+            const res = await apiCall({ action: 'get_circ_list' }, isSilent);
+            if (res.result === 'success') {
+                globalList = res.list;
+                renderList();
+
+                if (!isSilent) {
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const openId = urlParams.get('open_id');
+                    if (openId) {
+                        setTimeout(() => openDoc(openId), 300);
+                        window.history.replaceState({}, document.title, window.location.pathname);
+                    }
+                }
+            }
+        }
+
+        function renderList() {
+            const showUnread = document.getElementById('showUnreadOnly').checked;
+            let list = globalList;
+
+            if (showUnread) {
+                list = list.filter(doc => !doc.readers || !doc.readers.includes(user.name));
+            }
+
+            const container = document.getElementById('circulationList');
+            container.innerHTML = list.map(doc => {
+                const isRead = doc.readers && doc.readers.includes(user.name);
+                return `
+                <div class="circ-card ${isRead ? 'is-read' : ''}" onclick="openDoc('${doc.id}')">
+                    <div class="info">
+                        <h3>${doc.title}</h3>
+                        <div class="meta">작성: ${doc.author} | ${doc.date}</div>
+                    </div>
+                    <div class="status">
+                        <span class="status-badge ${isRead ? 'bg-read' : 'bg-unread'}">
+                            ${isRead ? '확인완료' : '미확인'}
+                        </span>
+                    </div>
+                </div>`;
+            }).join('');
+        }
+
+        function openDoc(id) {
+            currentDoc = globalList.find(d => d.id === id);
+
+            document.getElementById('viewTitle').innerText = currentDoc.title;
+            document.getElementById('viewMeta').innerText = `작성자: ${currentDoc.author} | 날짜: ${currentDoc.date}`;
+            document.getElementById('viewContent').innerText = currentDoc.content;
+
+            let html = '';
+            
+            // PDF 뷰어 로직
+            const pdfContainer = document.getElementById('viewPdfContainer');
+            const pdfViewer = document.getElementById('pdfViewer');
+            if (currentDoc.mainFile && currentDoc.mainFile.toLowerCase().endsWith('.pdf')) {
+                pdfContainer.style.display = 'block';
+                // URL에 타임스탬프를 붙여서 캐싱 방지
+                pdfViewer.src = '/api/download_circ?file=' + encodeURIComponent(currentDoc.mainFile) + '#toolbar=0&navpanes=0';
+            } else {
+                pdfContainer.style.display = 'none';
+                pdfViewer.src = '';
+            }
+
+            html += `<div class="file-item" onclick="openLocalFile('${currentDoc.mainFile}')">
+                            <i class="fas fa-file-pdf"></i> [본문 다운로드] ${currentDoc.mainFile}
+                         </div>`;
+            if (currentDoc.attachments && currentDoc.attachments.length > 0) {
+                currentDoc.attachments.forEach(f => {
+                    const folderId = currentDoc.id.replace(/^C_/, '');
+                    html += `<div class="file-item" onclick="openLocalFile('attachments/${folderId}/${f}')">
+                                <i class="fas fa-paperclip"></i> ${f}
+                             </div>`;
+                });
+            }
+            document.getElementById('fileList').innerHTML = html || '첨부파일 없음';
+
+            // [UI 로직 수정] 확인 상태에 따른 UI
+            const isRead = currentDoc.readers && currentDoc.readers.includes(user.name);
+            if (isRead) {
+                document.getElementById('confirmBtn').style.display = 'none';
+                document.getElementById('alreadyReadMsg').style.display = 'block';
+            } else {
+                document.getElementById('confirmBtn').style.display = 'inline-block';
+                document.getElementById('alreadyReadMsg').style.display = 'none';
+            }
+
+            // [권한 체크 수정] 시스템관리자 포함
+            const adminRoles = ['관리자', '센터장', '팀장', '주임'];
+            const isAdmin = user.isSystemAdmin === true || adminRoles.includes(user.role);
+
+            // 1. 작성자 본인이거나 2. 시스템 관리자이거나 3. 관리 직책일 때
+            const authorActions = document.getElementById('authorActions');
+            if (currentDoc.author === user.name || isAdmin) {
+                authorActions.style.display = 'inline-block';
+                // 공람이 이미 확인된 경우 수정 불가 (버튼 숨김)
+                const editBtn = authorActions.querySelector('.btn-orange');
+                if (editBtn) {
+                    if (isRead || (currentDoc.readers && currentDoc.readers.length > 0)) {
+                        editBtn.style.display = 'none';
+                    } else {
+                        editBtn.style.display = 'inline-block';
+                    }
+                }
+
+                // 미확인자 목록 관리자에게 표시
+                document.getElementById('unreadSection').style.display = 'block';
+                const readers = currentDoc.readers || [];
+                const unreadMembers = globalMembers.filter(m => !readers.includes(m.name) && m.name !== currentDoc.author);
+
+                document.getElementById('unreadCount').innerText = unreadMembers.length;
+                if (unreadMembers.length > 0) {
+                    document.getElementById('unreadList').innerHTML = unreadMembers.map(m => `<span style="background:white; padding:2px 6px; border-radius:4px; border:1px solid #e2e8f0;">${m.name}</span>`).join('');
+                    document.getElementById('notifyUnreadBtn').style.display = 'inline-block';
+                } else {
+                    document.getElementById('unreadList').innerHTML = '<span style="color:var(--read);"><i class="fas fa-check-circle"></i> 전원이 확인했습니다.</span>';
+                    document.getElementById('notifyUnreadBtn').style.display = 'none';
+                }
+            } else {
+                authorActions.style.display = 'none';
+                document.getElementById('unreadSection').style.display = 'none';
+            }
+
+            document.getElementById('viewModal').style.display = 'flex';
+        }
+
+        async function notifyUnread() {
+            if (!currentDoc) return;
+            if (!await parent.Modal.confirm("현재 미확인 상태인 모든 직원에게 확인 요청 알림을 전송하시겠습니까?")) return;
+
+            const res = await apiCall({ action: 'notify_unread_circ', id: currentDoc.id });
+            if (res.result === 'success') {
+                if (res.count > 0) {
+                    parent.Modal.alert(`미확인자 ${res.count}명에게 알림을 전송했습니다.`);
+                } else {
+                    parent.Modal.alert("미확인자가 없습니다.");
+                }
+            } else {
+                parent.Modal.alert("알림 전송 실패: " + res.message);
+            }
+        }
+
+        async function openLocalFile(subPath) {
+            // Web environment: Download file via backend API instead of using node 'fs'/'shell'
+            window.open('/api/download_circ?file=' + encodeURIComponent(subPath), '_blank');
+        }
+
+        async function processRegistration() {
+            const title = document.getElementById('reg-title').value;
+            const content = document.getElementById('reg-content').value;
+            const mainFile = document.getElementById('reg-mainFile').files[0];
+            const attachFiles = document.getElementById('reg-attachments').files;
+            const editId = document.getElementById('edit-id').value;
+
+
+            if (!title) return parent.Modal.alert("제목을 입력하세요.");
+
+            let mainFileName = currentDoc ? currentDoc.mainFile : "";
+            let attachmentNames = currentDoc ? (currentDoc.attachments || []) : [];
+            const numId = editId ? editId.replace(/^C_/, '') : String(Date.now());
+            const docId = numId;
+
+            if (deleteQueue.length > 0) {
+                attachmentNames = attachmentNames.filter(n => !deleteQueue.includes(n));
+            }
+
+            if (mainFile || attachFiles.length > 0) {
+                const formData = new FormData();
+                formData.append('docId', docId);
+                if (mainFile) formData.append('mainFile', mainFile);
+                if (attachFiles.length > 0) {
+                    for (let f of attachFiles) {
+                        formData.append('attachments', f);
+                    }
+                }
+
+                document.getElementById('loading').style.display = 'flex';
+                try {
+                    const uploadRes = await fetch('/api/upload_circ', { method: 'POST', body: formData }).then(r => r.json());
+                    if (uploadRes.result === 'success') {
+                        if (uploadRes.mainFile) mainFileName = uploadRes.mainFile;
+                        if (uploadRes.attachments && uploadRes.attachments.length > 0) {
+                            attachmentNames = attachmentNames.concat(uploadRes.attachments);
+                        }
+                    } else {
+                        document.getElementById('loading').style.display = 'none';
+                        return parent.Modal.alert("파일 업로드 실패: " + uploadRes.message);
+                    }
+                } catch (e) {
+                    document.getElementById('loading').style.display = 'none';
+                    return parent.Modal.alert("파일 업로드 연동 오류: " + e.message);
+                }
+                document.getElementById('loading').style.display = 'none';
+            }
+
+            const payload = {
+                action: 'save_circ',
+                id: editId || `C_${numId}`,
+                title: title,
+                content: content,
+                author: user.name,
+                mainFile: mainFileName,
+                attachments: attachmentNames,
+                readers: editId ? currentDoc.readers : []
+            };
+
+            const res = await apiCall(payload);
+            if (res.result === 'success') {
+                await parent.Modal.alert("저장되었습니다.");
+                closeModal('regModal');
+                loadList();
+            } else {
+                parent.Modal.alert("저장 실패: " + res.message);
+            }
+        }
+
+        async function confirmRead() {
+            if (!await parent.Modal.confirm("내용을 확인하셨습니까?")) return;
+            const res = await apiCall({
+                action: 'confirm_read',
+                id: currentDoc.id,
+                readerName: user.name
+            });
+
+            if (res.result === 'success') {
+                currentDoc.readers = res.readers;
+                // UI 즉시 변경
+                document.getElementById('confirmBtn').style.display = 'none';
+                document.getElementById('alreadyReadMsg').style.display = 'block';
+                loadList();
+            }
+        }
+
+        async function deleteDoc() {
+            if (!await parent.Modal.confirm("정말 삭제하시겠습니까?")) return;
+            const res = await apiCall({ action: 'delete_circ', id: currentDoc.id });
+            if (res.result === 'success') {
+                await parent.Modal.alert("삭제되었습니다.");
+                closeModal('viewModal');
+                loadList();
+            }
+        }
+
+        function openRegModal() {
+            document.getElementById('regModal').style.display = 'flex';
+            document.getElementById('edit-id').value = "";
+            document.getElementById('reg-title').value = "";
+            document.getElementById('reg-content').value = "";
+            document.getElementById('reg-mainFile').value = "";
+            document.getElementById('reg-attachments').value = "";
+            document.getElementById('current-attachments').innerHTML = "";
+            document.getElementById('drop-text-main').innerText = "클릭하거나 파일을 마우스로 끌어오세요.";
+            document.getElementById('drop-text-attach').innerText = "클릭하거나 여러 파일을 끌어오세요.";
+            currentDoc = null;
+        }
+
+        function openEditModal() {
+            closeModal('viewModal');
+            document.getElementById('regModal').style.display = 'flex';
+            document.getElementById('edit-id').value = currentDoc.id;
+            document.getElementById('reg-title').value = currentDoc.title;
+            document.getElementById('reg-content').value = currentDoc.content;
+
+            if (currentDoc.mainFile) {
+                document.getElementById('current-mainFile').innerHTML = `현재 파일: ${currentDoc.mainFile}`;
+            }
+
+            deleteQueue = [];
+            let html = '';
+            if (currentDoc.attachments) {
+                currentDoc.attachments.forEach(f => {
+                    html += `<div>${f} <span style="color:red; cursor:pointer;" onclick="markDelete(this, '${f}')">[삭제]</span></div>`;
+                });
+            }
+            document.getElementById('current-attachments').innerHTML = html;
+        }
+
+        window.markDelete = function (el, fname) {
+            deleteQueue.push(fname);
+            el.parentElement.style.textDecoration = "line-through";
+        }
+
+        function setupDragAndDrop(inputId, dropZoneId, textId) {
+            const input = document.getElementById(inputId);
+            const dropZone = document.getElementById(dropZoneId);
+            const textEl = document.getElementById(textId);
+
+            // 입력값이 바뀌었을 때 (클릭해서 선택했을 때 포함)
+            input.addEventListener('change', (e) => {
+                updateFileText(input.files, textEl);
+            });
+
+            // 드래그 이벤트 효과
+            dropZone.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                dropZone.classList.add('dragover');
+            });
+            ['dragleave', 'dragend', 'drop'].forEach(evt => {
+                dropZone.addEventListener(evt, (e) => {
+                    dropZone.classList.remove('dragover');
+                });
+            });
+
+            // 드롭했을 때의 처리
+            dropZone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                if (e.dataTransfer.files.length > 0) {
+                    input.files = e.dataTransfer.files; // FileList 할당
+                    updateFileText(input.files, textEl);
+                }
+            });
+        }
+
+        function updateFileText(files, textEl) {
+            if (files.length === 0) {
+                textEl.innerText = "클릭하거나 파일을 마우스로 끌어오세요.";
+            } else if (files.length === 1) {
+                textEl.innerText = files[0].name;
+                textEl.style.color = 'var(--primary)';
+                textEl.style.fontWeight = 'bold';
+            } else {
+                textEl.innerText = `${files[0].name} 외 ${files.length - 1}개 파일`;
+                textEl.style.color = 'var(--primary)';
+                textEl.style.fontWeight = 'bold';
+            }
+        }
+
+        function initDragAndDrop() {
+            setupDragAndDrop('reg-mainFile', 'drop-main', 'drop-text-main');
+            setupDragAndDrop('reg-attachments', 'drop-attach', 'drop-text-attach');
+        }
+
+        function closeModal(id) { 
+            document.getElementById(id).style.display = 'none'; 
+            if(id === 'viewModal') {
+                document.getElementById('pdfViewer').src = ''; // 메모리 누수 방지
+            }
+        }
+        
+        // 기존 init()의 맨 끝에 initDragAndDrop()을 호출하도록 래핑
+        const originInit = init;
+        init = function() {
+            originInit();
+            initDragAndDrop();
+        }
+
+        window.onload = init;
+    </script>
+</body>
+
+</html>
