@@ -438,7 +438,6 @@
             * {
                 -webkit-print-color-adjust: exact !important;
                 print-color-adjust: exact !important;
-                color-adjust: exact !important;
             }
 
             #sidebar,
@@ -814,8 +813,8 @@
                 let isAllday = fcEvent.allDay;
                 document.getElementById('event-allday').checked = isAllday;
 
-                let sVal = formatLocalISO(fcEvent.start, false);
-                let eVal = formatLocalISO(fcEvent.end || fcEvent.start, false);
+                let sVal = formatFCDate(fcEvent.start, false);
+                let eVal = formatFCDate(fcEvent.end || fcEvent.start, false);
 
                 if (isAllday) {
                     sVal = sVal.split('T')[0];
@@ -823,7 +822,7 @@
                         let eStr = eVal.split('T')[0];
                         let ed = new Date(eStr + "T12:00:00");
                         ed.setDate(ed.getDate() - 1);
-                        eVal = formatLocalISO(ed, true);
+                        eVal = formatNativeDate(ed, true);
                     } else {
                         eVal = sVal;
                     }
@@ -860,8 +859,8 @@
                 let startObj = selectInfo ? selectInfo.start : new Date();
                 let endObj = selectInfo ? selectInfo.end : new Date(Date.now() + 3600000);
 
-                let sVal = formatLocalISO(startObj, false);
-                let eVal = formatLocalISO(endObj, false);
+                let sVal = selectInfo ? formatFCDate(startObj, false) : formatNativeDate(startObj, false);
+                let eVal = selectInfo ? formatFCDate(endObj, false) : formatNativeDate(endObj, false);
 
                 if (isAllday) {
                     sVal = sVal.split('T')[0];
@@ -869,7 +868,7 @@
                         let eStr = eVal.split('T')[0];
                         let ed = new Date(eStr + "T12:00:00");
                         ed.setDate(ed.getDate() - 1);
-                        eVal = formatLocalISO(ed, true);
+                        eVal = formatNativeDate(ed, true);
                     } else {
                         eVal = sVal;
                     }
@@ -938,7 +937,7 @@
             if (isAllday) {
                 const ed = new Date(endVal + 'T00:00:00');
                 ed.setDate(ed.getDate() + 1);
-                endVal = formatLocalISO(ed, true); // Exclusive for FullCalendar DB
+                endVal = formatNativeDate(ed, true); // Exclusive for FullCalendar DB
             }
 
             const payload = {
@@ -955,9 +954,10 @@
 
             const recurrence = document.getElementById('event-recurrence').value;
             if (recurrence) {
-                const start = new Date(payload.start);
+                const sd = new Date(payload.start);
                 let freq = recurrence.toUpperCase();
-                payload.rrule = `FREQ=${freq};DTSTART=${start.toISOString().replace(/[-:]/g, '').split('.')[0]}Z`;
+                let rruleDateStr = formatNativeDate(sd).replace(/[-:T]/g, '') + '00';
+                payload.rrule = `FREQ=${freq};DTSTART=${rruleDateStr}`;
             } else {
                 payload.rrule = null;
             }
@@ -1038,12 +1038,24 @@
             }
         }
 
-        function formatLocalISO(date, isDateOnly = false) {
-            if (!date) return '';
-            const d = new Date(date);
-            const offset = d.getTimezoneOffset() * 60000;
-            const local = new Date(d.getTime() - offset);
-            return isDateOnly ? local.toISOString().slice(0, 10) : local.toISOString().slice(0, 16);
+        function formatFCDate(d, isDateOnly = false) {
+            if (!d) return '';
+            const year = d.getUTCFullYear();
+            const month = String(d.getUTCMonth() + 1).padStart(2, '0');
+            const day = String(d.getUTCDate()).padStart(2, '0');
+            const hours = String(d.getUTCHours()).padStart(2, '0');
+            const minutes = String(d.getUTCMinutes()).padStart(2, '0');
+            return isDateOnly ? `${year}-${month}-${day}` : `${year}-${month}-${day}T${hours}:${minutes}`;
+        }
+
+        function formatNativeDate(d, isDateOnly = false) {
+            if (!d) return '';
+            const year = d.getFullYear();
+            const month = String(d.getMonth() + 1).padStart(2, '0');
+            const day = String(d.getDate()).padStart(2, '0');
+            const hours = String(d.getHours()).padStart(2, '0');
+            const minutes = String(d.getMinutes()).padStart(2, '0');
+            return isDateOnly ? `${year}-${month}-${day}` : `${year}-${month}-${day}T${hours}:${minutes}`;
         }
     </script>
 </body>
