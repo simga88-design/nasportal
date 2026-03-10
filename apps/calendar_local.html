@@ -857,10 +857,21 @@
                 document.getElementById('event-allday').checked = isAllday;
 
                 let startObj = selectInfo ? selectInfo.start : new Date();
-                let endObj = selectInfo ? selectInfo.end : new Date(Date.now() + 3600000);
+                let endObj = selectInfo && selectInfo.end ? selectInfo.end : new Date(startObj.getTime() + 3600000);
+                
+                // FullCalendar sometimes passes end as identical to start or null for single slot clicks
+                if (endObj.getTime() <= startObj.getTime()) {
+                    endObj = new Date(startObj.getTime() + 3600000); // add 1 hour
+                }
 
+                // If the object came from fullcalendar we use FCDate formatter, if we created it by adding 1hr it's Native
                 let sVal = selectInfo ? formatFCDate(startObj, false) : formatNativeDate(startObj, false);
-                let eVal = selectInfo ? formatFCDate(endObj, false) : formatNativeDate(endObj, false);
+                
+                // For endObj, if it was perfectly cleanly pulled from FC we use FC format. 
+                // But if we generated the +1 hour fallback ourselves just above, it's a native Date.
+                let eVal = (selectInfo && selectInfo.end && selectInfo.end.getTime() > startObj.getTime()) 
+                                ? formatFCDate(endObj, false) 
+                                : formatNativeDate(endObj, false);
 
                 if (isAllday) {
                     sVal = sVal.split('T')[0];
