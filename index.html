@@ -509,7 +509,6 @@
 
         async function deleteNotification(event, id) {
             event.stopPropagation();
-            if (!confirm("이 알림을 삭제하시겠습니까?")) return;
             try {
                 const res = await fetch(BASE_URL, {
                     method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -528,7 +527,6 @@
         async function deleteReadNotifications() {
             const user = JSON.parse(sessionStorage.getItem('jc_user'));
             if (!user) return;
-            if (!confirm('읽은 알림을 모두 삭제하시겠습니까?')) return;
 
             try {
                 await fetch(BASE_URL, {

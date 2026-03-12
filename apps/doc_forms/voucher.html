@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ko">
 
 <head>
@@ -146,7 +146,7 @@
 
             if (hasOther && otherText) issues.push(`기타(${otherText})`);
 
-            let text = `상기 의뢰고객은 본 센터에서 ${issues.join(', ') || '상담'} 문제로 면담을 진행하였으며 `;
+            let text = `상기 신청자는 본 센터에서 ${issues.join(', ') || '상담'} 문제로 면담을 진행하였으며 `;
             const tests = [phq, gad].filter(x => x).join(', ');
             text += tests;
             text += (phq || gad) ? ' 확인함. ' : '';

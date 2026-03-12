@@ -267,11 +267,12 @@ app.post('/api/auth', (req, res) => {
             const list = db.prepare('SELECT * FROM members').all();
             res.json({ result: 'success', list });
         } else if (action === 'save_member') {
-            const { id, password, name, email, role, team, position, phone, avatar, stamp, status, isSystemAdmin, isCirculationAdmin, joinDate } = req.body;
-            // INSERT OR REPLACE wipes missing fields (permission_level). Use UPSERT instead.
+            const { id, password, name, email, role, team, position, phone, stamp, status, isSystemAdmin, isCirculationAdmin, joinDate } = req.body;
+            // Admin form doesn't send 'avatar'. Omit avatar from the UPDATE block so user profile pictures are not wiped.
+            // Default it to '' only on INSERT.
             const stmt = db.prepare(`
                 INSERT INTO members (id, password, name, email, role, team, position, phone, avatar, stamp, status, isSystemAdmin, isCirculationAdmin, joinDate) 
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, '', ?, ?, ?, ?, ?)
                 ON CONFLICT(id) DO UPDATE SET
                     password=excluded.password,
                     name=excluded.name,
@@ -280,14 +281,13 @@ app.post('/api/auth', (req, res) => {
                     team=excluded.team,
                     position=excluded.position,
                     phone=excluded.phone,
-                    avatar=excluded.avatar,
                     stamp=excluded.stamp,
                     status=excluded.status,
                     isSystemAdmin=excluded.isSystemAdmin,
                     isCirculationAdmin=excluded.isCirculationAdmin,
                     joinDate=excluded.joinDate
             `);
-            stmt.run(id, password, name, email, role, team, position || '', phone || '', avatar || '', stamp || '', status, isSystemAdmin ? 1 : 0, isCirculationAdmin ? 1 : 0, joinDate || '');
+            stmt.run(id, password, name, email, role, team, position || '', phone || '', stamp || '', status, isSystemAdmin ? 1 : 0, isCirculationAdmin ? 1 : 0, joinDate || '');
             res.json({ result: 'success' });
         } else if (action === 'delete_member') {
             db.prepare('DELETE FROM members WHERE id = ?').run(req.body.id);
@@ -304,9 +304,10 @@ app.post('/api/auth', (req, res) => {
             db.prepare('DELETE FROM teams WHERE code = ?').run(req.body.code);
             res.json({ result: 'success' });
         } else if (action === 'update_profile') {
-            const { id, password, joinDate, team, position, phone, avatar, stamp } = req.body;
-            const stmt = db.prepare(`UPDATE members SET password = ?, joinDate = ?, team = ?, position = ?, role = ?, phone = ?, avatar = ?, stamp = ? WHERE id = ?`);
-            stmt.run(password, joinDate, team, position, position, phone, avatar || '', stamp || '', id);
+            const { id, password, phone, avatar, stamp } = req.body;
+            // The self-edit form doesn't control role, position, or team. Omitting them prevents overwriting existing MDM HR data.
+            const stmt = db.prepare(`UPDATE members SET password = ?, phone = ?, avatar = ?, stamp = ? WHERE id = ?`);
+            stmt.run(password, phone, avatar || '', stamp || '', id);
             // Fetch updated user to return
             const user = db.prepare('SELECT * FROM members WHERE id = ?').get(id);
             if (user) user.isSystemAdmin = !!user.isSystemAdmin;
@@ -442,10 +443,14 @@ app.post('/api/auth', (req, res) => {
             // Using KST date
             const date = new Date(new Date().getTime() - (new Date().getTimezoneOffset() * 60000)).toISOString().split('T')[0];
 
+            let targetTable = 'doc_numbers';
+            if (docType === '제정내') targetTable = 'doc_numbers_jejeongnae';
+            else if (docType === '제정연') targetTable = 'doc_numbers_jejeongyeon';
+
             if (docType === '제정공' || docType === '제정내' || docType === '제정연') {
                 // Sequential Numbering without Year (e.g., 제정공-1, 제정공-2)
                 // Find max number for this docType
-                const rows = db.prepare('SELECT docNum FROM doc_numbers WHERE docType = ?').all(docType);
+                const rows = db.prepare(`SELECT docNum FROM ${targetTable} WHERE docType = ?`).all(docType);
                 let maxNum = 0;
                 rows.forEach(r => {
                     const match = r.docNum.match(/-(\d+)$/); // Extract last digits
@@ -458,47 +463,134 @@ app.post('/api/auth', (req, res) => {
             } else {
                 // Default Year-based Numbering (e.g., 일반-2024-001)
                 const year = date.split('-')[0];
-                const count = db.prepare('SELECT COUNT(*) as count FROM doc_numbers WHERE docType = ? AND date LIKE ?').get(docType, `${year}%`).count + 1;
+                const count = db.prepare(`SELECT COUNT(*) as count FROM ${targetTable} WHERE docType = ? AND date LIKE ?`).get(docType, `${year}%`).count + 1;
                 docNum = `${docType}-${year}-${String(count).padStart(3, '0')}`;
             }
 
-            const stmt = db.prepare('INSERT INTO doc_numbers (docNum, docType, title, sender, target, date) VALUES (?, ?, ?, ?, ?, ?)');
+            const stmt = db.prepare(`INSERT INTO ${targetTable} (docNum, docType, title, sender, target, date) VALUES (?, ?, ?, ?, ?, ?)`);
             stmt.run(docNum, docType, title, sender, target, date);
             res.json({ result: 'success', data: { message: docNum } });
         } else if (action === 'get_pending_list') {
-            const list = db.prepare("SELECT * FROM doc_numbers WHERE status = '미발송' AND docType != '제정내' ORDER BY date DESC").all();
+            const list = db.prepare(`
+                SELECT * FROM doc_numbers WHERE status = '미발송'
+            `).all();
+
+            list.sort((a, b) => {
+                if (a.date !== b.date) return a.date < b.date ? 1 : -1;
+                const getNum = (s) => (s && s.match(/-(\d+)$/) ? parseInt(s.match(/-(\d+)$/)[1], 10) : 0);
+                const numA = getNum(a.docNum), numB = getNum(b.docNum);
+                if (numA !== numB) return numB - numA;
+                return (b.docNum || '').localeCompare(a.docNum || '');
+            });
             res.json({ result: 'success', list, data: { list } });
         } else if (action === 'get_ledger') {
             const { docType } = req.body;
-            // Naturally sort by Date descending, then Document Number Length, then Document Number String to avoid 1, 10, 2
-            const list = db.prepare('SELECT * FROM doc_numbers WHERE docType = ? ORDER BY date DESC, LENGTH(docNum) DESC, docNum DESC').all(docType);
+            let targetTable = 'doc_numbers';
+            if (docType === '제정내') targetTable = 'doc_numbers_jejeongnae';
+            else if (docType === '제정연') targetTable = 'doc_numbers_jejeongyeon';
+
+            const list = db.prepare(`SELECT * FROM ${targetTable} WHERE docType = ?`).all(docType);
+
+            list.sort((a, b) => {
+                if (a.date !== b.date) return a.date < b.date ? 1 : -1;
+                const getNum = (s) => (s && s.match(/-(\d+)$/) ? parseInt(s.match(/-(\d+)$/)[1], 10) : 0);
+                const numA = getNum(a.docNum), numB = getNum(b.docNum);
+                if (numA !== numB) return numB - numA;
+                return (b.docNum || '').localeCompare(a.docNum || '');
+            });
             res.json({ result: 'success', list });
         } else if (action === 'search_doc_info') {
             const { docNumber } = req.body;
             if (!docNumber) return res.json({ result: 'success', data: { found: false } });
-            // Exact match or ends-with match for robustness
-            const doc = db.prepare('SELECT * FROM doc_numbers WHERE docNum = ? OR docNum LIKE ?').get(String(docNumber), `%${docNumber}`);
-            if (doc) res.json({ result: 'success', data: { found: true, ...doc } });
-            else res.json({ result: 'success', data: { found: false } });
+            
+            // Search doc_numbers first (which only contains 제정공 and other non-internal docs now)
+            let doc = db.prepare(`
+                SELECT * FROM doc_numbers 
+                WHERE docNum = ? OR docNum LIKE ? 
+                ORDER BY date DESC 
+                LIMIT 1
+            `).get(String(docNumber), `%${docNumber}`);
+
+            // If not found, check jejeongnae to give the user the warning message
+            if (!doc) {
+                doc = db.prepare(`SELECT * FROM doc_numbers_jejeongnae WHERE docNum = ? OR docNum LIKE ? ORDER BY date DESC LIMIT 1`).get(String(docNumber), `%${docNumber}`);
+            }
+            // If still not found, check jejeongyeon
+            if (!doc) {
+                doc = db.prepare(`SELECT * FROM doc_numbers_jejeongyeon WHERE docNum = ? OR docNum LIKE ? ORDER BY date DESC LIMIT 1`).get(String(docNumber), `%${docNumber}`);
+            }
+            
+            if (doc) {
+                if (doc.docType === '제정내') {
+                    res.json({ result: 'success', data: { found: true, isValiddocType: false, docType: doc.docType } });
+                } else {
+                    res.json({ result: 'success', data: { found: true, isValiddocType: true, ...doc } });
+                }
+            } else {
+                res.json({ result: 'success', data: { found: false } });
+            }
         } else if (action === 'get_issued_doc') {
             const { id } = req.body;
             if (!id) return res.json({ result: 'error', message: 'ID가 없습니다.' });
 
-            const doc = db.prepare('SELECT * FROM issued_docs WHERE id = ?').get(String(id));
-            if (doc) {
-                // Parse the JSON content back out before sending to client
-                let contentRaw = doc.content_json;
-                if (typeof contentRaw === 'string') {
-                    try { contentRaw = JSON.parse(contentRaw); } catch (e) { }
+            const prefix = String(id).split('-')[0];
+            const prefixMap = {
+                'VOU': 'issued_docs_voucher',
+                'CNF': 'issued_docs_confirmation',
+                'REPC': 'issued_docs_reply_child',
+                'REPA': 'issued_docs_reply_adult',
+                'REPS': 'issued_docs_reply_suicide',
+                'REPR': 'issued_docs_reply_resignation',
+                'REP': 'issued_docs_reply_letter',
+                'DIS': 'issued_docs_dis',
+                'JJY': 'issued_docs_jejungyeon',
+                'CAL': 'issued_docs_calc',
+                'LCF': 'issued_docs_lecture_conf',
+                'RPT': 'issued_docs_report',
+                'EMG': 'issued_docs_emergency',
+                'BTR': 'issued_docs_biz_trip',
+                'CMT': 'issued_docs_case_meeting'
+            };
+
+            let targetTable = prefixMap[prefix];
+            
+            try {
+                let doc = null;
+                
+                if (targetTable) {
+                    doc = db.prepare(`SELECT * FROM ${targetTable} WHERE id = ?`).get(String(id));
+                } else {
+                    // Fallback for legacy "DOC-" prefixes that might be hiding anywhere
+                    const allTables = Object.values(prefixMap);
+                    for (let tbl of allTables) {
+                        try {
+                            doc = db.prepare(`SELECT * FROM ${tbl} WHERE id = ?`).get(String(id));
+                            if (doc) break;
+                        } catch (e) {
+                            // Ignore missing tables during scan
+                        }
+                    }
                 }
-                res.json({ result: 'success', data: { ...doc, content: contentRaw } });
-            } else {
-                res.json({ result: 'error', message: '문서를 찾을 수 없습니다.' });
+
+                if (doc) {
+                    let contentRaw = doc.content_json;
+                    if (typeof contentRaw === 'string') {
+                        try { contentRaw = JSON.parse(contentRaw); } catch (e) { }
+                    }
+                    res.json({ result: 'success', data: { ...doc, content: contentRaw } });
+                } else {
+                    res.json({ result: 'error', message: '문서를 찾을 수 없습니다.' });
+                }
+            } catch (err) {
+                res.json({ result: 'error', message: err.message });
             }
         } else if (action === 'mark_sent') {
             const { docNumber, sentDate } = req.body;
+            let targetTable = 'doc_numbers';
+            if (String(docNumber).startsWith('제정연')) targetTable = 'doc_numbers_jejeongyeon';
+            
             // Use exact or partial match but consistent
-            const stmt = db.prepare("UPDATE doc_numbers SET sentDate = ?, status = '발송완료' WHERE docNum = ? OR docNum LIKE ?");
+            const stmt = db.prepare(`UPDATE ${targetTable} SET sentDate = ?, status = '발송완료' WHERE docNum = ? OR docNum LIKE ?`);
             stmt.run(sentDate, String(docNumber), `%${docNumber}`);
             res.json({ result: 'success' });
 
@@ -506,27 +598,92 @@ app.post('/api/auth', (req, res) => {
         } else if (action === 'save_issued_doc') {
             const { type, target_name, content, issuer, status } = req.body;
             // ID 생성 (예: VOU-20240220-123456)
+            
+            const docTypesMap = {
+                'voucher': { table: 'issued_docs_voucher', prefix: 'VOU' },
+                'confirmation': { table: 'issued_docs_confirmation', prefix: 'CNF' },
+                'reply_child': { table: 'issued_docs_reply_child', prefix: 'REPC' },
+                'reply_adult': { table: 'issued_docs_reply_adult', prefix: 'REPA' },
+                'reply_suicide': { table: 'issued_docs_reply_suicide', prefix: 'REPS' },
+                'reply_resignation': { table: 'issued_docs_reply_resignation', prefix: 'REPR' },
+                '퇴사통회신서발행기': { table: 'issued_docs_dis', prefix: 'DIS' },
+                'jejungyeon': { table: 'issued_docs_jejungyeon', prefix: 'JJY' },
+                '강사비산출내역서': { table: 'issued_docs_calc', prefix: 'CAL' },
+                '강의확인서': { table: 'issued_docs_lecture_conf', prefix: 'LCF' },
+                '사례종결보고서-2026년': { table: 'issued_docs_report', prefix: 'RPT' },
+                '응급개입 기록지(수정본)': { table: 'issued_docs_emergency', prefix: 'EMG' },
+                '출장복명서': { table: 'issued_docs_biz_trip', prefix: 'BTR' },
+                '사례회의록': { table: 'issued_docs_case_meeting', prefix: 'CMT' }
+            };
+
+            const mapInfo = docTypesMap[type];
+            if (!mapInfo) {
+                return res.json({ result: 'error', message: '지원하지 않는 문서 종류입니다: ' + type });
+            }
+
             const datePrefix = new Date().toISOString().slice(0, 10).replace(/-/g, '');
             const randomSuffix = Math.floor(Math.random() * 900000) + 100000;
-            let prefix = 'DOC';
-            if (type === 'voucher') prefix = 'VOU';
-            else if (type === 'confirmation') prefix = 'CNF';
-            else if (type === 'reply_letter') prefix = 'REP';
+            const prefix = mapInfo.prefix;
+            const targetTable = mapInfo.table;
+            
             const id = `${prefix}-${datePrefix}-${randomSuffix}`;
             let finalStatus = status || '발급 완료'; // Default to '발급 완료'
+            
+            const approvalTypes = ['사례종결보고서-2026년', '응급개입 기록지(수정본)', '출장복명서', '사례회의록'];
+            if (!status && approvalTypes.includes(type)) {
+                finalStatus = '결재 대기';
+            }
 
-            const stmt = db.prepare(`INSERT INTO issued_docs (id, type, target_name, content_json, issuer, created_at, status) VALUES (?, ?, ?, ?, ?, datetime('now', 'localtime'), ?)`);
+            const stmt = db.prepare(`INSERT INTO ${targetTable} (id, type, target_name, content_json, issuer, created_at, status) VALUES (?, ?, ?, ?, ?, datetime('now', 'localtime'), ?)`);
             stmt.run(id, type, target_name, JSON.stringify(content || {}), issuer, finalStatus);
 
             res.json({ result: 'success', id });
 
         } else if (action === 'get_issued_docs') {
-            const list = db.prepare('SELECT id, type, target_name, issuer, created_at, status FROM issued_docs ORDER BY created_at DESC, id DESC').all();
+            const docTypesMap = {
+                'voucher': { table: 'issued_docs_voucher', prefix: 'VOU' },
+                'confirmation': { table: 'issued_docs_confirmation', prefix: 'CNF' },
+                'reply_child': { table: 'issued_docs_reply_child', prefix: 'REPC' },
+                'reply_adult': { table: 'issued_docs_reply_adult', prefix: 'REPA' },
+                'reply_suicide': { table: 'issued_docs_reply_suicide', prefix: 'REPS' },
+                'reply_resignation': { table: 'issued_docs_reply_resignation', prefix: 'REPR' },
+                '퇴사통회신서발행기': { table: 'issued_docs_dis', prefix: 'DIS' },
+                'jejungyeon': { table: 'issued_docs_jejungyeon', prefix: 'JJY' },
+                '강사비산출내역서': { table: 'issued_docs_calc', prefix: 'CAL' },
+                '강의확인서': { table: 'issued_docs_lecture_conf', prefix: 'LCF' },
+                '사례종결보고서-2026년': { table: 'issued_docs_report', prefix: 'RPT' },
+                '응급개입 기록지(수정본)': { table: 'issued_docs_emergency', prefix: 'EMG' },
+                '출장복명서': { table: 'issued_docs_biz_trip', prefix: 'BTR' },
+                '사례회의록': { table: 'issued_docs_case_meeting', prefix: 'CMT' }
+            };
+            const tables = Object.values(docTypesMap).map(m => m.table);
+            const unionQuery = tables.map(t => `SELECT id, type, target_name, issuer, created_at, status FROM ${t}`).join(' UNION ALL ');
+
+            const list = db.prepare(`SELECT * FROM (${unionQuery}) ORDER BY created_at DESC, id DESC`).all();
             res.json({ result: 'success', list });
 
         } else if (action === 'get_issued_doc_detail') {
             const { id } = req.body;
-            const doc = db.prepare('SELECT * FROM issued_docs WHERE id = ?').get(id);
+            const docTypesMap = {
+                'voucher': { table: 'issued_docs_voucher', prefix: 'VOU' },
+                'confirmation': { table: 'issued_docs_confirmation', prefix: 'CNF' },
+                'reply_child': { table: 'issued_docs_reply_child', prefix: 'REPC' },
+                'reply_adult': { table: 'issued_docs_reply_adult', prefix: 'REPA' },
+                'reply_suicide': { table: 'issued_docs_reply_suicide', prefix: 'REPS' },
+                'reply_resignation': { table: 'issued_docs_reply_resignation', prefix: 'REPR' },
+                '퇴사통회신서발행기': { table: 'issued_docs_dis', prefix: 'DIS' },
+                'jejungyeon': { table: 'issued_docs_jejungyeon', prefix: 'JJY' },
+                '강사비산출내역서': { table: 'issued_docs_calc', prefix: 'CAL' },
+                '강의확인서': { table: 'issued_docs_lecture_conf', prefix: 'LCF' },
+                '사례종결보고서-2026년': { table: 'issued_docs_report', prefix: 'RPT' },
+                '응급개입 기록지(수정본)': { table: 'issued_docs_emergency', prefix: 'EMG' },
+                '출장복명서': { table: 'issued_docs_biz_trip', prefix: 'BTR' },
+                '사례회의록': { table: 'issued_docs_case_meeting', prefix: 'CMT' }
+            };
+            const tables = Object.values(docTypesMap).map(m => m.table);
+            const unionQuery = tables.map(t => `SELECT * FROM ${t}`).join(' UNION ALL ');
+
+            const doc = db.prepare(`SELECT * FROM (${unionQuery}) WHERE id = ?`).get(id);
             if (doc) {
                 res.json({ result: 'success', doc });
             } else {
@@ -539,14 +696,20 @@ app.post('/api/auth', (req, res) => {
             const updates = { ...req.body };
             delete updates.action;
 
+            let targetTable = 'inquiries';
+            const rawCategory = updates.category || '기타';
+            if (rawCategory === '아동청소년') targetTable = 'inquiries_child';
+            else if (rawCategory === '성인') targetTable = 'inquiries_adult';
+            else if (rawCategory === '자살') targetTable = 'inquiries_suicide';
+            else if (rawCategory === '퇴사통' || rawCategory === '퇴원사실통보') targetTable = 'inquiries_resignation';
+
             // Generate sequence ID based on category prefix
             if (!updates.id) {
-                const rawCategory = updates.category || '기타';
                 // '퇴원사실통보' -> '퇴원' 으로 줄임표시 (유저 요청: 퇴원-1)
-                let prefix = rawCategory === '퇴원사실통보' ? '퇴원' : rawCategory;
+                let prefix = rawCategory === '퇴원사실통보' || rawCategory === '퇴사통' ? '퇴원' : rawCategory;
 
                 // Query existing max number for the prefix
-                const rows = db.prepare('SELECT id FROM inquiries WHERE id LIKE ?').all(`${prefix}-%`);
+                const rows = db.prepare(`SELECT id FROM ${targetTable} WHERE id LIKE ?`).all(`${prefix}-%`);
                 let maxNum = 0;
                 rows.forEach(r => {
                     const match = r.id.match(/-(\d+)$/);
@@ -565,18 +728,39 @@ app.post('/api/auth', (req, res) => {
             const placeholders = keys.map(() => '?').join(', ');
             const values = keys.map(k => updates[k]);
 
-            const stmt = db.prepare(`INSERT INTO inquiries (${columns}) VALUES (${placeholders})`);
+            const stmt = db.prepare(`INSERT INTO ${targetTable} (${columns}) VALUES (${placeholders})`);
             stmt.run(...values);
             res.json({ result: 'success' });
         } else if (action === 'get_pending') {
-            const list = db.prepare("SELECT *, id as rowIndex FROM inquiries WHERE (status = '대기' OR status IS NULL) AND category = ?").all(req.body.category || '');
+            let pendingTable = 'inquiries';
+            const pendingCategory = req.body.category || '';
+            if (pendingCategory === '아동청소년') pendingTable = 'inquiries_child';
+            else if (pendingCategory === '성인') pendingTable = 'inquiries_adult';
+            else if (pendingCategory === '자살') pendingTable = 'inquiries_suicide';
+            else if (pendingCategory === '퇴사통' || pendingCategory === '퇴원사실통보') pendingTable = 'inquiries_resignation';
+
+            const list = db.prepare(`SELECT *, id as rowIndex FROM ${pendingTable} WHERE (status = '대기' OR status IS NULL) AND category = ?`).all(pendingCategory);
             res.json({ result: 'success', list });
         } else if (action === 'get_case_ledger') {
-            const list = db.prepare("SELECT *, id as rowIndex FROM inquiries WHERE category = ? ORDER BY date DESC").all(req.body.category || '');
+            let ledgerTable = 'inquiries';
+            const ledgerCategory = req.body.category || '';
+            if (ledgerCategory === '아동청소년') ledgerTable = 'inquiries_child';
+            else if (ledgerCategory === '성인') ledgerTable = 'inquiries_adult';
+            else if (ledgerCategory === '자살') ledgerTable = 'inquiries_suicide';
+            else if (ledgerCategory === '퇴사통' || ledgerCategory === '퇴원사실통보') ledgerTable = 'inquiries_resignation';
+
+            const list = db.prepare(`SELECT *, id as rowIndex FROM ${ledgerTable} WHERE category = ? ORDER BY date DESC`).all(ledgerCategory);
             res.json({ result: 'success', list });
         } else if (action === 'get_case_detail') {
-            const { id, rowIndex } = req.body;
-            const data = db.prepare("SELECT *, id AS rowIndex, agencyDetail AS agency FROM inquiries WHERE id = ?").get(id || rowIndex);
+            const { id, rowIndex, category } = req.body;
+            let detailTable = 'inquiries';
+            const detailCategory = category || '';
+            if (detailCategory === '아동청소년') detailTable = 'inquiries_child';
+            else if (detailCategory === '성인') detailTable = 'inquiries_adult';
+            else if (detailCategory === '자살') detailTable = 'inquiries_suicide';
+            else if (detailCategory === '퇴사통' || detailCategory === '퇴원사실통보') detailTable = 'inquiries_resignation';
+
+            const data = db.prepare(`SELECT *, id AS rowIndex, agencyDetail AS agency FROM ${detailTable} WHERE id = ?`).get(id || rowIndex);
             res.json({ result: 'success', data: { data } });
         } else if (action === 'update_status') {
             const updates = { ...req.body };
@@ -584,12 +768,19 @@ app.post('/api/auth', (req, res) => {
             delete updates.action;
             delete updates.id;
             delete updates.rowIndex;
+            
+            let updateTable = 'inquiries';
+            const updateCategory = updates.category || ''; // Category must be passed to update_status to find correct table
+            if (updateCategory === '아동청소년') updateTable = 'inquiries_child';
+            else if (updateCategory === '성인') updateTable = 'inquiries_adult';
+            else if (updateCategory === '자살') updateTable = 'inquiries_suicide';
+            else if (updateCategory === '퇴사통' || updateCategory === '퇴원사실통보') updateTable = 'inquiries_resignation';
 
             const keys = Object.keys(updates).filter(k => INQUIRY_COLUMNS.includes(k) && updates[k] !== undefined);
             const setClause = keys.map(k => `${k} = ?`).join(', ');
             const values = keys.map(k => updates[k]);
             values.push(id);
-            db.prepare(`UPDATE inquiries SET ${setClause} WHERE id = ?`).run(...values);
+            db.prepare(`UPDATE ${updateTable} SET ${setClause} WHERE id = ?`).run(...values);
             res.json({ result: 'success' });
         }
 
@@ -947,6 +1138,43 @@ app.post('/api/auth', (req, res) => {
                 res.json({ result: 'error', message: err.message });
             }
         }
+        else if (action === 'cancel_approval') {
+            const { approval_id, approver_id } = req.body;
+            try {
+                db.transaction(() => {
+                    const app = db.prepare(`SELECT * FROM approvals WHERE id = ?`).get(approval_id);
+                    if (!app) throw new Error('문서를 찾을 수 없습니다.');
+                    if (app.status !== 'IN_PROGRESS') throw new Error('진행 중인 결재 문서만 취소할 수 있습니다.');
+
+                    // Get the current approver's line
+                    const myLine = db.prepare(`SELECT * FROM approval_lines WHERE approval_id = ? AND approver_id = ?`).get(approval_id, approver_id);
+                    if (!myLine) throw new Error('결재선에 존재하지 않습니다.');
+                    if (myLine.status !== 'APPROVED') throw new Error('본인이 승인 완료한 상태가 아닙니다.');
+
+                    // Get the next approver's line (if any)
+                    const nextLine = db.prepare(`SELECT * FROM approval_lines WHERE approval_id = ? AND step_order = ?`).get(approval_id, myLine.step_order + 1);
+                    if (nextLine && nextLine.status !== 'PENDING' && nextLine.status !== 'WAITING') {
+                        throw new Error('다음 단계 결재자가 이미 확인하여 취소할 수 없습니다.');
+                    }
+
+                    // Undo current approver
+                    db.prepare(`UPDATE approval_lines SET status = 'PENDING', comment = '', acted_at = NULL WHERE approval_id = ? AND step_order = ?`)
+                        .run(approval_id, myLine.step_order);
+                    
+                    // Undo next approver and reset pointer
+                    if (nextLine) {
+                        db.prepare(`UPDATE approval_lines SET status = 'WAITING' WHERE approval_id = ? AND step_order = ?`)
+                            .run(approval_id, nextLine.step_order);
+                        
+                        db.prepare(`UPDATE approvals SET current_step = ? WHERE id = ?`)
+                            .run(myLine.step_order, approval_id);
+                    }
+                })();
+                res.json({ result: 'success' });
+            } catch (err) {
+                res.json({ result: 'error', message: err.message });
+            }
+        }
         else if (action === 'withdraw_approval') {
             const { approval_id, user_id } = req.body;
             try {
@@ -970,6 +1198,30 @@ app.post('/api/auth', (req, res) => {
                         eventBus.emit('approval:withdrawn', { linkedDocId: contentObj.linkedDocId });
                     }
                 })();
+                res.json({ result: 'success' });
+            } catch (err) {
+                res.json({ result: 'error', message: err.message });
+            }
+        }
+        else if (action === 'delete_approval') {
+            const { approval_id, user_id } = req.body;
+            try {
+                // Ensure the user actually owns this approval before permitting deletion
+                const app = db.prepare('SELECT drafter_id, status FROM approvals WHERE id = ?').get(approval_id);
+                if (!app) {
+                    return res.json({ result: 'error', message: '문서를 찾을 수 없습니다.' });
+                }
+                if (app.drafter_id !== user_id) {
+                    return res.json({ result: 'error', message: '본인이 기안한 문서만 삭제할 수 있습니다.' });
+                }
+                if (app.status !== 'REJECTED' && app.status !== 'WITHDRAWN') {
+                    return res.json({ result: 'error', message: '반려되거나 회수된 문서만 삭제 가능합니다.' });
+                }
+
+                // Delete dependencies first (approval_lines) then the main row
+                db.prepare('DELETE FROM approval_lines WHERE approval_id = ?').run(approval_id);
+                db.prepare('DELETE FROM approvals WHERE id = ?').run(approval_id);
+
                 res.json({ result: 'success' });
             } catch (err) {
                 res.json({ result: 'error', message: err.message });
@@ -1085,6 +1337,11 @@ app.post('/api/auth', (req, res) => {
             db.prepare(`DELETE FROM notifications WHERE user_id = ? AND is_read = 1`).run(user_id);
             res.json({ result: 'success' });
         }
+        else if (action === 'delete_notification_by_link') {
+            const { user_id, doc_id } = req.body;
+            db.prepare(`DELETE FROM notifications WHERE user_id = ? AND link LIKE ?`).run(user_id, `%${doc_id}%`);
+            res.json({ result: 'success' });
+        }
 
         // --- Error Report API ---
         else if (action === 'save_error_report') {
@@ -1094,14 +1351,12 @@ app.post('/api/auth', (req, res) => {
             
             db.prepare(`INSERT INTO error_reports (id, author_id, author_name, category, urgency, title, content, attachments) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`).run(id, author_id, author_name, category || '기타', urgency || '보통', title, content, attachStr);
             
-            // Send notification to admins
-            const admins = db.prepare(`SELECT id FROM members WHERE role = '관리자' OR role = '시스템관리자' OR isSystemAdmin = 1`).all();
-            admins.forEach(admin => {
-                const urgencyText = urgency === '긴급' ? '🚨 [긴급]' : '💡';
-                sendInternalNotification(admin.id, 'ERROR_REPORT', `${urgencyText} [오류접수] ${author_name}님의 새 신고`, `유형: ${category} | 제목: ${title}`, '');
-            });
-
+            // Notification dispatch removed as requested
             res.json({ result: 'success' });
+        }
+        else if (action === 'get_error_reports') {
+            const list = db.prepare(`SELECT * FROM error_reports ORDER BY created_at DESC`).all();
+            res.json({ result: 'success', list });
         }
 
         // ==========================================
@@ -1109,7 +1364,7 @@ app.post('/api/auth', (req, res) => {
         // ==========================================
         else if (action === 'admin_get_table_data') {
             const { table } = req.body;
-            const allowedTables = ['members', 'teams', 'doc_numbers', 'issued_docs', 'inquiries', 'user_tasks', 'work_logs', 'weekly_cases', 'daily_logs', 'notices', 'events', 'approvals', 'saved_lines'];
+            const allowedTables = ['members', 'teams', 'doc_numbers', 'doc_numbers_jejeongnae', 'issued_docs_voucher', 'issued_docs_confirmation', 'issued_docs_reply_child', 'issued_docs_reply_adult', 'issued_docs_reply_suicide', 'issued_docs_reply_resignation', 'issued_docs_dis', 'issued_docs_jejungyeon', 'issued_docs_calc', 'issued_docs_lecture_conf', 'issued_docs_report', 'issued_docs_emergency', 'issued_docs_biz_trip', 'issued_docs_case_meeting', 'inquiries_child', 'inquiries_adult', 'inquiries_suicide', 'inquiries_resignation', 'user_tasks', 'work_logs', 'weekly_cases', 'daily_logs', 'notices', 'events', 'approvals', 'saved_lines'];
             if (!allowedTables.includes(table)) {
                 return res.json({ result: 'error', message: '접근이 허용되지 않은 테이블입니다.' });
             }
@@ -1127,11 +1382,11 @@ app.post('/api/auth', (req, res) => {
             }
         } else if (action === 'admin_delete_row') {
             const { table, id } = req.body;
-            const allowedTables = ['members', 'teams', 'doc_numbers', 'issued_docs', 'inquiries', 'user_tasks', 'work_logs', 'weekly_cases', 'daily_logs', 'notices', 'events', 'approvals', 'saved_lines'];
+            const allowedTables = ['members', 'teams', 'doc_numbers', 'doc_numbers_jejeongnae', 'issued_docs_voucher', 'issued_docs_confirmation', 'issued_docs_reply_child', 'issued_docs_reply_adult', 'issued_docs_reply_suicide', 'issued_docs_reply_resignation', 'issued_docs_dis', 'issued_docs_jejungyeon', 'issued_docs_calc', 'issued_docs_lecture_conf', 'issued_docs_report', 'issued_docs_emergency', 'issued_docs_biz_trip', 'issued_docs_case_meeting', 'inquiries_child', 'inquiries_adult', 'inquiries_suicide', 'inquiries_resignation', 'user_tasks', 'work_logs', 'weekly_cases', 'daily_logs', 'notices', 'events', 'approvals', 'saved_lines'];
             if (!allowedTables.includes(table)) return res.json({ result: 'error', message: '접근 금지된 테이블입니다.' });
             try {
                 // Cascading logic for DB integrity
-                if (table === 'issued_docs') {
+                if (table.startsWith('issued_docs_')) {
                     // Reset inquiries linked to this document
                     db.prepare(`UPDATE inquiries SET status = '대기', replyDate = '', docNum = '', issuedDocId = '' WHERE issuedDocId = ?`).run(id);
                 } else if (table === 'doc_numbers') {
@@ -1150,7 +1405,7 @@ app.post('/api/auth', (req, res) => {
             }
         } else if (action === 'admin_update_row') {
             const { table, id, updateData } = req.body;
-            const allowedTables = ['members', 'teams', 'doc_numbers', 'issued_docs', 'inquiries', 'user_tasks', 'work_logs', 'weekly_cases', 'daily_logs', 'notices', 'events', 'approvals', 'saved_lines'];
+            const allowedTables = ['members', 'teams', 'doc_numbers', 'doc_numbers_jejeongnae', 'issued_docs_voucher', 'issued_docs_confirmation', 'issued_docs_reply_child', 'issued_docs_reply_adult', 'issued_docs_reply_suicide', 'issued_docs_reply_resignation', 'issued_docs_dis', 'issued_docs_jejungyeon', 'issued_docs_calc', 'issued_docs_lecture_conf', 'issued_docs_report', 'issued_docs_emergency', 'issued_docs_biz_trip', 'issued_docs_case_meeting', 'inquiries_child', 'inquiries_adult', 'inquiries_suicide', 'inquiries_resignation', 'user_tasks', 'work_logs', 'weekly_cases', 'daily_logs', 'notices', 'events', 'approvals', 'saved_lines'];
             if (!allowedTables.includes(table)) return res.json({ result: 'error', message: '접근 금지된 테이블입니다.' });
             try {
                 const pk = table === 'teams' ? 'code' : 'id';
@@ -1202,9 +1457,13 @@ app.post('/api/import_legacy', uploadCirc.single('excelFile'), (req, res) => {
         let stmtDoc = null;
         let stmtInq = null;
 
-        if (docType === '제정내' || docType === '제정공') {
+        let targetTable = 'doc_numbers';
+        if (docType === '제정내') targetTable = 'doc_numbers_jejeongnae';
+        if (docType === '제정연') targetTable = 'doc_numbers_jejeongyeon';
+
+        if (docType === '제정내' || docType === '제정공' || docType === '제정연') {
             stmtDoc = db.prepare(`
-                INSERT INTO doc_numbers (docType, docNum, title, sender, target, date, sentDate, status)
+                INSERT INTO ${targetTable} (docType, docNum, title, sender, target, date, sentDate, status)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?)
             `);
         } else if (['성인대장', '자살대장', '아동대장', '퇴원사실통보'].includes(docType)) {
@@ -1379,16 +1638,26 @@ app.post('/api/export_excel', async (req, res) => {
             }
             query += " ORDER BY date ASC, id ASC";
         } else {
-            query = "SELECT * FROM doc_numbers WHERE docType = ?";
+            let targetTable = 'doc_numbers';
+            if (docType === '제정내') targetTable = 'doc_numbers_jejeongnae';
+            else if (docType === '제정연') targetTable = 'doc_numbers_jejeongyeon';
+
+            query = `SELECT * FROM ${targetTable} WHERE docType = ?`;
             params.push(docType);
             if (yearMonth) {
                 query += " AND date LIKE ?";
                 params.push(`${yearMonth}%`);
             }
-            query += " ORDER BY date ASC, LENGTH(docNum) ASC, docNum ASC";
+            query += " ORDER BY id ASC";
         }
 
         const targetData = db.prepare(query).all(...params);
+        
+        console.log(`[Export Excel Debug]`, {
+            docType, targetTable: isCaseLedger ? 'inquiries' : (docType === '제정내' ? 'doc_numbers_jejeongnae' : 'doc_numbers'),
+            query, params,
+            resultCount: targetData.length
+        });
 
         if (targetData.length === 0) {
             return res.json({ result: 'error', message: '데이터가 없습니다.' });
@@ -1429,6 +1698,33 @@ app.use((err, req, res, next) => {
         result: 'error',
         message: err.message || 'Internal Server Error'
     });
+});
+
+// --- TEMPORARY FIX FOR ORPHANED APPROVALS ---
+app.get('/api/fix_db', (req, res) => {
+    try {
+        const docs = db.prepare("SELECT * FROM approvals WHERE type='CASE_CONFERENCE'").all();
+        let fixedCount = 0;
+        for (const doc of docs) {
+            const content = JSON.parse(doc.content);
+            if (content.reportData && !content.linkedDocId) {
+                const datePrefix = new Date(doc.created_at || Date.now()).toISOString().slice(0, 10).replace(/\-/g, '');
+                const randomSuffix = Math.floor(Math.random() * 900000) + 100000;
+                const id = 'CMT-' + datePrefix + '-' + randomSuffix;
+                let target_name = content.reportData.v_manager || '담당자';
+                let issuer = content.reportData.issuer || '이보람';
+                db.prepare("INSERT INTO issued_docs_case_meeting (id, type, target_name, content_json, issuer, created_at, status) VALUES (?, ?, ?, ?, ?, ?, ?)").run(id, '사례회의록', target_name, JSON.stringify(content.reportData), issuer, doc.created_at || new Date().toISOString(), doc.status);
+                content.linkedDocId = id;
+                db.prepare("UPDATE approvals SET content = ? WHERE id = ?").run(JSON.stringify(content), doc.id);
+                console.log('Fixed missing linkedDocId for:', doc.id, '->', id);
+                fixedCount++;
+            }
+        }
+        res.send(`Fixed ${fixedCount} orphaned approvals.`);
+    } catch(e) {
+        console.error('Fix error:', e.message);
+        res.status(500).send(`Error: ${e.message}`);
+    }
 });
 
 // Start server

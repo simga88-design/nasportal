@@ -725,23 +725,52 @@
             const urlParams = new URLSearchParams(window.location.search);
             const autoSelect = urlParams.get('autoSelect');
             const openHistoryId = urlParams.get('openHistoryId');
-            const editId = urlParams.get('edit_id'); // From approval redraft
+            const redraftId = urlParams.get('redraft_id'); // From approval redraft (template doc)
+            const docTypeParam = urlParams.get('docType'); // From approval
+            const editId = urlParams.get('editId');
 
-            if (editId) {
-                // Determine which target doc belongs to
-                // Default handling for redrafts logic starts at approval
+            if (editId || redraftId) {
+                // Determine docType: if passed from URL use it, otherwise fallback
+                const targetDocType = docTypeParam || '사례종결보고서-2026년';
+                
+                // Switch to approval tab since it's an approval redraft
                 switchTab('approval');
-                // Temporarily just set to 사례종결보고서 for now. Ideally should deduce document type from DB.
-                // It will be fixed inside the switchDocType or later if needed.
-                document.getElementById('docTypeSelect').value = '사례종결보고서-2026년';
-                switchDocType('사례종결보고서-2026년');
+                document.getElementById('docTypeSelect').value = targetDocType;
+                switchDocType(targetDocType);
+
                 setTimeout(() => {
-                    loadHistoryDetail(editId);
-                    // Automatically click "Copy & Edit" mode to unlock the form
-                    setTimeout(() => {
-                        enableCopyEditMode();
-                        Toastify({ text: "반려된 문서를 수정 모드로 불러왔습니다.", style: { background: "#3b82f6" }, duration: 3000 }).showToast();
-                    }, 800);
+                    if (redraftId) {
+                        // Load data from sessionStorage for template documents
+                        const redraftDataStr = sessionStorage.getItem('jc_redraft_data');
+                        if (redraftDataStr) {
+                            try {
+                                const redraftData = JSON.parse(redraftDataStr);
+                                const formIframe = document.getElementById('form-frame');
+                                if (formIframe && formIframe.contentWindow) {
+                                    // Pass data in the format loadDoc expects ({ content: ... })
+                                    formIframe.contentWindow.postMessage({ action: 'loadDoc', data: { content: redraftData.content.reportData || redraftData.content } }, '*');
+                                    setHistoryMode(true);
+                                    
+                                    // Automatically click "Copy & Edit" mode to unlock the form
+                                    setTimeout(() => {
+                                        enableCopyEditMode(true);
+                                        Toastify({ text: "반려된 문서를 수정 모드로 불러왔습니다.", style: { background: "#3b82f6" }, duration: 3000 }).showToast();
+                                        sessionStorage.removeItem('jc_redraft_data'); // Clean up
+                                    }, 800);
+                                }
+                            } catch(e) {
+                                console.error('Error parsing redraft data', e);
+                            }
+                        }
+                    } else {
+                        // Load data from History DB for linked documents
+                        loadHistoryDetail(editId);
+                        // Automatically click "Copy & Edit" mode to unlock the form
+                        setTimeout(() => {
+                            enableCopyEditMode(true);
+                            Toastify({ text: "반려된 문서를 수정 모드로 불러왔습니다.", style: { background: "#3b82f6" }, duration: 3000 }).showToast();
+                        }, 800);
+                    }
                 }, 300);
             } else if (openHistoryId) {
                 let docType = 'voucher';
@@ -828,32 +857,66 @@
             if (data.type === 'updatePreview' && data.payload) {
                 const previewIframe = document.getElementById('preview-frame');
                 if (previewIframe && previewIframe.contentWindow) {
+                    const currentIssuerName = document.getElementById('issuer').value;
+                    let currentIssuerStamp = user.stamp; // Default to logged in user
+
+                    // Try to find the stamp of the current issuer from AppStore members
+                    if (currentIssuerName !== user.name && window.parent && window.parent.AppStore) {
+                        const members = window.parent.AppStore.state.members || [];
+                        const match = members.find(m => m.name === currentIssuerName);
+                        if (match && match.stamp) {
+                            currentIssuerStamp = match.stamp;
+                        }
+                    }
+
                     const enhancedPayload = {
                         ...data.payload,
-                        issuer: document.getElementById('issuer').value,
+                        issuer: currentIssuerName,
                         issueDate: document.getElementById('issueDate').value,
-                        issuer_stamp: user.stamp
+                        issuer_stamp: currentIssuerStamp
                     };
                     previewIframe.contentWindow.postMessage({ action: 'render', data: enhancedPayload }, '*');
                 }
             } else if (data.type === 'saveSuccess') {
-                const btn = document.getElementById('btnSave');
-                btn.innerHTML = '<i class="fas fa-print"></i> 발급 및 인쇄';
-                btn.disabled = false;
-                Toastify({ text: "처리 완료! 인쇄를 시작합니다.", style: { background: "#10b981" }, duration: 3000 }).showToast();
-                loadHistory();
-                setTimeout(() => {
-                    const previewIframe = document.getElementById('preview-frame');
-                    if (previewIframe && previewIframe.contentWindow) {
-                        previewIframe.contentWindow.postMessage({ action: 'print' }, '*');
+                if (isWaitingForApprovalDraft) {
+                    isWaitingForApprovalDraft = false;
+                    const commonData = {
+                        issuer: document.getElementById('issuer').value,
+                        issueDate: document.getElementById('issueDate').value,
+                        docType: currentMode,
+                        linkedDocId: data.id
+                    };
+                    const formIframe = document.getElementById('form-frame');
+                    if (formIframe && formIframe.contentWindow) {
+                        formIframe.contentWindow.postMessage({ action: 'prepareApproval', commonData: commonData }, '*');
                     }
-                }, 500);
+                } else {
+                    const btn = document.getElementById('btnSave');
+                    btn.innerHTML = '<i class="fas fa-print"></i> 발급 및 인쇄';
+                    btn.disabled = false;
+                    Toastify({ text: "처리 완료! 인쇄를 시작합니다.", style: { background: "#10b981" }, duration: 3000 }).showToast();
+                    loadHistory();
+                    setTimeout(() => {
+                        const previewIframe = document.getElementById('preview-frame');
+                        if (previewIframe && previewIframe.contentWindow) {
+                            previewIframe.contentWindow.postMessage({ action: 'print' }, '*');
+                        }
+                    }, 500);
+                }
             } else if (data.type === 'saveError') {
-                const btn = document.getElementById('btnSave');
-                btn.innerHTML = '<i class="fas fa-print"></i> 발급 및 인쇄';
-                btn.disabled = false;
-                if (data.message) {
-                    Toastify({ text: "오류: " + data.message, style: { background: "#ef4444" }, duration: 4000 }).showToast();
+                if (isWaitingForApprovalDraft) {
+                    isWaitingForApprovalDraft = false;
+                    const btn = document.getElementById('btnApproval');
+                    btn.innerHTML = '<i class="fas fa-file-signature"></i> 전자결재 상신';
+                    btn.disabled = false;
+                    Toastify({ text: "문서 대장 생성 실패로 결재 상신이 취소되었습니다: " + (data.message || ''), style: { background: "#ef4444" }, duration: 4000 }).showToast();
+                } else {
+                    const btn = document.getElementById('btnSave');
+                    btn.innerHTML = '<i class="fas fa-print"></i> 발급 및 인쇄';
+                    btn.disabled = false;
+                    if (data.message) {
+                        Toastify({ text: "오류: " + data.message, style: { background: "#ef4444" }, duration: 4000 }).showToast();
+                    }
                 }
             } else if (data.type === 'disableSave') {
                 const btn = document.getElementById('btnSave');
@@ -980,10 +1043,14 @@
             }
         }
 
+        let isWaitingForApprovalDraft = false;
+
         function sendToApproval() {
             const btn = document.getElementById('btnApproval');
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 처리중...';
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 문서 대장 등록중...';
             btn.disabled = true;
+            isWaitingForApprovalDraft = true;
+
             const commonData = {
                 issuer: document.getElementById('issuer').value,
                 issueDate: document.getElementById('issueDate').value,
@@ -991,7 +1058,8 @@
             };
             const formIframe = document.getElementById('form-frame');
             if (formIframe && formIframe.contentWindow) {
-                formIframe.contentWindow.postMessage({ action: 'prepareApproval', commonData: commonData }, '*');
+                // Force a save to get the linkedDocId first!
+                formIframe.contentWindow.postMessage({ action: 'save', commonData: commonData }, '*');
             }
         }
 
@@ -1019,25 +1087,35 @@
                             let badge = '<span class="badge" style="background:#e2e8f0; color:#475569;">알수없음</span>';
 
                             if (docType === 'voucher' || docType === '의뢰서') {
-                                badge = '<span class="badge" style="background:#dbeafe; color:#2563eb;">마음투자의뢰서</span>';
+                                badge = '<span class="badge" style="background:#dbeafe; color:#2563eb;">투자의뢰서</span>';
                             } else if (docType === 'confirmation' || docType === '상담확인서') {
                                 badge = '<span class="badge" style="background:#dcfce7; color:#15803d;">상담확인서</span>';
                             } else if (docType === 'reply_letter' || docType === '의뢰회신서') {
-                                badge = '<span class="badge" style="background:#f3e8ff; color:#7e22ce;">통합의뢰회신서</span>';
+                                badge = '<span class="badge" style="background:#f3e8ff; color:#7e22ce;">통합회신서</span>';
+                            } else if (docType === 'reply_child') {
+                                badge = '<span class="badge" style="background:#f3e8ff; color:#7e22ce;">아동회신</span>';
+                            } else if (docType === 'reply_adult') {
+                                badge = '<span class="badge" style="background:#f3e8ff; color:#7e22ce;">성인회신</span>';
+                            } else if (docType === 'reply_suicide') {
+                                badge = '<span class="badge" style="background:#f3e8ff; color:#7e22ce;">자살회신</span>';
+                            } else if (docType === 'reply_resignation') {
+                                badge = '<span class="badge" style="background:#f3e8ff; color:#7e22ce;">퇴사통회신</span>';
                             } else if (docType === 'jejungyeon' || docType === '제정연') {
-                                badge = '<span class="badge" style="background:#fef08a; color:#854d0e;">제정연의뢰서</span>';
+                                badge = '<span class="badge" style="background:#fef08a; color:#854d0e;">제정연의뢰</span>';
                             } else if (docType === '퇴사통회신서발행기' || docType === '퇴원사실통보') {
-                                badge = '<span class="badge" style="background:#ffe4e6; color:#e11d48;">퇴원통보회신서</span>';
+                                badge = '<span class="badge" style="background:#ffe4e6; color:#e11d48;">퇴원통보</span>';
                             } else if (docType === '강사비산출내역서') {
                                 badge = '<span class="badge" style="background:#ccfbf1; color:#0f766e;">강사비내역</span>';
                             } else if (docType === '강의확인서') {
                                 badge = '<span class="badge" style="background:#ffedd5; color:#c2410c;">강의확인서</span>';
-                            } else if (docType === '사례종결보고서-2026년') {
+                            } else if (docType === '사례종결보고서-2026년' || docType === '사례종결보고서') {
                                 badge = '<span class="badge" style="background:#e0e7ff; color:#4338ca;">사례종결</span>';
-                            } else if (docType === '응급개입기록지') {
+                            } else if (docType === '응급개입 기록지(수정본)' || docType === '응급개입기록지') {
                                 badge = '<span class="badge" style="background:#fce7f3; color:#be185d;">응급개입</span>';
                             } else if (docType === '출장복명서') {
                                 badge = '<span class="badge" style="background:#ecfdf5; color:#059669;">출장복명</span>';
+                            } else if (docType === '사례회의록') {
+                                badge = '<span class="badge" style="background:#fef3c7; color:#d97706;">사례회의</span>';
                             }
                             const date = item.created_at ? item.created_at.split(' ')[0] : '날짜없음';
                             html += `
@@ -1067,6 +1145,15 @@
                 .then(data => {
                     if (data.result === 'success' && data.data) {
                         const doc = data.data;
+
+                        // Set the parent's issuer and issueDate so the preview gets the right values
+                        if (doc.issuer) {
+                            document.getElementById('issuer').value = doc.issuer;
+                        }
+                        if (doc.created_at) {
+                            document.getElementById('issueDate').value = doc.created_at.split(' ')[0] || doc.created_at.split('T')[0];
+                        }
+
                         const docTypeMapping = {
                             'voucher': 'voucher',
                             '의뢰서': 'voucher',
@@ -1087,7 +1174,24 @@
                         };
                         const mappedType = docTypeMapping[doc.type] || docTypeMapping[doc.doc_type] || 'voucher';
 
-                        if (currentMode !== mappedType) {
+                        // 1. Find which tab the document belongs to
+                        let targetTab = 'general';
+                        if (docCategories.approval.find(d => d.value === mappedType)) {
+                            targetTab = 'approval';
+                        }
+
+                        // 2. Check if we need to switch tab
+                        let tabChanged = false;
+                        if (currentTab !== targetTab) {
+                            switchTab(targetTab);
+                            tabChanged = true;
+                        }
+
+                        // 3. Keep track of the actual current iframe src state
+                        // Even if switchTab changed currentMode, the iframe hasn't loaded yet.
+                        const needsIframeLoad = tabChanged || (currentMode !== mappedType);
+
+                        if (needsIframeLoad) {
                             document.getElementById('docTypeSelect').value = mappedType;
                             switchDocType(mappedType);
 
@@ -1100,6 +1204,7 @@
                                 }, 300);
                             };
                         } else {
+                            // If neither the tab nor the docType changed, the iframe is already loaded
                             const formIframe = document.getElementById('form-frame');
                             if (formIframe && formIframe.contentWindow) {
                                 formIframe.contentWindow.postMessage({ action: 'loadDoc', data: doc }, '*');
@@ -1149,9 +1254,11 @@
             }, 500);
         };
 
-        window.enableCopyEditMode = function () {
+        window.enableCopyEditMode = function (silent = false) {
             setHistoryMode(false);
-            Toastify({ text: "복사된 내용으로 신규 문서를 작성합니다.", style: { background: "#3b82f6" }, duration: 3000 }).showToast();
+            if (!silent) {
+                Toastify({ text: "복사된 내용으로 신규 문서를 작성합니다.", style: { background: "#3b82f6" }, duration: 3000 }).showToast();
+            }
 
             // Clear generated components that specify it's a new document
             const formIframe = document.getElementById('form-frame');

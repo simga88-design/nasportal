@@ -507,6 +507,15 @@
         function openDoc(id) {
             currentDoc = globalList.find(d => d.id === id);
 
+            // Auto-delete notifications for this circulation
+            try {
+                fetch(BASE_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'delete_notification_by_link', user_id: user.id, doc_id: id })
+                });
+            } catch (e) { console.error('Auto notification delete error', e); }
+
             document.getElementById('viewTitle').innerText = currentDoc.title;
             document.getElementById('viewMeta').innerText = `작성자: ${currentDoc.author} | 날짜: ${currentDoc.date}`;
             document.getElementById('viewContent').innerText = currentDoc.content;

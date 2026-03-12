@@ -910,6 +910,15 @@
             const drafterLabel = drafterMember ? `${drafterMember.name} ${drafterMember.position ? `(${drafterMember.position})` : ''}` : item.drafter_id;
             const typeLabel = DOC_TYPE_MAP[item.type] || item.type;
 
+            // Auto-delete notifications for this approval
+            try {
+                fetch(BASE_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'delete_notification_by_link', user_id: currentUser.id, doc_id: id })
+                });
+            } catch (e) { console.error('Auto notification delete error', e); }
+
             let attachHtml = '';
             if (item.content.attachments && item.content.attachments.length > 0) {
                 attachHtml = '<div style="margin-bottom: 20px; padding: 10px; background: #f8fafc; border-radius: 8px;"><b>첨부파일:</b><br>';
@@ -999,7 +1008,10 @@
                         <div style="text-align:right; gap:10px; display:flex; justify-content:flex-end;">
                             ${printBtn}
                             <button class="btn btn-primary" onclick="reDraft('${item.id}')">
-                                <i class="fas fa-edit"></i> 재상신 (내용 복사)
+                                <i class="fas fa-edit"></i> 반려문서 수정
+                            </button>
+                            <button class="btn btn-danger" onclick="deleteApproval('${item.id}')">
+                                <i class="fas fa-trash-alt"></i> 삭제
                             </button>
                             <button class="btn btn-outline" onclick="closeModal('view-modal')">닫기</button>
                         </div>`;
@@ -1013,7 +1025,25 @@
                             <button class="btn btn-outline" onclick="closeModal('view-modal')">닫기</button>
                         </div>`;
                 } else {
+                    // Check if current user is an intermediate approver who can cancel their approval
+                    let cancelBtn = '';
+                    if (item.status === 'IN_PROGRESS' && item.lines && item.lines.length > 0) {
+                        const myLineIndex = item.lines.findIndex(l => l.approver_id === currentUser.id);
+                        if (myLineIndex !== -1 && item.lines[myLineIndex].status === 'APPROVED') {
+                            // Check if the next step is still PENDING or WAITING
+                            const nextLine = item.lines[myLineIndex + 1];
+                            if (nextLine && (nextLine.status === 'PENDING' || nextLine.status === 'WAITING')) {
+                                cancelBtn = `
+                                    <button class="btn btn-warning" onclick="cancelApproval('${item.id}', '${currentUser.id}')" style="color:#b45309; background:#fef3c7; border-color:#fde68a;">
+                                        <i class="fas fa-undo-alt"></i> 승인 취소
+                                    </button>
+                                `;
+                            }
+                        }
+                    }
+
                     html += `<div style="text-align:right; gap:10px; display:flex; justify-content:flex-end;">
+                        ${cancelBtn}
                         ${printBtn}
                         <button class="btn btn-outline" onclick="closeModal('view-modal')">닫기</button>
                     </div>`;
@@ -1161,6 +1191,47 @@
             } catch (e) { console.error(e); alert('오류 발생'); }
         }
 
+        async function deleteApproval(id) {
+            if (!confirm("이 반려/회수된 문서를 영구 삭제하시겠습니까?\n삭제 후에는 다시 복구할 수 없습니다.")) return;
+
+            try {
+                const res = await fetch(BASE_URL, {
+                    method: 'POST', body: JSON.stringify({ action: 'delete_approval', approval_id: id, user_id: currentUser.id })
+                });
+                const json = await res.json();
+                if (json.result === 'success') {
+                    alert('문서가 삭제되었습니다.');
+                    closeModal('view-modal');
+                    loadApprovals('sent');
+                } else {
+                    alert('실패: ' + json.message);
+                }
+            } catch (e) { console.error(e); alert('오류 발생'); }
+        }
+
+        async function cancelApproval(approval_id, approver_id) {
+            if (!confirm("승인을 취소하시겠습니까?\n(다음 결재자가 아직 확인하지 않은 경우에만 가능합니다)")) return;
+
+            try {
+                const res = await fetch(BASE_URL, {
+                    method: 'POST', 
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'cancel_approval', approval_id: approval_id, approver_id: approver_id })
+                });
+                const json = await res.json();
+                if (json.result === 'success') {
+                    alert('승인이 안전하게 취소되었습니다. 문서가 다시 결재 대기 상태로 변경됩니다.');
+                    closeModal('view-modal');
+                    loadApprovals('todo');
+                } else {
+                    alert('승인 취소 불가: ' + json.message);
+                }
+            } catch (e) { 
+                console.error(e); 
+                alert('서버 오류로 인해 호출을 실패했습니다.');
+            }
+        }
+
         // --- Re-draft Feature ---
         async function reDraft(id) {
             // 1. Fetch details
@@ -1174,9 +1245,16 @@
                 const item = json.list.find(a => a.id === id);
                 if (!item) return alert('문서 정보를 찾을 수 없습니다.');
 
+                // If it's a template document without a linkedDocId but has reportData
+                if (item.content && item.content.docType && item.content.reportData && !item.content.linkedDocId) {
+                    sessionStorage.setItem('jc_redraft_data', JSON.stringify(item));
+                    window.location.href = `doc_issue.html?redraft_id=${item.id}&approval_id=${item.id}&docType=${item.content.docType}`;
+                    return;
+                }
+
                 // Redirect to doc_issue.html for linked documents
                 if (item.content && item.content.linkedDocId) {
-                    window.location.href = `doc_issue.html?edit_id=${item.content.linkedDocId}&approval_id=${item.id}`;
+                    window.location.href = `doc_issue.html?editId=${item.content.linkedDocId}&approval_id=${item.id}`;
                     return;
                 }
 

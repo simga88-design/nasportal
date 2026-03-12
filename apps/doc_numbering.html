@@ -355,9 +355,9 @@
                     </div>
 
                     <div class="form-group">
-                        <label>문서 번호 (숫자만 입력 가능)</label>
+                        <label>문서 번호 (숫자 또는 공문번호 입력)</label>
                         <div style="display:flex; gap:10px; align-items:center;">
-                            <input type="number" id="search_number" placeholder="예: 60" style="flex:1;">
+                            <input type="text" id="search_number" placeholder="예: 60 또는 제정공-60" style="flex:1;">
                             <button class="btn btn-secondary btn-sm" onclick="searchDocInfo()">조회</button>
                         </div>
                     </div>
@@ -404,8 +404,6 @@
                 <!-- Excel Export Container (Right Aligned via flex) -->
                 <div style="flex: 1; text-align: right; display: flex; justify-content: flex-end; align-items: center; gap: 5px;"
                     id="export-controls" class="hidden">
-                    <input type="month" id="export-month" class="btn-sm"
-                        style="width: auto; padding: 4px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 12px;">
                     <button class="btn btn-sm btn-success" id="btn-export-excel" onclick="exportToExcel()">
                         <i class="fas fa-file-excel"></i> 엑셀 다운로드
                     </button>
@@ -492,7 +490,13 @@
             // Update Tab UI
             ['pending', 'jejeonggong', 'jejeongnae'].forEach(key => {
                 const btn = document.getElementById(`tab-${key}`);
-                if (key === (mode === '제정공' ? 'jejeonggong' : (mode === '제정내' ? 'jejeongnae' : 'pending'))) {
+                if (!btn) return;
+                
+                let targetKey = 'pending';
+                if (mode === '제정공') targetKey = 'jejeonggong';
+                if (mode === '제정내') targetKey = 'jejeongnae';
+
+                if (key === targetKey) {
                     btn.classList.remove('btn-secondary');
                     btn.classList.add('btn-primary', 'active');
                 } else {
@@ -541,6 +545,14 @@
                         container.innerHTML = '<div class="empty-state"><i class="fas fa-check-circle" style="color:#10b981"></i> 미발송 내역이 없습니다.</div>';
                         return;
                     }
+                    // Forcing rigorous numerical sort on the frontend to absolutely guarantee 94 -> 93 -> 92
+                    list.sort((a, b) => {
+                        if (a.date !== b.date) return a.date < b.date ? 1 : -1;
+                        const getNum = (s) => (s && s.match(/-(\d+)$/) ? parseInt(s.match(/-(\d+)$/)[1], 10) : 0);
+                        const numA = getNum(a.docNum), numB = getNum(b.docNum);
+                        if (numA !== numB) return numB - numA;
+                        return (b.docNum || '').localeCompare(a.docNum || '');
+                    });
                     renderList(list, 'pending');
                 })
                 .catch(err => {
@@ -563,6 +575,14 @@
                         container.innerHTML = '<div class="empty-state">검색 결과가 없습니다.</div>';
                         return;
                     }
+                    // Forcing rigorous numerical sort on the frontend to absolutely guarantee 94 -> 93 -> 92
+                    list.sort((a, b) => {
+                        if (a.date !== b.date) return a.date < b.date ? 1 : -1;
+                        const getNum = (s) => (s && s.match(/-(\d+)$/) ? parseInt(s.match(/-(\d+)$/)[1], 10) : 0);
+                        const numA = getNum(a.docNum), numB = getNum(b.docNum);
+                        if (numA !== numB) return numB - numA;
+                        return (b.docNum || '').localeCompare(a.docNum || '');
+                    });
                     renderList(list, 'ledger');
                 })
                 .catch(err => {
@@ -576,11 +596,9 @@
 
             list.forEach(item => {
                 const badgeType = type === 'pending' ? 'badge-red' : 'badge-blue';
-                // Extract numeric part for ID: "제정공-123" -> 123
-                const numOnly = item.docNum.replace(/[^0-9]/g, '');
 
                 html += `
-            <div class="list-item" onclick="onItemClick('${numOnly}', '${item.type || ''}')">
+            <div class="list-item" onclick="onItemClick('${item.docNum}', '${item.type || ''}')">
                 <div class="list-item-header">
                     <span class="badge ${badgeType}">${item.docNum}</span>
                     <span class="list-item-meta">${item.date}</span>
@@ -596,11 +614,11 @@
             container.innerHTML = html;
         }
 
-        function onItemClick(numOnly) {
+        function onItemClick(docNum) {
             // Switch to Sent tab (Action Panel)
             switchLeftTab('sent');
             // Pre-fill number
-            document.getElementById('search_number').value = numOnly;
+            document.getElementById('search_number').value = docNum;
             // Auto-search
             searchDocInfo();
         }
@@ -650,6 +668,12 @@
                 .then(json => {
                     const data = json.data || {};
                     if (data.found) {
+                        if (data.isValiddocType === false) {
+                            parent.Modal.alert('제정공 문서만 검색 및 발송 처리할 수 있습니다.');
+                            document.getElementById('docInfoArea').classList.add('hidden');
+                            return;
+                        }
+
                         document.getElementById('docInfoArea').classList.remove('hidden');
                         document.getElementById('info_title').innerText = data.title;
                         document.getElementById('info_sender').innerText = data.sender;
@@ -718,12 +742,9 @@
         async function exportToExcel() {
             if (currentListMode !== '제정공' && currentListMode !== '제정내') return;
 
-            const monthVal = document.getElementById('export-month').value;
             const btn = document.getElementById('btn-export-excel');
 
-            const confirmMsg = monthVal
-                ? `${monthVal}월 '${currentListMode}' 내역을 엑셀로 다운로드하시겠습니까?`
-                : `전체 '${currentListMode}' 내역을 엑셀로 다운로드하시겠습니까? (시간이 소요될 수 있습니다.)`;
+            const confirmMsg = `전체 '${currentListMode}' 내역을 엑셀로 다운로드하시겠습니까? (로딩에 다소 시간이 소요될 수 있습니다.)`;
 
             if (!await parent.Modal.confirm(confirmMsg)) return;
 
@@ -740,7 +761,7 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         docType: currentListMode,
-                        yearMonth: monthVal
+                        yearMonth: ''
                     })
                 });
 

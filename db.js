@@ -55,7 +55,7 @@ db.exec(`
     rrule TEXT
   );
 
-  -- [신규] 문서 발급 대장 (의뢰서, 상담확인서 통합)
+  -- [신규] 문서 발급 대장 (개별 테이블로 분할됨)
   CREATE TABLE IF NOT EXISTS issued_docs(
     id TEXT PRIMARY KEY,
     type TEXT,
@@ -65,6 +65,19 @@ db.exec(`
     created_at TEXT,
     status TEXT DEFAULT '발급 완료'
   );
+
+  CREATE TABLE IF NOT EXISTS issued_docs_voucher (id TEXT PRIMARY KEY, type TEXT, target_name TEXT, content_json TEXT, issuer TEXT, created_at TEXT, status TEXT DEFAULT '발급 완료');
+  CREATE TABLE IF NOT EXISTS issued_docs_confirmation (id TEXT PRIMARY KEY, type TEXT, target_name TEXT, content_json TEXT, issuer TEXT, created_at TEXT, status TEXT DEFAULT '발급 완료');
+  CREATE TABLE IF NOT EXISTS issued_docs_reply_letter (id TEXT PRIMARY KEY, type TEXT, target_name TEXT, content_json TEXT, issuer TEXT, created_at TEXT, status TEXT DEFAULT '발급 완료');
+  CREATE TABLE IF NOT EXISTS issued_docs_dis (id TEXT PRIMARY KEY, type TEXT, target_name TEXT, content_json TEXT, issuer TEXT, created_at TEXT, status TEXT DEFAULT '발급 완료');
+  CREATE TABLE IF NOT EXISTS issued_docs_jejungyeon (id TEXT PRIMARY KEY, type TEXT, target_name TEXT, content_json TEXT, issuer TEXT, created_at TEXT, status TEXT DEFAULT '발급 완료');
+  CREATE TABLE IF NOT EXISTS issued_docs_calc (id TEXT PRIMARY KEY, type TEXT, target_name TEXT, content_json TEXT, issuer TEXT, created_at TEXT, status TEXT DEFAULT '발급 완료');
+  CREATE TABLE IF NOT EXISTS issued_docs_lecture_conf (id TEXT PRIMARY KEY, type TEXT, target_name TEXT, content_json TEXT, issuer TEXT, created_at TEXT, status TEXT DEFAULT '발급 완료');
+  CREATE TABLE IF NOT EXISTS issued_docs_report (id TEXT PRIMARY KEY, type TEXT, target_name TEXT, content_json TEXT, issuer TEXT, created_at TEXT, status TEXT DEFAULT '발급 완료');
+  CREATE TABLE IF NOT EXISTS issued_docs_emergency (id TEXT PRIMARY KEY, type TEXT, target_name TEXT, content_json TEXT, issuer TEXT, created_at TEXT, status TEXT DEFAULT '발급 완료');
+  CREATE TABLE IF NOT EXISTS issued_docs_biz_trip (id TEXT PRIMARY KEY, type TEXT, target_name TEXT, content_json TEXT, issuer TEXT, created_at TEXT, status TEXT DEFAULT '발급 완료');
+  CREATE TABLE IF NOT EXISTS issued_docs_case_meeting (id TEXT PRIMARY KEY, type TEXT, target_name TEXT, content_json TEXT, issuer TEXT, created_at TEXT, status TEXT DEFAULT '발급 완료');
+
 
   -- [신규주간보고] 트랙 A: 행정/사업 업무 누적용
   CREATE TABLE IF NOT EXISTS master_categories (
@@ -125,6 +138,30 @@ db.exec(`
   );
 
   CREATE TABLE IF NOT EXISTS doc_numbers (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    docNum TEXT UNIQUE,
+    docType TEXT,
+    title TEXT,
+    sender TEXT,
+    target TEXT,
+    date TEXT,
+    sentDate TEXT,
+    status TEXT DEFAULT '미발송'
+  );
+
+  -- [신규] 제정내, 제정연 전용 대장 분리
+  CREATE TABLE IF NOT EXISTS doc_numbers_jejeongnae (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    docNum TEXT UNIQUE,
+    docType TEXT,
+    title TEXT,
+    sender TEXT,
+    target TEXT,
+    date TEXT,
+    status TEXT DEFAULT '완료'
+  );
+
+  CREATE TABLE IF NOT EXISTS doc_numbers_jejeongyeon (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     docNum TEXT UNIQUE,
     docType TEXT,
@@ -261,6 +298,51 @@ try {
     if (!inqCols.includes('issuedDocId')) db.exec('ALTER TABLE inquiries ADD COLUMN issuedDocId TEXT');
     if (!inqCols.includes('admissionDate')) db.exec('ALTER TABLE inquiries ADD COLUMN admissionDate TEXT');
     if (!inqCols.includes('dischargeDate')) db.exec('ALTER TABLE inquiries ADD COLUMN dischargeDate TEXT');
+
+    // DB 분리 마이그레이션: 기존 doc_numbers 에 있는 제정내, 제정연을 신규 테이블로 이전하고 기존에서 삭제
+    db.exec(`
+      INSERT OR IGNORE INTO doc_numbers_jejeongnae (docNum, docType, title, sender, target, date, status)
+      SELECT docNum, docType, title, sender, target, date, '완료' FROM doc_numbers WHERE docType = '제정내';
+      
+      INSERT OR IGNORE INTO doc_numbers_jejeongyeon (docNum, docType, title, sender, target, date, sentDate, status)
+      SELECT docNum, docType, title, sender, target, date, sentDate, status FROM doc_numbers WHERE docType = '제정연';
+
+      DELETE FROM doc_numbers WHERE docType IN ('제정내', '제정연');
+    `);
+
+    // 제정내 sentDate 컬럼 삭제
+    const jnCols = db.prepare('PRAGMA table_info(doc_numbers_jejeongnae)').all().map(c => c.name);
+    if (jnCols.includes('sentDate')) {
+        db.exec('ALTER TABLE doc_numbers_jejeongnae DROP COLUMN sentDate');
+    }
+
+    // issued_docs 개별 테이블 분할 마이그레이션
+    const docTypesMap = {
+        'voucher': 'issued_docs_voucher',
+        'confirmation': 'issued_docs_confirmation',
+        'reply_letter': 'issued_docs_reply_letter',
+        '퇴사통회신서발행기': 'issued_docs_dis',
+        'jejungyeon': 'issued_docs_jejungyeon',
+        '강사비산출내역서': 'issued_docs_calc',
+        '강의확인서': 'issued_docs_lecture_conf',
+        '사례종결보고서-2026년': 'issued_docs_report',
+        '응급개입 기록지(수정본)': 'issued_docs_emergency',
+        '출장복명서': 'issued_docs_biz_trip',
+        '사례회의록': 'issued_docs_case_meeting'
+    };
+
+    const existingDocs = db.prepare('SELECT COUNT(*) as count FROM issued_docs').get();
+    if (existingDocs.count > 0) {
+        for (const [type, tableName] of Object.entries(docTypesMap)) {
+            db.prepare(`
+                INSERT OR IGNORE INTO ${tableName} (id, type, target_name, content_json, issuer, created_at, status)
+                SELECT id, type, target_name, content_json, issuer, created_at, status 
+                FROM issued_docs WHERE type = ?
+            `).run(type);
+        }
+        // 원본 테이블 내용 비우기 (데이터 보존을 위해 DROP하지 않고 비움처리)
+        db.exec('DELETE FROM issued_docs');
+    }
 
     console.log('Database migrations applied successfully');
 } catch (e) {

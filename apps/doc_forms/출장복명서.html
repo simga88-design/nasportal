@@ -390,8 +390,56 @@
             el.addEventListener('change', triggerPreview);
         });
 
+        function setupDragAndDrop() {
+            const inputs = ['v_photo1_file', 'v_photo2_file', 'v_scan1_file', 'v_scan2_file'];
+            inputs.forEach(id => {
+                const el = document.getElementById(id);
+                if (!el) return;
+                const container = el.parentElement;
+
+                ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                    container.addEventListener(eventName, preventDefaults, false);
+                });
+
+                function preventDefaults(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                }
+
+                ['dragenter', 'dragover'].forEach(eventName => {
+                    container.addEventListener(eventName, () => {
+                        container.style.backgroundColor = '#e2e8f0';
+                        container.style.outline = '2px dashed #3b82f6';
+                        container.style.outlineOffset = '2px';
+                        container.style.borderRadius = '8px';
+                    }, false);
+                });
+
+                ['dragleave', 'drop'].forEach(eventName => {
+                    container.addEventListener(eventName, () => {
+                        container.style.backgroundColor = '';
+                        container.style.outline = '';
+                        container.style.outlineOffset = '';
+                        container.style.borderRadius = '';
+                    }, false);
+                });
+
+                container.addEventListener('drop', (e) => {
+                    const dt = e.dataTransfer;
+                    const files = dt.files;
+                    if (files.length > 0) {
+                        el.files = files; // Trigger file input population
+                        // Manually trigger the onchange event
+                        const event = new Event('change');
+                        el.dispatchEvent(event);
+                    }
+                }, false);
+            });
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
             renderTravelers();
+            setupDragAndDrop();
             // Give parent a chance to send common data first
             setTimeout(triggerPreview, 200);
         });
@@ -515,37 +563,12 @@
             }
             const fullData = { ...commonData, ...content };
 
-            fetch(API_URL, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    action: 'save_issued_doc',
-                    type: '출장복명서',
-                    target_name: '(출장)',
-                    title: `출장복명서(${title})`,
-                    content: fullData,
-                    issuer: commonData.issuer,
-                    status: '결재 대기'
-                })
-            })
-                .then(res => res.json())
-                .then(json => {
-                    if (json.result === 'success') {
-                        window.parent.postMessage({
-                            type: 'readyForApproval',
-                            targetName: '(출장)',
-                            reportData: fullData,
-                            linkedDocId: json.id
-                        }, '*');
-                    } else {
-                        Toastify({ text: "사전 임시저장 오류: " + json.message, style: { background: "#ef4444" }, duration: 4000 }).showToast();
-                        window.parent.postMessage({ type: 'approvalError', message: json.message }, '*');
-                    }
-                })
-                .catch(err => {
-                    Toastify({ text: "서버 오류 (사전 임시저장 실패)", style: { background: "#ef4444" }, duration: 4000 }).showToast();
-                    window.parent.postMessage({ type: 'approvalError', message: '사전 임시저장 실패' }, '*');
-                });
+            window.parent.postMessage({
+                type: 'readyForApproval',
+                targetName: '(출장)',
+                reportData: fullData,
+                linkedDocId: commonData.linkedDocId
+            }, '*');
         }
     </script>
 </body>

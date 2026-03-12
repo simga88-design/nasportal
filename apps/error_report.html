@@ -216,6 +216,74 @@
 
         /* Require Star */
         .req { color: #ef4444; margin-left: 2px; }
+
+        /* Tabs */
+        .tabs-header {
+            display: flex;
+            border-bottom: 1px solid #cbd5e1;
+            margin-bottom: 15px;
+        }
+        .tab-btn {
+            padding: 10px 16px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #64748b;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s;
+        }
+        .tab-btn:hover {
+            color: #3b82f6;
+        }
+        .tab-btn.active {
+            color: #2563eb;
+            border-bottom-color: #2563eb;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Admin Table */
+        .admin-table-wrapper {
+            background: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 1px 2px -1px rgba(0, 0, 0, 0.05);
+            border: 1px solid #e2e8f0;
+            overflow: hidden;
+        }
+        .admin-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+        .admin-table th, .admin-table td {
+            padding: 12px 16px;
+            border-bottom: 1px solid #f1f5f9;
+            text-align: left;
+        }
+        .admin-table th {
+            background-color: #f8fafc;
+            font-weight: 600;
+            color: #475569;
+        }
+        .admin-table tbody tr:hover {
+            background-color: #f8fafc;
+        }
+        .status-badge {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+        .status-danger { background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; }
+        .status-warning { background: #fffbeb; color: #b45309; border: 1px solid #fde68a; }
+        .status-info { background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; }
+        .status-success { background: #ecfdf5; color: #047857; border: 1px solid #a7f3d0; }
     </style>
 </head>
 <body>
@@ -225,7 +293,14 @@
             <p>시스템 사용 중 겪으신 문제를 상세히 알려주세요.<br>빠르게 확인하고 조치하여 더 나은 환경을 만들겠습니다.</p>
         </div>
 
-        <div class="card">
+        <div class="tabs-header">
+            <button class="tab-btn active" onclick="switchTab('report-tab')" id="btn-report-tab">오류 신고하기</button>
+            <button class="tab-btn" onclick="switchTab('admin-tab')" id="btn-admin-tab" style="display: none;">신고 내역 (관리자용)</button>
+        </div>
+
+        <!-- Report Tab -->
+        <div id="report-tab" class="tab-content active">
+            <div class="card">
             <div class="section-title"><i class="fas fa-tags"></i> 기본 정보 분류</div>
             <div class="form-row">
                 <div class="form-group">
@@ -298,6 +373,37 @@
                 <i class="fas fa-paper-plane"></i> 신고 접수 완료
             </button>
         </div>
+        </div> <!-- End Report Tab -->
+
+        <!-- Admin History Tab -->
+        <div id="admin-tab" class="tab-content">
+            <div class="card" style="margin-bottom: 15px;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div class="section-title" style="margin-bottom: 0; border: none; padding: 0;"><i class="fas fa-list-alt"></i> 접수된 오류 목록</div>
+                    <button class="btn-submit" style="padding: 6px 12px; font-size: 13px;" onclick="loadAdminReports()">
+                        <i class="fas fa-sync-alt"></i> 새로고침
+                    </button>
+                </div>
+            </div>
+            <div class="admin-table-wrapper">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 120px;">접수일시</th>
+                            <th style="width: 80px;">신고자</th>
+                            <th style="width: 100px;">유형</th>
+                            <th style="width: 80px; text-align: center;">긴급도</th>
+                            <th>제목</th>
+                            <th style="width: 80px; text-align: center;">첨부</th>
+                        </tr>
+                    </thead>
+                    <tbody id="admin-report-list">
+                        <tr><td colspan="6" style="text-align: center; color: #64748b; padding: 30px;">데이터를 불러오는 중입니다...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div> <!-- End Admin Tab -->
+
     </div>
 
     <!-- Scripts -->
@@ -309,6 +415,128 @@
             alert: (msg) => alert(msg),
             confirm: (msg) => confirm(msg)
         };
+
+        const apiURL = typeof window.parent.BASE_URL !== 'undefined' ? window.parent.BASE_URL : '/api/auth';
+        let currentUser = null;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const userStr = sessionStorage.getItem('jc_user');
+            if (userStr) {
+                currentUser = JSON.parse(userStr);
+                const isAdmin = currentUser.isSystemAdmin || ['관리자', '센터장', '시스템관리자'].includes(currentUser.role);
+                if (isAdmin) {
+                    document.getElementById('btn-admin-tab').style.display = 'inline-block';
+                    loadAdminReports();
+                }
+            }
+        });
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            
+            document.getElementById('btn-' + tabId).classList.add('active');
+            document.getElementById(tabId).classList.add('active');
+            
+            if(tabId === 'admin-tab') {
+                loadAdminReports();
+            }
+        }
+
+        async function loadAdminReports() {
+            const tbody = document.getElementById('admin-report-list');
+            tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #64748b; padding: 30px;"><i class="fas fa-spinner fa-spin"></i> 데이터를 불러오는 중입니다...</td></tr>';
+            
+            try {
+                const res = await fetch(apiURL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'get_error_reports' })
+                });
+                const data = await res.json();
+                
+                if (data.result === 'success') {
+                    if (data.list.length === 0) {
+                        tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #64748b; padding: 30px;">접수된 오류 내역이 없습니다.</td></tr>';
+                        return;
+                    }
+                    
+                    let html = '';
+                    data.list.forEach(item => {
+                        const date = new Date(item.created_at).toLocaleString();
+                        
+                        let urgencyBadge = '';
+                        if (item.urgency === '긴급') urgencyBadge = '<span class="status-badge status-danger">긴급</span>';
+                        else if (item.urgency === '높음') urgencyBadge = '<span class="status-badge status-warning">높음</span>';
+                        else if (item.urgency === '보통') urgencyBadge = '<span class="status-badge status-info">보통</span>';
+                        else urgencyBadge = '<span class="status-badge status-success">낮음</span>';
+                        
+                        let attachIcon = '-';
+                        if (item.attachments && item.attachments !== '[]' && item.attachments !== 'null') {
+                            try {
+                                const atts = JSON.parse(item.attachments);
+                                if (atts.length > 0) attachIcon = `<i class="fas fa-paperclip" style="color: #64748b;" title="${atts.length} files"></i>`;
+                            } catch(e) {}
+                        }
+                        
+                        html += `
+                            <tr>
+                                <td style="color: #64748b; font-size: 12px;">${date}</td>
+                                <td style="font-weight: 500;">${item.author_name}</td>
+                                <td style="color: #64748b;">${item.category}</td>
+                                <td style="text-align: center;">${urgencyBadge}</td>
+                                <td style="font-weight: 500; cursor: pointer;" onclick="showReportDetail('${item.id}')">${item.title}</td>
+                                <td style="text-align: center;">${attachIcon}</td>
+                            </tr>
+                        `;
+                    });
+                    tbody.innerHTML = html;
+                    
+                    // Store the list for detail view
+                    window.adminReportList = data.list;
+                } else {
+                    tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #ef4444; padding: 30px;">데이터를 불러오지 못했습니다: ${data.message}</td></tr>`;
+                }
+            } catch (err) {
+                tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #ef4444; padding: 30px;">서버 통신 오류가 발생했습니다.</td></tr>`;
+            }
+        }
+
+        function showReportDetail(id) {
+            const report = window.adminReportList.find(r => r.id === id);
+            if (!report) return;
+            
+            let attachText = '없음';
+            if (report.attachments && report.attachments !== '[]' && report.attachments !== 'null') {
+                try {
+                    const atts = JSON.parse(report.attachments);
+                    if (atts.length > 0) {
+                        attachText = atts.map(a => {
+                            const fileName = a.split('/').pop();
+                            const dlUrl = typeof window.parent.BASE_URL !== 'undefined' ? window.parent.BASE_URL.replace('/api/auth', `/api/download_error_report?file=${encodeURIComponent(a)}`) : `/api/download_error_report?file=${encodeURIComponent(a)}`;
+                            return `<div style="margin-top: 5px;"><a href="${dlUrl}" target="_blank" style="color:#3b82f6; text-decoration:none;"><i class="fas fa-paperclip"></i> ${fileName}</a></div>`;
+                        }).join('');
+                    }
+                } catch(e) {}
+            }
+            
+            const detailHtml = `
+                <div style="text-align:left; font-size: 14px; line-height: 1.6;">
+                    <div style="margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid #e2e8f0;">
+                        <span style="color:#64748b; font-size:12px;">신고자: ${report.author_name} | 분류: ${report.category} | 중요도: ${report.urgency} | 등록일: ${new Date(report.created_at).toLocaleString()}</span><br>
+                        <strong style="font-size: 16px; color:#0f172a; margin-top:5px; display:inline-block;">${report.title}</strong>
+                    </div>
+                    <div style="background: #f8fafc; padding: 15px; border-radius: 8px; border: 1px solid #e2e8f0; white-space: pre-wrap; margin-bottom: 15px;">${report.content}</div>
+                    <div>
+                        <strong style="font-size:13px;">첨부파일</strong>
+                        ${attachText !== '없음' ? attachText : '<div style="color:#64748b; font-size:13px; margin-top:5px;">첨부파일 없음</div>'}
+                    </div>
+                </div>
+            `;
+            
+            // Re-use ParentModal alert for displaying detail, since passing HTML works for sweetalert/custom alert components
+            ParentModal.alert(detailHtml);
+        }
 
         let selectedFiles = [];
 
@@ -395,13 +623,10 @@
                 return;
             }
 
-            const userStr = sessionStorage.getItem('jc_user');
             if (!userStr) {
                 ParentModal.alert('로그인 정보가 없습니다. 다시 로그인해 주세요.');
                 return;
             }
-            const user = JSON.parse(userStr);
-            const apiURL = typeof window.parent.BASE_URL !== 'undefined' ? window.parent.BASE_URL : '/api/auth';
             const btn = document.getElementById('btn-submit');
             btn.disabled = true;
             btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> 접수 중...';
@@ -435,8 +660,8 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         action: 'save_error_report',
-                        author_id: user.id,
-                        author_name: user.name,
+                        author_id: currentUser.id,
+                        author_name: currentUser.name,
                         category: category,
                         urgency: urgency,
                         title: title,

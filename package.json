@@ -7,7 +7,7 @@
   "scripts": {
     "start": "electron .",
     "dist": "electron-builder",
-    "server": "node server.js"
+    "server": ".\\node-v20.11.1-win-x64\\node.exe server.js"
   },
   "build": {
     "appId": "com.jcmind.portal",

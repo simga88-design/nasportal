@@ -337,7 +337,8 @@
 
                 if (event.data.members && event.data.members.length > 0) {
                     const positionOrder = { '센터장': 0, '부센터장': 1, '상임팀장': 2, '팀장': 3, '주임': 4, '팀원': 5 };
-                    membersData = [...event.data.members].sort((a, b) => {
+                    const activeMembers = event.data.members.filter(m => m.status === '활성');
+                    membersData = activeMembers.sort((a, b) => {
                         const posA = positionOrder[a.position] ?? 99;
                         const posB = positionOrder[b.position] ?? 99;
                         if (posA !== posB) return posA - posB;
@@ -438,7 +439,8 @@
             window.parent.postMessage({
                 type: 'readyForApproval',
                 targetName: `${titleDate}_${payload.v_manager}`,
-                reportData: { ...commonData, ...payload }
+                reportData: { ...commonData, ...payload },
+                linkedDocId: commonData.linkedDocId
             }, '*');
         }
     </script>

@@ -443,38 +443,12 @@
             }
             const fullData = { ...commonData, ...content };
 
-            // First, save as DRAFT in issued_docs
-            fetch(API_URL, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    action: 'save_issued_doc',
-                    type: '사례종결보고서-2026년',
-                    target_name: target_name,
-                    title: `사례종결보고서(${target_name})`,
-                    content: fullData,
-                    issuer: commonData.issuer,
-                    status: '결재 대기' // Indicates pending electronic approval
-                })
-            })
-                .then(res => res.json())
-                .then(json => {
-                    if (json.result === 'success') {
-                        window.parent.postMessage({
-                            type: 'readyForApproval',
-                            targetName: target_name,
-                            reportData: fullData,
-                            linkedDocId: json.id // Pass the new DB ID
-                        }, '*');
-                    } else {
-                        Toastify({ text: "사전 임시저장 오류: " + json.message, style: { background: "#ef4444" }, duration: 4000 }).showToast();
-                        window.parent.postMessage({ type: 'approvalError', message: json.message }, '*');
-                    }
-                })
-                .catch(err => {
-                    Toastify({ text: "서버 오류 (사전 임시저장 실패)", style: { background: "#ef4444" }, duration: 4000 }).showToast();
-                    window.parent.postMessage({ type: 'approvalError', message: '사전 임시저장 실패' }, '*');
-                });
+            window.parent.postMessage({
+                type: 'readyForApproval',
+                targetName: target_name,
+                reportData: fullData,
+                linkedDocId: commonData.linkedDocId
+            }, '*');
         }
     </script>
 </body>
