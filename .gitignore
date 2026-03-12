@@ -9,3 +9,25 @@ node-v*/
 *.sqlite
 logs/
 .env
+
+# Local admin and test scripts
+backup_db.*
+check.js
+clear_*.js
+decode_reply.js
+delete_docs.js
+dummy.png
+err.txt
+extracted_confirmation.txt
+fix_*.js
+git_*.txt
+main.js
+node.zip
+reset_*.js
+restore_templates.js
+test.pdf
+test_*
+tmp_*.js
+update_ports.js
+admin_history.txt
+
