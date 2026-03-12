@@ -20,7 +20,7 @@
             <input type="password" id="login-pw" placeholder="비밀번호 (초기값: 1234)"
                 onkeypress="if(event.key === 'Enter') handleLogin()">
             <button id="btn-login" onclick="handleLogin()">로그인</button>
-            <p class="login-footer">문의: 정신건강복지센터 사무실</p>
+            <p class="login-footer">문의: 정신건강복지센터 심규호</p>
         </div>
     </div>
 
@@ -73,7 +73,8 @@
 
                 <li class="menu-header">사례 관리</li>
                 <li id="menu-case-management" title="사례접수 및 회신"
-                    onclick="loadFrame('./apps/case_management.html', '사례접수 및 회신')"><i class="fas fa-user-md"></i> 사례접수 및 회신</li>
+                    onclick="loadFrame('./apps/case_management.html', '사례접수 및 회신')"><i class="fas fa-user-md"></i> 사례접수
+                    및 회신</li>
                 <li id="menu-case-manager" title="사례관리 통합매니저"
                     onclick="window.open('https://script.google.com/a/macros/jcmind.or.kr/s/AKfycbwxBALh0Rq684W0pSwIMBK4ZMjOAgv66VumhR-ZOx-BP5hMozqqV4J49eHXFBcI5PPt/exec', '_blank')">
                     <i class="fas fa-project-diagram"></i> 사례관리 통합매니저
@@ -98,7 +99,8 @@
                 </li>
 
                 <li class="menu-header">시스템</li>
-                <li id="menu-error-report" title="오류 신고" onclick="loadFrame('./apps/error_report.html', '오류 신고')"><i class="fas fa-bug"></i> 오류 신고</li>
+                <li id="menu-error-report" title="오류 신고" onclick="loadFrame('./apps/error_report.html', '오류 신고')"><i
+                        class="fas fa-bug"></i> 오류 신고</li>
                 <li id="menu-org-chart" title="조직도" onclick="loadFrame('./apps/org_chart.html', '조직도')"><i
                         class="fas fa-sitemap"></i> 조직도</li>
             </ul>
@@ -444,7 +446,7 @@
                     <button onclick="deleteNotification(event, '${n.id}')" style="position:absolute; right:10px; top:10px; background:none; border:none; color:#cbd5e1; cursor:pointer; font-size:14px;" title="삭제" onmouseover="this.style.color='#ef4444'" onmouseout="this.style.color='#cbd5e1'"><i class="fas fa-times"></i></button>
                     <div class="noti-title" style="${titleStyle}">${n.title}</div>
                     <div class="noti-msg">${displayMsg}</div>
-                    <div class="noti-time">${(function(){
+                    <div class="noti-time">${(function () {
                         let d = n.created_at;
                         if (!d.includes('Z') && !d.includes('T')) d = d.replace(' ', 'T') + 'Z';
                         return new Date(d).toLocaleString();
